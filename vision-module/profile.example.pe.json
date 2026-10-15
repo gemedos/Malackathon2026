@@ -1,0 +1,28 @@
+{
+  "game": "ejemplo-no-calibrado",
+  "calibrated": false,
+  "image_size": [1280, 720],
+  "market": "betsson.pe",
+  "expected_currency": "PEN",
+  "ocr_language": "spa+eng",
+  "decimal_separator": ".",
+  "template_threshold": 0.85,
+  "template_scales": [0.9, 1.0, 1.1],
+  "insufficient_patterns": [
+    "\\bsaldo insuficiente\\b",
+    "\\bfondos insuficientes\\b"
+  ],
+  "insufficient_window_seconds": 5.0,
+  "regions": {
+    "spin_search": [950, 450, 330, 270],
+    "reels": [250, 120, 700, 400],
+    "balance": [50, 640, 220, 65],
+    "wager": [330, 640, 180, 65],
+    "payout": [620, 640, 200, 65],
+    "currency": [10, 640, 40, 65],
+    "message": [250, 180, 780, 340]
+  },
+  "motion": {"start_threshold": 8.0, "quiet_threshold": 2.0, "quiet_seconds": 1.0, "timeout_seconds": 20.0},
+  "consensus": {"min_readings": 3, "min_separation_seconds": 0.3},
+  "ready": {"threshold": 0.85, "busy_margin": 0.05}
+}
