@@ -55,9 +55,24 @@ class LoginPage(BasePage):
         username.fill(credentials.username)
         password.fill(credentials.password)
         self._submit(password)
-        return self._confirm(evidence, [username, password])
+        result = self._confirm(evidence, [username, password])
+        self._skip_passkey_offer()
+        return result
 
     # ------------------------------------------------------------------ interno
+
+    def _skip_passkey_offer(self) -> None:
+        """Si Betsson ofrece crear una clave de acceso, pulsa «ahora no». Nunca crea la clave."""
+        sel = self.selectors.login
+        if not sel.passkey_detect or self.find_first(sel.passkey_detect, 4000, what="clave-de-acceso") is None:
+            return
+        skip = self.find_first(sel.passkey_skip, 3000, what="clave-de-acceso-omitir")
+        if skip is None:
+            log.warning("Aviso de clave de acceso visible pero sin botón para omitirlo (revisar login.passkey_skip)")
+            return
+        skip.click()
+        self.page.wait_for_timeout(800)
+        log.info("Aviso de clave de acceso omitido")
 
     def _submit(self, password: Locator) -> None:
         """Pulsa el botón de envío del formulario del login (o Enter como último recurso)."""

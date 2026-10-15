@@ -6,6 +6,8 @@ y valida los dos escenarios del reto **leyendo la pantalla** (OCR y visión), si
 
 > Las reglas del proyecto están en [CLAUDE.md](CLAUDE.md) y son obligatorias.
 
+> **¿Quieres ejecutarlo?** Sigue [HOW_TO_RUN.md](HOW_TO_RUN.md): `python run.py setup` una vez y después `python run.py`.
+
 ## Flujo completo
 
 ```

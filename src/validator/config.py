@@ -169,6 +169,9 @@ class LoginSelectors(_Strict):
     logged_in: Candidates
     error: Candidates = Field(default_factory=list)
     verification: Candidates = Field(default_factory=list)
+    # Aviso «configura una clave de acceso» tras el login: se pospone (nunca se crea la clave).
+    passkey_detect: Candidates = Field(default_factory=list)
+    passkey_skip: Candidates = Field(default_factory=list)
 
 
 class LobbySelectors(_Strict):

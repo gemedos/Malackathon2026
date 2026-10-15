@@ -41,6 +41,8 @@ vision:
     - "\\bsaldo insuficiente\\b"
     - "\\bfondos insuficientes\\b"
     - "\\bcredito insuficiente\\b"
+    - "\\b(?:fondos|saldo|credito|dinero) insuficientes?\\b"
+    - "\\bno (?:tienes|tiene|dispone|dispones|hay) (?:de )?(?:suficientes? )?(?:fondos|saldo|dinero|credito)\\b"
     - "\\bno (?:tienes|tiene|hay) (?:suficiente saldo|saldo suficiente|fondos suficientes|credito suficiente)\\b"
   # Sondeo del saldo Betsson tras el intento (puede tardar en actualizarse).
   balance_poll_interval_s: 2.0
@@ -61,7 +63,7 @@ navigation:
   iframe_min_width: 400
   iframe_min_height: 300
   iframe_stable_ms: 2000
-  canvas_poll_ms: 500
+  canvas_poll_ms: 1500
   canvas_timeout_ms: 60000
   canvas_diff_threshold: 0.02     # fracción de píxeles que cambian entre capturas seguidas
   canvas_pixel_delta: 12          # diferencia (0-255) para considerar que un píxel cambió

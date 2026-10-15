@@ -131,7 +131,7 @@ def _reach_hud(session: GameSession, driver: GameDriver, engine: VisionEngine, s
                 clicks += 1
                 driver.wait(3000)
                 continue
-        driver.wait(1000)
+        driver.wait(1500)
     raise CalibrationError(f"No se llegó al HUD del juego en {HUD_TIMEOUT_S}s (crédito/apuesta ilegibles)")
 
 

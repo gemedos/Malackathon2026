@@ -21,6 +21,8 @@ from validator.pages.base_page import BasePage, build_locator
 
 log = logging.getLogger(__name__)
 
+PREGAME_CHECK_S = 1.5     # separación mínima entre comprobaciones de pantallas previas
+
 
 class GameLoadError(RuntimeError):
     """El iframe o el canvas del juego no llegó a cargarse."""
@@ -57,6 +59,7 @@ class GamePage(BasePage):
     def __init__(self, page: Page, market: MarketConfig, selectors: SelectorsConfig, evidence: Evidence) -> None:
         super().__init__(page, market, selectors)
         self.evidence = evidence
+        self._pregame_checked = 0.0
 
     # ------------------------------------------------------------------ público
 
@@ -91,6 +94,12 @@ class GamePage(BasePage):
 
         Puede llamarse en bucle mientras se espera al juego: las pantallas regulatorias (aviso de sesión de
         juego, límites, avisos que tapan el juego) llegan en distinto orden según el juego y el proveedor."""
+        # Sondear tres pantallas en cada vuelta hace que la página parpadee mientras carga el juego:
+        # como mucho una comprobación cada PREGAME_CHECK_S segundos.
+        now = time.monotonic()
+        if now - self._pregame_checked < PREGAME_CHECK_S:
+            return False
+        self._pregame_checked = now
         for screen in self.selectors.game_launch.pregame:
             if self.find_first(screen.detect, 0, what=f"pregame:{screen.name}") is None:
                 continue

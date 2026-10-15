@@ -54,6 +54,14 @@ login:
     - {text: "código de verificación", fuzzy: true}       # TODO: verificar con inspect_site.sh
     - {text: "verifica tu", fuzzy: true}                  # TODO: verificar con inspect_site.sh
     - {text: "hemos enviado un código", fuzzy: true}      # TODO: verificar con inspect_site.sh
+  passkey_detect:                                        # TODO: confirmar el texto exacto con el aviso real
+    - {text: "clave de acceso", fuzzy: true}
+  passkey_skip:                                          # TODO: confirmar con el aviso real (se prueban en orden)
+    - {role: button, name: "Ahora no", fuzzy: true}
+    - {role: button, name: "Más tarde", fuzzy: true}
+    - {role: button, name: "Omitir", fuzzy: true}
+    - {role: button, name: "No, gracias", fuzzy: true}
+    - {role: button, name: "Cancelar", fuzzy: true}
 
 lobby:
   not_found:

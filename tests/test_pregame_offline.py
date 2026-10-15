@@ -44,8 +44,13 @@ def test_notice_is_closed_before_tournament_panel(browser) -> None:
     page.set_content(HTML)
     game_page = GamePage(page, load_market("es"), load_selectors("es"), object())  # type: ignore[arg-type]  (solo se usa al fallar)
     steps = 0
-    while game_page.handle_pregame() and steps < 6:
-        steps += 1
+    for _ in range(8):
+        if game_page.handle_pregame():
+            steps += 1
+        elif page.evaluate("window.noticeDone && window.tourDone"):
+            break
+        else:
+            page.wait_for_timeout(1600)   # el sondeo está espaciado (PREGAME_CHECK_S)
     assert page.evaluate("window.noticeDone") is True
     assert page.evaluate("window.tourDone") is True
     assert steps == 2
