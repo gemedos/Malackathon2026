@@ -92,7 +92,7 @@ def open_game(
     try:
         provider_page = ProviderPage(page, market, selectors)
         with check(CHECK_PROVIDER_URL) as out:
-            opened = provider_page.open(provider)
+            opened = provider_page.open(provider, evidence)
             CookieBanner(page, market, selectors).handle(timeout=2000)
             out.detail = f"{opened.url} -> HTTP {opened.status}"
             if opened.plan_b:

@@ -47,11 +47,12 @@ class CardMatch:
 class ProviderPage(BasePage):
     # ----------------------------------------------------------------- apertura
 
-    def open(self, provider: str) -> ProviderOpenResult:
+    def open(self, provider: str, evidence=None) -> ProviderOpenResult:
         """Abre la URL del proveedor; si da 404 o redirige al lobby, usa el plan B (lobby)."""
         url = provider_url(self.market, provider)
         response = self.page.goto(url, wait_until="domcontentloaded")
         self._settle()
+        self.ensure_site_available(evidence)
         status = response.status if response is not None else None
         final_url = self.page.url
         reason = self._unusable_reason(url, status, final_url)

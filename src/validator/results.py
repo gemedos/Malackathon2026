@@ -71,7 +71,8 @@ class Checklist:
         try:
             yield outcome
         except Exception as exc:
-            self._add(name, "fail", f"{type(exc).__name__}: {exc}", outcome.evidence)
+            evidence = getattr(exc, "evidence", None) or outcome.evidence
+            self._add(name, "fail", f"{type(exc).__name__}: {exc}", evidence)
             self.failures.append(name)
             for pending in self.names:
                 if pending not in self.done:

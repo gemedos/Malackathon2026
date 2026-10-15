@@ -84,7 +84,7 @@ def load_catalog(market: str) -> Catalog:
 def save_catalog(catalog: Catalog) -> Path:
     path = catalog_path(catalog.market)
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(catalog.model_dump(), ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    path.write_text(json.dumps(catalog.model_dump(), ensure_ascii=False, indent=1) + "\n", encoding="utf-8", newline="\n")
     return path
 
 
@@ -153,7 +153,9 @@ def scrape_catalog(market: MarketConfig, headless: bool = True) -> Catalog:
 
             page.on("response", on_response)
             page.goto(page_url, wait_until="domcontentloaded")
-            CookieBanner(page, market, load_selectors(market.market)).handle()
+            banner = CookieBanner(page, market, load_selectors(market.market))
+            banner.ensure_site_available()
+            banner.handle()
             deadline = time.monotonic() + 60
             while len(captured) < len(wanted) and time.monotonic() < deadline:
                 page.wait_for_timeout(500)

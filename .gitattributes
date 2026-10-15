@@ -1,0 +1,5 @@
+# Saltos de línea LF en todo el repo (el runner self-hosted es Windows y Git tiene autocrlf).
+* text=auto eol=lf
+*.png binary
+*.webm binary
+*.zip binary

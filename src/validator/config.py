@@ -142,6 +142,10 @@ class SelectorCandidate(_Strict):
 Candidates = list[SelectorCandidate]
 
 
+class SiteSelectors(_Strict):
+    blocked: Candidates = Field(default_factory=list)
+
+
 class CookieSelectors(_Strict):
     reject: Candidates = Field(default_factory=list)
     settings: Candidates = Field(default_factory=list)
@@ -179,6 +183,7 @@ class GameSelectors(_Strict):
 
 
 class SelectorsConfig(_Strict):
+    site: SiteSelectors = Field(default_factory=SiteSelectors)
     cookies: CookieSelectors
     login: LoginSelectors
     lobby: LobbySelectors

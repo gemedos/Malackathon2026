@@ -48,7 +48,21 @@ gh secret set BETSSON_ES_EMPTY_PASS
 Opcionalmente, en **Variables** puedes definir `DEFAULT_GAME` (formato `Proveedor / Juego`) para la
 ejecución programada. Para el workflow de catálogo hace falta además `CATALOG_PAT` (ver más abajo).
 
-## Ejecutar en local
+## Lanzador interactivo (recomendado)
+
+```bash
+python scripts/run_tests.py
+```
+
+Primero eliges el proveedor y después **solo ves los juegos de ese proveedor** (o "todos"). En cada
+menú puedes escribir un número o parte del nombre para filtrar. Al final eliges dónde ejecutar:
+
+- `local`: ejecuta `pytest` en tu PC (necesita `.env`) y después el test de higiene.
+- `github`: lanza el workflow **Tests betsson.es** con esa selección (`gh workflow run`).
+
+Sin menús: `python scripts/run_tests.py --provider "PlaynGo" --game "Book of Dead" --where github --yes`.
+
+## Ejecutar en local con pytest
 
 ```bash
 pytest tests --provider "Pragmatic Play" --game "Sweet Bonanza"
@@ -132,6 +146,27 @@ compartas un script o captura con credenciales.
 
 ## GitHub Actions
 
+### Runner self-hosted (obligatorio)
+
+betsson.es solo está disponible desde España (licencia de juego). Desde los runners de GitHub se ve
+*"esta página web no está disponible en este país"* y el test falla con `SiteBlockedError`. Por eso
+los jobs que entran en betsson.es corren en `runs-on: [self-hosted, betsson-es]`, un PC del equipo en
+España. El job `plan` sí corre en GitHub, porque solo lee el catálogo.
+
+Instalación (Windows; ya hecha en `C:ctions-runner` del PC del equipo):
+
+1. **Settings → Actions → Runners → New self-hosted runner → Windows x64**, y sigue los comandos
+   (descarga y `config.cmd`). En *labels* escribe `betsson-es`. Cuando pregunte si quieres
+   ejecutarlo como servicio, responde **N**.
+2. Arráncalo con `C:ctions-runnerun.cmd` y deja la ventana abierta ("Listening for Jobs").
+3. Requisitos del PC: encendido y sin suspensión, en España **sin VPN**, con Git for Windows instalado
+   (los pasos usan `shell: bash`).
+
+Credenciales: **solo en GitHub Secrets** (`BETSSON_ES_*`). GitHub las entrega al runner como variables
+de entorno durante cada job. No pongas un `.env` en `C:ctions-runner` ni las metas en la configuración
+del runner. El repo debe seguir siendo **privado**: un runner self-hosted ejecuta el código de cualquiera
+que pueda lanzar workflows.
+
 ### `Tests betsson.es` (`.github/workflows/tests.yml`)
 
 **Actions → Tests betsson.es → Run workflow**:
@@ -164,7 +199,6 @@ fine-grained de este repo con permisos *Contents*, *Pull requests* y *Workflows*
 Sin él, el job falla con un mensaje claro y deja los archivos generados como artifact para commitearlos
 a mano. También se puede ejecutar `python scripts/update_catalog.py` en local y commitear.
 
-Si betsson.es bloquea las IP de GitHub, cambia `runs-on` a `self-hosted` en ambos workflows.
 
 ## Reglas de seguridad
 

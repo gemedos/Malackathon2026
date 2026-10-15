@@ -16,21 +16,22 @@ from PIL import Image
 from playwright.sync_api import BrowserContext, FrameLocator, Locator, Page
 
 from validator.config import MarketConfig, SelectorsConfig
+from validator.errors import EvidenceError
 from validator.evidence import Evidence
 from validator.pages.base_page import BasePage, build_locator
 
 log = logging.getLogger(__name__)
 
 
-class GameLoadError(RuntimeError):
+class GameLoadError(EvidenceError):
     """El iframe o el canvas del juego no llegó a cargarse."""
 
 
-class DemoModeError(RuntimeError):
+class DemoModeError(EvidenceError):
     """El juego se abrió en modo demo."""
 
 
-class SessionLimitsRequiredError(RuntimeError):
+class SessionLimitsRequiredError(EvidenceError):
     """La web exige configurar límites de sesión y no hay pasos definidos en el YAML."""
 
 
@@ -88,7 +89,7 @@ class GamePage(BasePage):
             shot = self.evidence.screenshot(self.page, "session_limits.png")
             raise SessionLimitsRequiredError(
                 "La web pide configurar límites de sesión antes de jugar y no hay pasos definidos en "
-                f"game_launch.session_limits_steps (evidencia: {self.evidence.relative(shot)})"
+                "game_launch.session_limits_steps", self.evidence.relative(shot)
             )
         for step in launch.session_limits_steps:
             target = self.find_first([step], self.nav.default_timeout_ms, what="paso-límites")
@@ -116,7 +117,7 @@ class GamePage(BasePage):
                 return best
             self.page.wait_for_timeout(500)
         shot = self.evidence.screenshot(self.page, "game_iframe_missing.png")
-        raise GameLoadError(f"No apareció el iframe del juego (evidencia: {self.evidence.relative(shot)})")
+        raise GameLoadError("No apareció el iframe del juego", self.evidence.relative(shot))
 
     def _wait_stable_box(self, iframe: Locator) -> dict[str, float]:
         """El bounding box debe mantenerse (±1 px) durante `iframe_stable_ms`."""
@@ -143,7 +144,7 @@ class GamePage(BasePage):
             if marker.lower() in src or marker.lower() in url:
                 shot = self.evidence.screenshot(self.page, "game_demo_mode.png")
                 raise DemoModeError(
-                    f"El juego se abrió en modo demo (marcador {marker!r}; evidencia: {self.evidence.relative(shot)})"
+                    f"El juego se abrió en modo demo (marcador {marker!r})", self.evidence.relative(shot)
                 )
 
     def _wait_canvas(self, iframe: Locator) -> None:
@@ -163,8 +164,8 @@ class GamePage(BasePage):
             self.page.wait_for_timeout(nav.canvas_poll_ms)
         shot = self.evidence.screenshot(self.page, "game_canvas_timeout.png")
         raise GameLoadError(
-            f"El canvas no se estabilizó en {nav.canvas_timeout_ms} ms (última diferencia {last_diff}; "
-            f"evidencia: {self.evidence.relative(shot)})"
+            f"El canvas no se estabilizó en {nav.canvas_timeout_ms} ms (última diferencia {last_diff})",
+            self.evidence.relative(shot),
         )
 
     @staticmethod

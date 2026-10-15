@@ -9,6 +9,7 @@ from typing import Union
 from playwright.sync_api import FrameLocator, Locator, Page
 
 from validator.config import MarketConfig, SelectorCandidate, SelectorsConfig
+from validator.errors import SiteBlockedError
 from validator.urls import fuzzy_pattern
 
 log = logging.getLogger(__name__)
@@ -79,6 +80,19 @@ class BasePage:
                 log.info("find_first[%s]: ninguna alternativa visible en %d ms", what, timeout)
                 return None
             self.page.wait_for_timeout(POLL_MS)
+
+    def ensure_site_available(self, evidence=None, *, login_context: bool = False) -> None:
+        """Falla con un mensaje claro si la web muestra la página de bloqueo geográfico."""
+        if not self.find_first(self.selectors.site.blocked, 1500, what="bloqueo-geográfico"):
+            return
+        shot = None
+        if evidence is not None:
+            shot = (evidence.login_screenshot if login_context else evidence.screenshot)(self.page, "site_blocked.png")
+        raise SiteBlockedError(
+            f"{self.market.base_url} no está disponible desde esta ubicación (bloqueo geográfico). "
+            "Ejecuta desde una IP del mercado, p. ej. con el runner self-hosted",
+            evidence.relative(shot) if evidence is not None else None,
+        )
 
     def is_any_visible(self, candidates: list[SelectorCandidate], *, scope: Scope | None = None, **params: str) -> bool:
         """Comprobación instantánea (sin espera)."""

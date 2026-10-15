@@ -49,7 +49,7 @@ def render_workflow(catalog: Catalog, path: Path = WORKFLOW) -> bool:
         body = "".join(f"{indent}- {json.dumps(o, ensure_ascii=False)}\n" for o in options)
         new = new[: match.start("body")] + body + new[match.end("body"):]
     if new != text:
-        path.write_text(new, encoding="utf-8")
+        path.write_text(new, encoding="utf-8", newline="\n")  # LF también en runners Windows
         return True
     return False
 

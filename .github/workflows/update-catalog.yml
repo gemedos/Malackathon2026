@@ -14,6 +14,10 @@ on:
 permissions:
   contents: read
 
+defaults:
+  run:
+    shell: bash
+
 concurrency:
   group: update-catalog
   cancel-in-progress: true
@@ -23,11 +27,14 @@ env:
 
 jobs:
   update:
-    # Si betsson.es bloquea las IP de GitHub, cambia a: runs-on: self-hosted
-    runs-on: ubuntu-latest
+    # betsson.es bloquea las IP fuera de España: corre en el runner self-hosted.
+    runs-on: [self-hosted, betsson-es]
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+
+      - name: Limpiar restos locales
+        run: rm -rf artifacts .auth
 
       - uses: actions/setup-python@v5
         with:

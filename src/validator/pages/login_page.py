@@ -8,6 +8,7 @@ from pathlib import Path
 
 from playwright.sync_api import Locator
 
+from validator.errors import EvidenceError
 from validator.evidence import Evidence
 from validator.pages.base_page import BasePage
 from validator.secrets import Credentials
@@ -15,11 +16,11 @@ from validator.secrets import Credentials
 log = logging.getLogger(__name__)
 
 
-class LoginBlockedError(RuntimeError):
+class LoginBlockedError(EvidenceError):
     """El sitio pide CAPTCHA, 2FA o verificación por email. No se intenta saltar."""
 
 
-class LoginFailedError(RuntimeError):
+class LoginFailedError(EvidenceError):
     """El login no se pudo completar o confirmar."""
 
 
@@ -33,6 +34,7 @@ class LoginPage(BasePage):
         sel = self.selectors.login
         timeout = self.nav.default_timeout_ms
 
+        self.ensure_site_available(evidence, login_context=True)
         username = self.find_first(sel.username, 2000, what="usuario")
         if username is None:
             # No se pidió login: si ya hay sesión se registra, si no se fuerza (Real Play lo requiere).
@@ -96,9 +98,9 @@ class LoginPage(BasePage):
 
     def _check_verification(self, evidence: Evidence, fields: list[Locator] | None = None) -> None:
         if self.is_any_visible(self.selectors.login.verification):
-            evidence.login_screenshot(self.page, "login_blocked.png", fields)
-            raise LoginBlockedError("Login bloqueado por verificación adicional")
+            shot = evidence.login_screenshot(self.page, "login_blocked.png", fields)
+            raise LoginBlockedError("Login bloqueado por verificación adicional", evidence.relative(shot))
 
     def _fail(self, evidence: Evidence, shot: str, message: str, fields: list[Locator] | None = None) -> None:
         path: Path | None = evidence.login_screenshot(self.page, shot, fields)
-        raise LoginFailedError(f"{message} (evidencia: {evidence.relative(path)})")
+        raise LoginFailedError(message, evidence.relative(path))

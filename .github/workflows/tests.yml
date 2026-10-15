@@ -2212,9 +2212,14 @@ concurrency:
 env:
   MARKET: es
 
+defaults:
+  run:
+    shell: bash   # también en el runner self-hosted de Windows (Git Bash)
+
 jobs:
   plan:
     name: Planificar juegos
+    # Solo lee el catálogo del repo (no entra en betsson.es): puede correr en GitHub.
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
@@ -2239,8 +2244,9 @@ jobs:
   tests:
     name: Lote ${{ matrix.chunk }}
     needs: plan
-    # Si betsson.es bloquea las IP de GitHub (403, CAPTCHA o anti-bot), cambia a: runs-on: self-hosted
-    runs-on: ubuntu-latest
+    # betsson.es bloquea las IP fuera de España: corre en el runner self-hosted (PC en España)
+    # registrado con la etiqueta betsson-es. Ver README, "Runner self-hosted".
+    runs-on: [self-hosted, betsson-es]
     timeout-minutes: 120
     strategy:
       fail-fast: false
@@ -2262,6 +2268,11 @@ jobs:
           done
 
       - uses: actions/checkout@v4
+
+      # El runner self-hosted conserva su carpeta de trabajo: los restos de otra ejecución
+      # no deben mezclarse con las evidencias de esta.
+      - name: Limpiar restos locales
+        run: rm -rf artifacts .auth
 
       - uses: actions/setup-python@v5
         with:

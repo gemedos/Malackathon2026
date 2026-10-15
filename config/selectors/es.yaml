@@ -5,6 +5,12 @@
 # Plantillas: {game} (nombre del juego) y {label} (textos de real_play_labels / demo_labels).
 # find_first() registra en el log qué alternativa funcionó: úsalo para confirmar y limpiar la lista.
 
+site:
+  # Página "no disponible en este país" (bloqueo geográfico por licencia). Confirmado 2026-10-15 desde un runner de GitHub.
+  blocked:
+    - {text: "no está disponible en este país", fuzzy: true}
+    - {text: "not available in your country", fuzzy: true}   # TODO: verificar con inspect_site.sh
+
 cookies:
   reject:
     - {role: button, name: "Rechazarlas todas"}           # confirmado 2026-10-15 (dentro de la configuración)
