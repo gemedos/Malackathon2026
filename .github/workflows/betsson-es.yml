@@ -2239,6 +2239,7 @@ defaults:
 
 env:
   MARKET: es
+  PYTHONUTF8: "1"   # en el runner de Windows la consola usa cp1252 y no puede imprimir «→» del informe
 
 jobs:
   plan:

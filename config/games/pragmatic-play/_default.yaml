@@ -24,7 +24,9 @@ regions:
 # Animación constante en los rodillos: el giro termina cuando el Spin vuelve a estar listo tras verse ocupado.
 settle: ready
 # Sin ganancia, la línea de premio muestra «¡HAGA SU APUESTA!» (sin dígitos) = premio 0,00.
-idle_patterns: ["haga su apuesta", "su apuest"]
+# Separadores tolerantes: Tesseract 5.4 (Windows) lee los espacios de este texto como comillas («haga"su"apuesta»).
+# Tras un giro perdido la línea alterna con «¡BUENA SUERTE!» (run 38768481527). Sin dígitos = premio 0,00.
+idle_patterns: ["haga\\W*su\\W*apuest", "su\\W*apuest", "buena\\W*suerte"]
 payout_empty_is_zero: false
 setup_clicks: []
 # Apuesta mínima (CLAUDE.md §3): el juego recuerda la última apuesta, así que se pulsa «−» hasta que la apuesta leída

@@ -30,6 +30,7 @@ defaults:
 
 env:
   MARKET: es
+  PYTHONUTF8: "1"   # en el runner de Windows la consola usa cp1252
   # auto (o vacío en la ejecución programada) => vars.EGRESS_MODE => self-hosted
   EGRESS: ${{ ((!inputs.egress || inputs.egress == 'auto') && (vars.EGRESS_MODE || 'self-hosted')) || inputs.egress }}
 
