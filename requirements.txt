@@ -1,0 +1,9 @@
+playwright>=1.47,<2
+pytest>=8.2,<9
+PyYAML>=6.0,<7
+python-dotenv>=1.0,<2
+pydantic>=2.7,<3
+numpy>=1.26,<3
+Pillow>=10.3,<12
+opencv-python-headless>=4.8,<5
+pytesseract>=0.3.10,<0.4

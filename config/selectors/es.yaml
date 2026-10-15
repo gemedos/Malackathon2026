@@ -1,0 +1,144 @@
+# Selectores de betsson.es como listas de alternativas, en orden de preferencia.
+# Cada alternativa usa UNA estrategia: role(+name), label, placeholder, text, alt_text, title o css.
+#   exact: true  -> coincidencia exacta del texto
+#   fuzzy: true  -> sin distinguir mayúsculas ni tildes (regex)
+# Plantillas: {game} (nombre del juego) y {label} (textos de real_play_labels / demo_labels).
+# find_first() registra en el log qué alternativa funcionó: úsalo para confirmar y limpiar la lista.
+
+cookies:
+  reject:
+    - {role: button, name: "Rechazarlas todas"}           # confirmado 2026-10-15 (dentro de la configuración)
+    - {role: button, name: "Rechazar todas"}              # TODO: verificar con inspect_site.sh
+    - {role: button, name: "Aceptar solo necesarias"}     # TODO: verificar con inspect_site.sh
+  settings:   # abre el centro de preferencias, donde está el rechazo
+    - {role: button, name: "Configuración de cookies"}    # confirmado 2026-10-15
+  accept:
+    - {role: button, name: "Aceptar todas las cookies"}   # confirmado 2026-10-15 (último recurso)
+    - {role: button, name: "Aceptar", exact: true}        # TODO: verificar con inspect_site.sh
+
+login:
+  open_button:   # exact: existe también "Iniciar sesión con Clave de acceso"
+    - {role: button, name: "Iniciar sesión", exact: true} # confirmado 2026-10-15 (cabecera)
+    - {role: link, name: "Iniciar sesión", exact: true}   # TODO: verificar con inspect_site.sh
+    - {role: button, name: "Entrar", exact: true}         # TODO: verificar con inspect_site.sh
+    - {role: button, name: "Acceder", exact: true}        # TODO: verificar con inspect_site.sh
+  username:
+    - {label: "Usuario/email"}                            # confirmado 2026-10-15 (modal de login)
+    - {label: "Email"}                                    # TODO: verificar con inspect_site.sh
+    - {label: "Usuario"}                                  # TODO: verificar con inspect_site.sh
+    - {label: "Correo electrónico"}                       # TODO: verificar con inspect_site.sh
+    - {placeholder: "Email"}                              # TODO: verificar con inspect_site.sh
+    - {placeholder: "Usuario"}                            # TODO: verificar con inspect_site.sh
+    - {placeholder: "Correo electrónico"}                 # TODO: verificar con inspect_site.sh
+    - {role: textbox, name: "Email", fuzzy: true}         # TODO: verificar con inspect_site.sh
+  password:
+    - {label: "Contraseña", exact: true}                  # confirmado 2026-10-15 (modal de login)
+    - {placeholder: "Contraseña"}                         # TODO: verificar con inspect_site.sh
+    - {css: "input[type=password]"}                       # genérico, no depende de clases
+  submit:
+    - {role: button, name: "Iniciar sesión", exact: true} # confirmado 2026-10-15 (visible; envío sin probar)
+    - {role: button, name: "Entrar", exact: true}         # TODO: verificar con inspect_site.sh
+    - {role: button, name: "Acceder", exact: true}        # TODO: verificar con inspect_site.sh
+  logged_in:
+    - {role: button, name: "Depósito"}                    # el encabezado muestra «Saldo» y «Depósito»
+    - {role: link, name: "Depósito"}
+    - {role: button, name: "Depositar"}                   # TODO: verificar con inspect_site.sh
+    - {role: link, name: "Depositar"}                     # TODO: verificar con inspect_site.sh
+    - {role: button, name: "Mi cuenta"}                   # TODO: verificar con inspect_site.sh
+    - {text: "Saldo"}                                     # TODO: verificar con inspect_site.sh
+  error:
+    - {text: "incorrect", fuzzy: true}                    # TODO: verificar con inspect_site.sh
+    - {text: "no son válid", fuzzy: true}                 # TODO: verificar con inspect_site.sh
+  verification:   # CAPTCHA / 2FA / email: nunca se intenta saltar
+    - {css: "iframe[src*=captcha]"}                       # genérico
+    - {css: "iframe[title*=captcha i]"}                   # genérico
+    - {text: "captcha", fuzzy: true}                      # TODO: verificar con inspect_site.sh
+    - {text: "código de verificación", fuzzy: true}       # TODO: verificar con inspect_site.sh
+    - {text: "verifica tu", fuzzy: true}                  # TODO: verificar con inspect_site.sh
+    - {text: "hemos enviado un código", fuzzy: true}      # TODO: verificar con inspect_site.sh
+  passkey_detect:                                        # TODO: confirmar el texto exacto con el aviso real
+    - {text: "clave de acceso", fuzzy: true}
+  passkey_skip:                                          # TODO: confirmar con el aviso real (se prueban en orden)
+    - {role: button, name: "Ahora no", fuzzy: true}
+    - {role: button, name: "Más tarde", fuzzy: true}
+    - {role: button, name: "Omitir", fuzzy: true}
+    - {role: button, name: "No, gracias", fuzzy: true}
+    - {role: button, name: "Cancelar", fuzzy: true}
+
+lobby:
+  not_found:
+    - {text: "Página no encontrada", fuzzy: true}         # TODO: verificar con inspect_site.sh
+    - {text: "no existe", fuzzy: true}                    # TODO: verificar con inspect_site.sh
+  search_open:
+    - {text: "Buscar juegos", exact: true}                # confirmado 2026-10-15
+    - {role: button, name: "Buscar"}                      # TODO: verificar con inspect_site.sh
+    - {role: link, name: "Buscar"}                        # TODO: verificar con inspect_site.sh
+    - {label: "Buscar"}                                   # TODO: verificar con inspect_site.sh
+  search_input:
+    - {placeholder: "Búsqueda de juegos", fuzzy: true}    # confirmado 2026-10-15 (no usar "Buscar...": es el del panel de cookies)
+    - {role: searchbox}                                   # TODO: verificar con inspect_site.sh
+    - {label: "Buscar", fuzzy: true}                      # TODO: verificar con inspect_site.sh
+  load_more:
+    - {role: button, name: "Cargar más"}                  # TODO: verificar con inspect_site.sh
+    - {role: button, name: "Ver más"}                     # TODO: verificar con inspect_site.sh
+    - {role: button, name: "Mostrar más"}                 # TODO: verificar con inspect_site.sh
+  game_card:
+    - {alt_text: "{game}", fuzzy: true}                   # confirmado 2026-10-15 (img alt = nombre)
+    - {role: link, name: "{game}", fuzzy: true}           # TODO: verificar con inspect_site.sh
+    - {label: "{game}", fuzzy: true}                      # TODO: verificar con inspect_site.sh
+    - {title: "{game}", fuzzy: true}                      # TODO: verificar con inspect_site.sh
+    - {text: "{game}", fuzzy: true}                       # TODO: verificar con inspect_site.sh
+
+game_launch:
+  # Sin sesión, el hover de la tarjeta muestra "Ingresar y jugar" (confirmado 2026-10-15): eso NO es Real Play.
+  real_play:
+    - {role: button, name: "{label}", exact: true}        # TODO: verificar con inspect_site.sh
+    - {role: link, name: "{label}", exact: true}          # TODO: verificar con inspect_site.sh
+  login_required:   # si aparece en el contexto de trabajo, la sesión no se conservó
+    - {role: button, name: "Ingresar y jugar"}            # confirmado 2026-10-15 (sin sesión)
+  demo:
+    - {role: button, name: "{label}", exact: true}        # TODO: verificar con inspect_site.sh
+    - {role: link, name: "{label}", exact: true}          # TODO: verificar con inspect_site.sh
+  # La regulación española puede exigir fijar límites de sesión antes de jugar.
+  # Si se detecta y no hay pasos configurados, el test falla con un mensaje claro.
+  session_limits_indicator:
+    - {text: "límite de sesión", fuzzy: true}             # TODO: verificar con inspect_site.sh
+    - {text: "límites de juego", fuzzy: true}             # TODO: verificar con inspect_site.sh
+  session_limits_steps: []     # (antiguo; usa `pregame`)
+
+  # Pantallas previas al juego (regulación española + avisos que tapan el juego). Se resuelve UNA por pasada,
+  # en bucle, hasta que el juego es jugable; el orden de la lista da prioridad. Comunes a todos los juegos y
+  # proveedores. Confirmado 2026-10-15 con Bubble Up (Pragmatic Play).
+  pregame:
+    # Formulario de límites (componentes fds-* con shadow DOM; data-test-id confirmados en la traza del 2026-10-15).
+    # Va antes que el aviso: con el formulario abierto, el «Iniciar sesión» del aviso no debe pulsarse por error.
+    - name: límites de sesión (tiempo y pérdidas)
+      detect: [{css: '[data-test-id="session-settings"]'}]
+      steps:                                             # valores moderados: la cuenta guarda estos límites
+        - {css: '[data-test-id="session-settings_time-limit-option-3600"]'}       # 1 Hora
+        # Sin saldo (cuenta EMPTY) el formulario solo ofrece el tiempo: este paso es opcional.
+        - {css: '[data-test-id="session-settings_spending-limit-option-25"]', optional: true}     # 25 % del saldo
+        - {css: '[data-test-id="session-settings_submit-button-btn-1"]'}          # Iniciar sesión
+    # El aviso es un diálogo modal: va antes que el panel de torneos: mientras está abierto tapa todo lo demás (clics bloqueados).
+    - name: aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")
+      detect:
+        - {css: '[data-test-id="start-new-session-buttons-btn-2"]'}
+        - {text: "finalizaste tu sesión de juego"}
+      steps:
+        - - {css: '[data-test-id="start-new-session-buttons-btn-2"]'}
+          - {css: 'fds-dialog >> text="Iniciar sesión"'}
+          - {role: button, name: "Iniciar sesión", exact: true}
+    - name: panel de torneos tapando el juego
+      detect: [{text: "Cerrar y no volver a mostrar", exact: true}]
+      steps:  [{text: "Cerrar y no volver a mostrar", exact: true}]
+
+account:
+  # Saldo de la cuenta Betsson en la cabecera (fuera del juego: se permite DOM y se respalda con OCR).
+  balance:
+    # En la página del juego la cabecera solo muestra «Saldo» (sin importe): no hay coincidencia y se lee desde el
+    # lobby, donde el importe va en un <span data-cs-mask> del botón de usuario (confirmado en la traza 2026-10-15).
+    - {css: 'span[data-cs-mask]:text-matches("^\\s*\\d[\\d.,]*\\s*(€|EUR)\\s*$")'}
+
+game:
+  iframe:
+    - {css: "iframe"}                                     # se elige el iframe visible más grande

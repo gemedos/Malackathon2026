@@ -1,0 +1,31 @@
+# Calibración del PROVEEDOR Pragmatic Play (sirve a todos sus juegos que no tengan YAML propio).
+# Medida sobre Bubble Up (iframe 1280x720). Regiones [x, y, ancho, alto] normalizadas (0–1) respecto al iframe.
+# Plantillas recortadas del mismo iframe: spin.png (botón en juego) y splash.png (Spin de la pantalla de carga).
+# Si otro juego de Pragmatic tiene el HUD en otro sitio, copia este archivo a <juego-slug>.yaml y ajústalo.
+provider: "Pragmatic Play"
+game: "_default"
+calibrated: true
+reference_size: [1280, 720]
+spin_template: spin.png
+splash_template: splash.png
+busy_template: null
+template_threshold: 0.8
+template_scales: [0.85, 1.0, 1.15, 1.3, 1.45]
+regions:
+  spin_search: [0.0, 0.0, 1.0, 1.0]
+  reels:       [0.2578, 0.1319, 0.4883, 0.7153]
+  balance:     [0.2328, 0.9, 0.1094, 0.0333]
+  wager:       [0.2328, 0.9361, 0.1094, 0.0333]
+  payout: [0.355, 0.875, 0.30, 0.0556]
+  currency:    [0.25, 0.9361, 0.0547, 0.0333]
+  message:     [0.345, 0.37, 0.31, 0.16]      # texto del diálogo «Mensaje» (centrado; sin título ni botón)
+# Animación constante en los rodillos: el giro termina cuando el Spin vuelve a estar listo tras verse ocupado.
+settle: ready
+# Sin ganancia, la línea de premio muestra «¡HAGA SU APUESTA!» (sin dígitos) = premio 0,00.
+idle_patterns: ["haga su apuesta", "su apuest"]
+payout_empty_is_zero: false
+setup_clicks: []
+insufficient_window_seconds: 5.0
+motion: {start_threshold: 8.0, quiet_threshold: 2.0, quiet_seconds: 1.0, timeout_seconds: 45.0}
+consensus: {min_readings: 3, min_separation_seconds: 0.3}
+ready: {threshold: 0.8, busy_margin: 0.05}
