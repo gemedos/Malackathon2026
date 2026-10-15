@@ -52,6 +52,22 @@ class SetupClick(BaseModel):
         return value
 
 
+class MinBet(BaseModel):
+    """Botón «−» de la apuesta: se pulsa hasta que la apuesta leída por OCR deja de bajar (apuesta mínima)."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+    point: tuple[float, float]
+    max_clicks: int = Field(default=30, ge=1, le=60)
+    settle_ms: int = Field(default=600, ge=100, le=5000)
+
+    @field_validator("point")
+    @classmethod
+    def _normalized(cls, value: tuple[float, float]) -> tuple[float, float]:
+        if not all(0 <= v <= 1 for v in value):
+            raise ValueError("point debe estar normalizado (0–1)")
+        return value
+
+
 class GameCalibration(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
@@ -69,6 +85,7 @@ class GameCalibration(BaseModel):
     regions: dict[str, Region]
     payout_empty_is_zero: bool = False
     setup_clicks: list[SetupClick] = Field(default_factory=list)
+    min_bet: MinBet | None = None              # bajar a la apuesta mínima antes del escenario
     insufficient_window_seconds: float = Field(default=5.0, gt=0)
     motion: dict[str, float] = Field(default_factory=dict)
     consensus: dict[str, float] = Field(default_factory=dict)

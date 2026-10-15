@@ -18,13 +18,18 @@ regions:
   wager:       [0.2328, 0.9361, 0.1094, 0.0333]
   payout: [0.355, 0.875, 0.30, 0.0556]
   currency:    [0.25, 0.9361, 0.0547, 0.0333]
-  message:     [0.2344, 0.3472, 0.5312, 0.3611]
+  # Solo el texto del aviso «MENSAJE» (sin título, botón ni rodillos: el diálogo es semitransparente y los símbolos
+  # de alrededor rompían el OCR). Medido en Sweet Bonanza 2026-10-15: frase reconocida en 10/11 frames (antes 1/11).
+  message:     [0.335, 0.36, 0.335, 0.14]
 # Animación constante en los rodillos: el giro termina cuando el Spin vuelve a estar listo tras verse ocupado.
 settle: ready
 # Sin ganancia, la línea de premio muestra «¡HAGA SU APUESTA!» (sin dígitos) = premio 0,00.
 idle_patterns: ["haga su apuesta", "su apuest"]
 payout_empty_is_zero: false
 setup_clicks: []
+# Apuesta mínima (CLAUDE.md §3): el juego recuerda la última apuesta, así que se pulsa «−» hasta que la apuesta leída
+# por OCR deja de bajar. Botón «−» del HUD estándar de Pragmatic, medido en Sweet Bonanza 2026-10-15.
+min_bet: {point: [0.695, 0.902], max_clicks: 30, settle_ms: 600}
 insufficient_window_seconds: 5.0
 motion: {start_threshold: 8.0, quiet_threshold: 2.0, quiet_seconds: 1.0, timeout_seconds: 25.0}
 consensus: {min_readings: 3, min_separation_seconds: 0.3}

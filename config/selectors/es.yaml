@@ -102,11 +102,17 @@ game_launch:
   pregame:
     # Formulario de límites (componentes fds-* con shadow DOM; data-test-id confirmados en la traza del 2026-10-15).
     # Va antes que el aviso: con el formulario abierto, el «Iniciar sesión» del aviso no debe pulsarse por error.
+    # Se detecta por las OPCIONES y no por el contenedor: tras enviar, el contenedor sigue en el DOM ~1 s mientras
+    # se cierra y se tomaba por un formulario nuevo (fallo del 2026-10-15, run 38762879878 de betsson-es.yml).
     - name: límites de sesión (tiempo y pérdidas)
-      detect: [{css: '[data-test-id="session-settings"]'}]
+      detect:
+        - {css: '[data-test-id^="session-settings_time-limit-option-"]'}
+        - {css: '[data-test-id^="session-settings_spending-limit-option-"]'}
       steps:                                             # valores moderados: la cuenta guarda estos límites
-        - {css: '[data-test-id="session-settings_time-limit-option-3600"]'}       # 1 Hora
-        - {css: '[data-test-id="session-settings_spending-limit-option-25"]'}     # 25 % del saldo
+        - - {css: '[data-test-id="session-settings_time-limit-option-3600"]'}     # 1 Hora
+          - {css: '[data-test-id^="session-settings_time-limit-option-"]'}        # si no se ofrece, la primera opción
+        - - {css: '[data-test-id="session-settings_spending-limit-option-25"]'}   # 25 % del saldo
+          - {css: '[data-test-id^="session-settings_spending-limit-option-"]'}    # si no se ofrece, la primera opción
         - {css: '[data-test-id="session-settings_submit-button-btn-1"]'}          # Iniciar sesión
     # El aviso es un diálogo modal: va antes que el panel de torneos: mientras está abierto tapa todo lo demás (clics bloqueados).
     - name: aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")

@@ -17,6 +17,7 @@ CHECKS: dict[str, tuple[str, str]] = {
     "spin_detected_before_click": ("Botón Spin localizado", "plantilla del Spin por encima del umbral"),
     "ready_before_click": ("Juego listo", "Spin habilitado visible antes del clic"),
     "game_setup": ("Preparación del juego verificada", "cada clic de preparación cambia la pantalla"),
+    "min_bet": ("Apuesta mínima fijada", "«−» hasta que la apuesta visible (OCR) deja de bajar"),
     "initial_balance": ("Saldo del juego inicial leído", ">= 3 lecturas iguales"),
     "wager": ("Apuesta leída", ">= 3 lecturas iguales"),
     "currency": ("Moneda = {currency}", "{currency} visible en el juego"),
@@ -39,7 +40,7 @@ CHECKS: dict[str, tuple[str, str]] = {
 
 # Qué evidencia anotada respalda mejor cada check (si existe).
 _IMAGE_FOR = {
-    "before": ("spin_detected_before_click", "ready_before_click", "initial_balance", "wager", "currency"),
+    "before": ("spin_detected_before_click", "ready_before_click", "initial_balance", "wager", "currency", "min_bet"),
     "strip": ("reels_started", "reels_settled", "no_cascade_or_bonus", "spin_rejected", "game_setup"),
     "after": ("ready_after_settle", "final_balance", "payout", "wager_consistent", "in_game_balance",
               "message_visible", "rejection_message", "message_language", "in_game_balance_unchanged"),

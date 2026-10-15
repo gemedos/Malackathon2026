@@ -13,14 +13,15 @@ from __future__ import annotations
 import logging
 import time
 from dataclasses import dataclass, field
+from decimal import Decimal
 from pathlib import Path
 
 import cv2
 
 from validator.config import MarketConfig, SelectorsConfig
 from validator.game.account import AccountBalanceReader
-from validator.game.calibration import (GAMES_DIR, CalibrationMissingError, LoadedCalibration, build_profile,
-                                        load_calibration)
+from validator.game.calibration import (GAMES_DIR, CalibrationMissingError, LoadedCalibration, MinBet,
+                                        build_profile, load_calibration)
 from validator.game.driver import GameDriver
 from validator.pages.game_page import GameSession
 from vision_engine.matching import best_match
@@ -67,6 +68,8 @@ def run_scenario(kind: str, session: GameSession, context, market: MarketConfig,
     spin_template, busy_template = loaded.templates()
     _reach_hud(session, driver, engine, loaded.splash_template(), frame_size)
     extra = [_setup(driver, loaded, frame_size)] if loaded.calibration.setup_clicks else []
+    if loaded.calibration.min_bet is not None:
+        extra.append(_lower_to_min_bet(driver, engine, loaded.calibration.min_bet, frame_size))
 
     account = AccountBalanceReader(context, session.page, market, selectors, engine)
     n, separation = profile.consensus.min_readings, profile.consensus.min_separation_seconds
@@ -143,6 +146,51 @@ def _setup(driver: GameDriver, loaded: LoadedCalibration, frame_size: tuple[int,
         return AssertionResult("game_setup", Verdict.INCONCLUSIVE,
                                f"Clics de preparación sin cambio visible (no cuentan): {detail}")
     return AssertionResult("game_setup", Verdict.PASS, f"Preparación verificada visualmente: {detail}")
+
+
+MIN_BET_READS = 3          # lecturas iguales y consecutivas de la apuesta para aceptar su valor
+MIN_BET_CONFIRMATIONS = 2  # clics seguidos sin bajada para dar la apuesta por mínima (uno solo puede perderse)
+
+
+def _read_wager(driver: GameDriver, engine: VisionEngine, sample: str) -> Decimal | None:
+    """Apuesta visible, solo si MIN_BET_READS lecturas seguidas coinciden. Un OCR fallido nunca es un valor."""
+    values = []
+    for i in range(MIN_BET_READS):
+        values.append(engine.read_field(driver.capture(), "wager", f"{sample}-{i}").value)
+        driver.wait(150)
+    if None in values or len(set(values)) != 1:
+        return None
+    return Decimal(values[0])
+
+
+def _lower_to_min_bet(driver: GameDriver, engine: VisionEngine, cfg: MinBet,
+                      frame_size: tuple[int, int]) -> AssertionResult:
+    """Pulsa «−» hasta que la apuesta visible deja de bajar. Cada clic se verifica leyendo la apuesta por OCR."""
+    current = _read_wager(driver, engine, "minbet-000")
+    if current is None:
+        return AssertionResult("min_bet", Verdict.INCONCLUSIVE, "Apuesta ilegible antes de bajarla a la mínima")
+    start, lowered, unchanged = current, 0, 0
+    width, height = frame_size
+    point = (cfg.point[0] * (width - 1), cfg.point[1] * (height - 1))
+    for n in range(1, cfg.max_clicks + 1):
+        driver.click(point, frame_size)
+        driver.wait(cfg.settle_ms)
+        after = _read_wager(driver, engine, f"minbet-{n:03d}")
+        if after is None:
+            return AssertionResult("min_bet", Verdict.INCONCLUSIVE, f"Apuesta ilegible tras el clic {n} en «−»")
+        if after > current:
+            return AssertionResult("min_bet", Verdict.INCONCLUSIVE,
+                                   f"«−» subió la apuesta ({current} -> {after}): revisa min_bet.point")
+        if after == current:
+            unchanged += 1
+            if unchanged >= MIN_BET_CONFIRMATIONS:
+                log.info("Apuesta mínima: %s (desde %s, %d bajadas)", after, start, lowered)
+                return AssertionResult("min_bet", Verdict.PASS,
+                                       f"Apuesta mínima {after} (desde {start}; {lowered} bajadas leídas por OCR)")
+        else:
+            current, lowered, unchanged = after, lowered + 1, 0
+    return AssertionResult("min_bet", Verdict.INCONCLUSIVE,
+                           f"La apuesta seguía bajando tras {cfg.max_clicks} clics ({start} -> {current})")
 
 
 def _click_spin(recorder: SpinAttemptRecorder, driver: GameDriver, frame_size: tuple[int, int],

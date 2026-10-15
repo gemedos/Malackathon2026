@@ -2365,7 +2365,7 @@ jobs:
         run: rm -rf artifacts test-results
 
   scenarios:
-    name: Escenarios 1 y 2 · ${{ needs.plan.outputs.provider }}
+    name: Escenarios 1 y 2   # nombre fijo: GitHub no evalúa expresiones en el nombre de un job saltado
     needs: [plan, navigation]
     # En modo completo solo se juega si la navegación al juego funcionó.
     if: >-
