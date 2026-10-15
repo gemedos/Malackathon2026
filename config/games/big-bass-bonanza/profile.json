@@ -1,0 +1,30 @@
+{
+  "provider": "Pragmatic Play",
+  "calibrated": true,
+  "game_name": "Big Bass Bonanza",
+  "game_path": "/casino/tragaperras-slots/big-bass-bonanza",
+  "calibration_note": "Calibrado el 2026-10-15 con capturas reales (iframe 770x433 CSS en viewport 1280x720, capturas a 2x). Regiones (x, y, ancho, alto) en fracciones del rectángulo del juego. T01 y T02 verificados en real.",
+  "regions": {
+    "game_balance": [0.2312, 0.9007, 0.0935, 0.0346],
+    "bet": [0.2312, 0.935, 0.0935, 0.035],
+    "win": [0.36, 0.86, 0.28, 0.07],
+    "reels": [0.12, 0.12, 0.76, 0.7],
+    "reels_left": [0.12, 0.12, 0.16, 0.72],
+    "reels_right": [0.72, 0.12, 0.16, 0.72]
+  },
+  "splash_template": {
+    "path": "splash.png",
+    "reference_width": 770,
+    "threshold": 0.8
+  },
+  "spin_template": {
+    "path": "spin.png",
+    "reference_width": 1540,
+    "threshold": 0.8
+  },
+  "amount_text_hsv": [
+    [15, 80, 140],
+    [40, 255, 255]
+  ],
+  "win_idle_patterns": ["haga su apuesta"]
+}

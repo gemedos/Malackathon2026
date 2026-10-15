@@ -41,10 +41,10 @@ func TestVisionContract(t *testing.T) {
 	if readings["nothing"].Cents != nil {
 		t.Errorf("una región vacía debe ser desconocida, no %d", *readings["nothing"].Cents)
 	}
-	if changed, _ := vision.motion(a, a, [4]float64{0, 0, 1, 1}); changed != 0 {
+	if changed, _ := vision.motion(a, a, [4]float64{0, 0, 1, 1}, "pixel", [2]int{}); changed != 0 {
 		t.Errorf("misma imagen debe dar 0 de cambio, dio %f", changed)
 	}
-	if changed, _ := vision.motion(a, b, [4]float64{0, 0, 1, 1}); changed < MOTION_STARTED {
+	if changed, _ := vision.motion(a, b, [4]float64{0, 0, 1, 1}, "pixel", [2]int{}); changed < MOTION_THRESHOLDS["pixel"].started {
 		t.Errorf("imágenes distintas deben superar el umbral, dio %f", changed)
 	}
 	if found, match, _ := vision.find_text(a, []string{"saldo insuficiente"}, nil); !found {

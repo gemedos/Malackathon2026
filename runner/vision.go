@@ -90,11 +90,13 @@ func (v *vision_client) read(image_path string, regions map[string][4]float64, t
 	return response.Readings, err
 }
 
-func (v *vision_client) motion(image_a, image_b string, region [4]float64) (float64, error) {
+// motion mide qué fracción de la región cambió entre dos capturas ("pixel" o "cells", ver vision_server.py).
+// En modo "cells", grid es [columnas, filas] de la cuadrícula de rodillos dentro de la región.
+func (v *vision_client) motion(image_a, image_b string, region [4]float64, mode string, grid [2]int) (float64, error) {
 	var response struct {
 		ChangedFraction float64 `json:"changed_fraction"`
 	}
-	err := v.call(map[string]any{"cmd": "motion", "image_a": image_a, "image_b": image_b, "region": region}, &response)
+	err := v.call(map[string]any{"cmd": "motion", "image_a": image_a, "image_b": image_b, "region": region, "mode": mode, "grid": grid}, &response)
 	return response.ChangedFraction, err
 }
 

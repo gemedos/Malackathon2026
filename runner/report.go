@@ -27,8 +27,11 @@ type case_result struct {
 	Market   string  `json:"market"`
 	Scenario string  `json:"scenario"`
 	Game     string  `json:"game"`
+	GameID   string  `json:"game_id"`
 	Status   string  `json:"status"`
 	Checks   []check `json:"checks"`
+	// Cifras clave observadas (saldos, apuesta, premio) para el resumen de la interfaz.
+	Figures map[string]string `json:"figures,omitempty"`
 }
 
 // verdict: sin evidencia suficiente el resultado es INCONCLUSIVE, nunca PASS.

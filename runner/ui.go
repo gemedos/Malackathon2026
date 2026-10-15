@@ -19,7 +19,6 @@ type ui_state struct {
 	options run_options
 	running string
 	log     []string
-	run_dir string
 	results []case_result
 	err     string
 }
@@ -34,11 +33,11 @@ func serve_ui(address string, options run_options) error {
 		return fmt.Errorf("la interfaz solo se abre en localhost (usa localhost:PUERTO)")
 	}
 	state := &ui_state{options: options}
-	state.run_dir, state.results = latest_report(options.out_dir)
+	state.results = latest_results(options.out_dir)
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /{$}", func(w http.ResponseWriter, r *http.Request) {
-		PAGE.Execute(w, options.config)
+		PAGE.Execute(w, page_view{Config: options.config, Games: list_games()})
 	})
 	mux.HandleFunc("GET /status", state.render_status)
 	mux.HandleFunc("POST /run", state.start_run)
@@ -46,6 +45,11 @@ func serve_ui(address string, options run_options) error {
 	mux.Handle("GET /files/", http.StripPrefix("/files/", http.FileServer(http.Dir(options.out_dir))))
 	fmt.Printf("Interfaz en http://%s\n", address)
 	return http.ListenAndServe(address, mux)
+}
+
+type page_view struct {
+	Config market_config
+	Games  []game_entry
 }
 
 func (state *ui_state) start_run(w http.ResponseWriter, r *http.Request) {
@@ -56,33 +60,38 @@ func (state *ui_state) start_run(w http.ResponseWriter, r *http.Request) {
 	}
 	state.mutex.Lock()
 	if state.running == "" {
-		label := only
-		if label == "" {
-			label = "T01 y T02"
+		if config, err := load_config(state.options.config_path, r.FormValue("game")); err != nil {
+			state.err = err.Error()
+		} else {
+			options := state.options
+			options.config = config
+			label := only
+			if label == "" {
+				label = "T01 y T02"
+			}
+			state.running, state.log, state.err = label+" · "+config.GameName, nil, ""
+			go state.run(options, only)
 		}
-		state.running, state.log, state.err = label, nil, ""
-		go state.run(only)
 	}
 	state.mutex.Unlock()
 	state.render_status(w, r)
 }
 
-func (state *ui_state) run(only string) {
+func (state *ui_state) run(options run_options, only string) {
 	progress := func(line string) {
 		state.mutex.Lock()
 		state.log = append(state.log, line)
 		state.mutex.Unlock()
 	}
-	_, results, err := run_cases(state.options, only, progress)
+	_, _, err := run_cases(options, only, progress)
+	results := latest_results(options.out_dir)
 	state.mutex.Lock()
 	defer state.mutex.Unlock()
 	state.running = ""
 	if err != nil {
 		state.err = err.Error()
 	}
-	if results != nil {
-		state.run_dir, state.results = latest_report(state.options.out_dir)
-	}
+	state.results = results
 }
 
 type evidence_link struct {
@@ -90,46 +99,55 @@ type evidence_link struct {
 	Name string
 }
 
+type check_view struct {
+	check
+	Links []evidence_link
+}
+
+type result_view struct {
+	case_result
+	Checks []check_view
+	Passed int
+}
+
 type status_view struct {
 	Running string
 	Log     []string
 	Err     string
-	RunDir  string
-	Results []case_result
-	Links   map[string][]evidence_link // por "caso/comprobación"
+	Results []result_view
 }
 
 func (state *ui_state) render_status(w http.ResponseWriter, r *http.Request) {
 	state.mutex.Lock()
-	view := status_view{
-		Running: state.running,
-		Log:     append([]string{}, state.log...),
-		Err:     state.err,
-		RunDir:  filepath.Base(state.run_dir),
-		Results: state.results,
-		Links:   map[string][]evidence_link{},
-	}
+	view := status_view{Running: state.running, Log: append([]string{}, state.log...), Err: state.err}
+	results := state.results
 	state.mutex.Unlock()
-	for _, result := range view.Results {
+	for _, result := range results {
+		rv := result_view{case_result: result}
 		for _, c := range result.Checks {
+			cv := check_view{check: c}
+			if c.Status == PASS {
+				rv.Passed++
+			}
 			for _, path := range c.Evidence {
 				relative, err := filepath.Rel(state.options.out_dir, path)
 				if err != nil || strings.HasPrefix(relative, "..") {
 					continue
 				}
-				key := result.ID + "/" + c.Name
-				view.Links[key] = append(view.Links[key], evidence_link{"/files/" + filepath.ToSlash(relative), filepath.Base(path)})
+				cv.Links = append(cv.Links, evidence_link{"/files/" + filepath.ToSlash(relative), filepath.Base(path)})
 			}
+			rv.Checks = append(rv.Checks, cv)
 		}
+		view.Results = append(view.Results, rv)
 	}
 	STATUS.Execute(w, view)
 }
 
-// latest_report reúne el resultado más reciente de cada caso a partir de los informes guardados.
-func latest_report(out_dir string) (string, []case_result) {
+// latest_results reúne el resultado más reciente de cada caso a partir de los informes guardados.
+func latest_results(out_dir string) []case_result {
 	entries, err := os.ReadDir(out_dir)
 	if err != nil {
-		return "", nil
+		return nil
 	}
 	names := []string{}
 	for _, entry := range entries {
@@ -140,7 +158,6 @@ func latest_report(out_dir string) (string, []case_result) {
 	sort.Sort(sort.Reverse(sort.StringSlice(names)))
 	seen := map[string]bool{}
 	latest := []case_result{}
-	newest := ""
 	for _, name := range names {
 		raw, err := os.ReadFile(filepath.Join(out_dir, name, "report.json"))
 		if err != nil {
@@ -154,99 +171,192 @@ func latest_report(out_dir string) (string, []case_result) {
 			if !seen[result.ID] {
 				seen[result.ID] = true
 				latest = append(latest, result)
-				if newest == "" {
-					newest = filepath.Join(out_dir, name)
-				}
 			}
 		}
 	}
 	sort.Slice(latest, func(i, j int) bool { return latest[i].ID < latest[j].ID })
-	return newest, latest
+	return latest
 }
 
 var FUNCS = template.FuncMap{
-	"badge": func(status string) string {
+	"tone": func(status string) string {
 		switch status {
 		case PASS:
-			return "bg-green-100 text-green-800"
+			return "text-ok bg-ok/10 ring-ok/30"
 		case FAIL:
-			return "bg-red-100 text-red-800"
+			return "text-bad bg-bad/10 ring-bad/30"
 		case INCONCLUSIVE:
-			return "bg-amber-100 text-amber-800"
+			return "text-warn bg-warn/10 ring-warn/30"
 		default:
-			return "bg-gray-200 text-gray-800"
+			return "text-mute bg-white/5 ring-white/10"
 		}
 	},
-	"key": func(id, name string) string { return id + "/" + name },
+	"lower": strings.ToLower,
 }
 
-var PAGE = template.Must(template.New("page").Parse(`<!doctype html>
-<html lang="es">
+var PAGE = template.Must(template.New("page").Funcs(FUNCS).Parse(`<!doctype html>
+<html lang="es" class="bg-ink">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Validación de juego — betsson.es</title>
+<title>Validación de juego</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Momo+Trust+Sans:wght@200..800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/htmx.org@1.9.12"></script>
 <script src="https://cdn.tailwindcss.com/3.4.5"></script>
+<script>
+tailwind.config = { theme: { extend: {
+  colors: { ink: "#09090b", tile: "#131316", tile2: "#1a1a1e", line: "rgba(255,255,255,0.07)",
+            text: "#f3f3f3", mute: "#8a8a8f", ok: "#24BA4A", bad: "#ff5c5c", warn: "#f5b642" },
+  fontFamily: { sans: ["Momo Trust Sans", "ui-sans-serif", "system-ui"], mono: ["JetBrains Mono", "ui-monospace"] } } } }
+</script>
+<style>
+  body { -webkit-font-smoothing: antialiased; }
+  .tile { background: #131316; border: 1px solid rgba(255,255,255,0.07); border-radius: 22px; }
+  .pill { border-radius: 999px; }
+  select { appearance: none; }
+</style>
 </head>
-<body class="bg-slate-50 text-slate-900">
-<main class="max-w-5xl mx-auto p-4 sm:p-8 space-y-6">
-  <header>
-    <h1 class="text-2xl font-bold">Validación de juego</h1>
-    <p class="text-slate-600">Mercado {{.Market}} · {{.Language}} · {{.Currency}} · {{.GameName}} (Pragmatic Play, Real Play)</p>
-  </header>
-  <section class="flex flex-wrap gap-3">
-    <button hx-post="/run?case=T01" hx-target="#status" hx-confirm="T01 hace un giro con dinero real de la cuenta financiada. ¿Continuar?"
-      class="px-4 py-2 rounded bg-orange-600 text-white font-semibold hover:bg-orange-700">T01 · Giro completado</button>
-    <button hx-post="/run?case=T02" hx-target="#status"
-      class="px-4 py-2 rounded bg-slate-700 text-white font-semibold hover:bg-slate-800">T02 · Saldo insuficiente</button>
-    <button hx-post="/run" hx-target="#status" hx-confirm="Incluye T01: un giro con dinero real. ¿Continuar?"
-      class="px-4 py-2 rounded border border-slate-400 font-semibold hover:bg-slate-100">Ambos</button>
-  </section>
-  <section id="status" hx-get="/status" hx-trigger="load, every 2s"></section>
+<body class="bg-ink text-text font-sans min-h-screen">
+<main class="max-w-6xl mx-auto px-4 py-8 sm:py-12">
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+
+    <section class="tile p-6 md:col-span-2 md:row-span-2 flex flex-col justify-between min-h-[220px]">
+      <div class="flex items-center gap-2 text-mute text-sm">
+        <span class="w-2 h-2 rounded-full bg-ok"></span> betsson · pragmatic play · real play
+      </div>
+      <div>
+        <h1 class="text-4xl sm:text-5xl font-semibold tracking-tight leading-[1.05]">validación<br>de juego.</h1>
+        <p class="mt-3 text-mute max-w-sm">lo que ve el jugador, comprobado con capturas: giros, mensajes y saldos.</p>
+      </div>
+    </section>
+
+    <section class="tile p-6">
+      <p class="text-mute text-sm">mercado</p>
+      <p class="mt-2 text-2xl font-semibold">{{.Config.Market}} · {{lower .Config.Language}}</p>
+      <p class="mt-1 font-mono text-mute text-sm break-all">{{.Config.BaseURL}}</p>
+    </section>
+    <section class="tile p-6">
+      <p class="text-mute text-sm">moneda</p>
+      <p class="mt-2 text-2xl font-semibold font-mono">{{.Config.Currency}}</p>
+      <p class="mt-1 text-mute text-sm">importes exactos en céntimos</p>
+    </section>
+
+    <section class="tile p-6 md:col-span-2">
+      <form id="launcher" class="flex flex-col gap-4">
+        <label class="text-mute text-sm" for="game">juego</label>
+        <div class="relative">
+          <select id="game" name="game" class="w-full bg-tile2 border border-line pill px-5 py-3 pr-10 text-text focus:outline-none focus:ring-2 focus:ring-ok/40">
+            {{range .Games}}<option value="{{.ID}}" {{if not .Calibrated}}disabled{{end}} {{if eq .ID $.Config.GameID}}selected{{end}}>{{.Name}}{{if not .Calibrated}} · sin calibrar{{end}}</option>{{end}}
+          </select>
+          <span class="pointer-events-none absolute right-5 top-1/2 -translate-y-1/2 text-mute">⌄</span>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <button hx-post="/run?case=T01" hx-include="#launcher" hx-target="#status" hx-confirm="T01 hace un giro con dinero real de la cuenta financiada. ¿Continuar?"
+            class="pill px-5 py-2.5 bg-ok text-black font-semibold hover:brightness-110 transition">t01 · giro completado</button>
+          <button hx-post="/run?case=T02" hx-include="#launcher" hx-target="#status"
+            class="pill px-5 py-2.5 bg-text text-black font-semibold hover:brightness-90 transition">t02 · saldo insuficiente</button>
+          <button hx-post="/run" hx-include="#launcher" hx-target="#status" hx-confirm="Incluye T01: un giro con dinero real. ¿Continuar?"
+            class="pill px-5 py-2.5 border border-line text-text hover:bg-white/5 transition">ambos</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="tile p-6 md:col-span-2">
+      <p class="text-mute text-sm">juegos</p>
+      <ul class="mt-3 flex flex-wrap gap-2">
+        {{range .Games}}
+        <li class="pill px-4 py-2 bg-tile2 border border-line text-sm flex items-center gap-2">
+          <span class="w-1.5 h-1.5 rounded-full {{if .Calibrated}}bg-ok{{else}}bg-mute{{end}}"></span>{{lower .Name}}
+        </li>
+        {{end}}
+      </ul>
+      <p class="mt-3 text-mute text-xs">un juego nuevo se calibra con <span class="font-mono">-explore</span>, sin apostar.</p>
+    </section>
+
+    <section class="tile p-6 md:col-span-2">
+      <p class="text-mute text-sm">cómo se decide</p>
+      <ul class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+        <li class="bg-tile2 rounded-2xl p-3"><span class="font-mono text-ok text-xs font-semibold">PASS</span><p class="text-mute mt-1">comprobado con evidencia</p></li>
+        <li class="bg-tile2 rounded-2xl p-3"><span class="font-mono text-bad text-xs font-semibold">FAIL</span><p class="text-mute mt-1">fallo demostrado</p></li>
+        <li class="bg-tile2 rounded-2xl p-3"><span class="font-mono text-warn text-xs font-semibold">INCONCLUSIVE</span><p class="text-mute mt-1">lectura dudosa: nunca cuenta como pass</p></li>
+        <li class="bg-tile2 rounded-2xl p-3"><span class="font-mono text-mute text-xs font-semibold">ERROR</span><p class="text-mute mt-1">no se pudo ejecutar</p></li>
+      </ul>
+    </section>
+  </div>
+
+  <div id="status" hx-get="/status" hx-trigger="load, every 2s" class="mt-4"></div>
+
+  <footer class="mt-10 text-center text-mute text-xs">sin evidencia completa no hay pass · ningún giro se reintenta solo</footer>
 </main>
 </body>
 </html>`))
 
 var STATUS = template.Must(template.New("status").Funcs(FUNCS).Parse(`
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4">
 {{if .Running}}
-  <div class="rounded border border-orange-300 bg-orange-50 p-4">
-    <p class="font-semibold">Ejecutando {{.Running}}…</p>
-    <pre class="mt-2 text-xs whitespace-pre-wrap">{{range .Log}}{{.}}
-{{end}}</pre>
-  </div>
-{{end}}
-{{if .Err}}<div class="rounded border border-red-300 bg-red-50 p-4 text-red-800">Error de ejecución: {{.Err}}</div>{{end}}
-{{if .Results}}
-  <h2 class="text-lg font-semibold mt-2">Último resultado de cada caso</h2>
-  {{$links := .Links}}
-  {{range $r := .Results}}
-  <div class="rounded bg-white shadow p-4 mt-3">
-    <div class="flex items-center justify-between gap-2">
-      <h3 class="font-semibold">{{$r.ID}} · {{$r.Scenario}} · {{$r.Market}}</h3>
-      <span class="px-2 py-1 rounded text-sm font-bold {{badge $r.Status}}">{{$r.Status}}</span>
+  <section class="tile p-6 md:col-span-4 ring-1 ring-ok/30">
+    <div class="flex items-center gap-3">
+      <span class="relative flex h-2.5 w-2.5"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-ok opacity-60"></span><span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-ok"></span></span>
+      <p class="font-semibold">ejecutando {{lower .Running}}…</p>
     </div>
-    <ul class="mt-3 divide-y">
-      {{range $c := $r.Checks}}
-      <li class="py-2">
-        <div class="flex items-start gap-2">
-          <span class="shrink-0 px-2 rounded text-xs font-bold {{badge $c.Status}}">{{$c.Status}}</span>
+    <pre class="mt-4 bg-ink rounded-2xl p-4 text-xs font-mono text-mute whitespace-pre-wrap max-h-64 overflow-auto">{{range .Log}}{{.}}
+{{else}}iniciando sesión y abriendo el juego…{{end}}</pre>
+  </section>
+{{end}}
+{{if .Err}}
+  <section class="tile p-6 md:col-span-4 ring-1 ring-bad/30">
+    <p class="text-bad font-semibold">error de ejecución</p>
+    <p class="mt-1 text-mute text-sm break-words">{{.Err}}</p>
+  </section>
+{{end}}
+
+{{range $r := .Results}}
+  <section class="tile p-6 md:col-span-2 flex flex-col gap-5">
+    <div class="flex items-start justify-between gap-3">
+      <div>
+        <p class="text-mute text-sm font-mono">{{lower $r.ID}} · {{$r.Market}}</p>
+        <h2 class="mt-1 text-2xl font-semibold">{{lower $r.Scenario}}</h2>
+        <p class="text-mute text-sm">{{lower $r.Game}}</p>
+      </div>
+      <span class="pill px-3 py-1 text-xs font-semibold font-mono ring-1 {{tone $r.Status}}">{{$r.Status}}</span>
+    </div>
+    <div class="grid grid-cols-2 gap-2">
+      {{with index $r.Figures "betsson_before"}}<div class="bg-tile2 rounded-2xl p-3"><p class="text-mute text-xs">betsson antes</p><p class="font-mono text-lg">{{.}}</p></div>{{end}}
+      {{with index $r.Figures "betsson_after"}}<div class="bg-tile2 rounded-2xl p-3"><p class="text-mute text-xs">betsson después</p><p class="font-mono text-lg">{{.}}</p></div>{{end}}
+      {{with index $r.Figures "bet"}}<div class="bg-tile2 rounded-2xl p-3"><p class="text-mute text-xs">apuesta</p><p class="font-mono text-lg">{{.}}</p></div>{{end}}
+      {{with index $r.Figures "win"}}<div class="bg-tile2 rounded-2xl p-3"><p class="text-mute text-xs">premio</p><p class="font-mono text-lg">{{.}}</p></div>{{end}}
+      {{with index $r.Figures "message"}}<div class="bg-tile2 rounded-2xl p-3"><p class="text-mute text-xs">mensaje</p><p class="text-sm">{{.}}</p></div>{{end}}
+    </div>
+    <p class="text-mute text-sm"><span class="text-text font-semibold">{{$r.Passed}}/{{len $r.Checks}}</span> comprobaciones en pass</p>
+  </section>
+{{end}}
+
+{{range $r := .Results}}
+  <section class="tile p-6 md:col-span-2">
+    <p class="text-mute text-sm font-mono">{{lower $r.ID}} · comprobaciones</p>
+    <ul class="mt-4 flex flex-col gap-3">
+      {{range $r.Checks}}
+      <li class="bg-tile2 rounded-2xl p-4">
+        <div class="flex items-start gap-3">
+          <span class="shrink-0 pill px-2.5 py-0.5 text-[11px] font-semibold font-mono ring-1 {{tone .Status}}">{{.Status}}</span>
           <div class="min-w-0">
-            <p class="font-medium">{{$c.Name}}</p>
-            <p class="text-sm text-slate-600 break-words">{{$c.Detail}}</p>
-            <div class="flex flex-wrap gap-2 mt-1">
-              {{range index $links (key $r.ID $c.Name)}}
-              <a href="{{.URL}}" target="_blank" title="{{.Name}}"><img src="{{.URL}}" alt="{{.Name}}" class="h-16 rounded border"></a>
-              {{end}}
-            </div>
+            <p class="font-medium leading-snug">{{lower .Name}}</p>
+            <p class="mt-1 text-mute text-sm break-words">{{.Detail}}</p>
           </div>
         </div>
+        {{if .Links}}
+        <div class="mt-3 flex gap-2 overflow-x-auto pb-1">
+          {{range .Links}}<a href="{{.URL}}" target="_blank" title="{{.Name}}" class="shrink-0"><img src="{{.URL}}" alt="{{.Name}}" loading="lazy" class="h-16 rounded-xl ring-1 ring-line hover:ring-ok/50 transition"></a>{{end}}
+        </div>
+        {{end}}
       </li>
       {{end}}
     </ul>
-  </div>
-  {{end}}
-{{else if not .Running}}
-  <p class="text-slate-500">Aún no hay informes. Lanza un caso.</p>
+  </section>
+{{else}}
+  {{if not .Running}}<section class="tile p-6 md:col-span-4 text-mute">aún no hay informes. lanza un caso.</section>{{end}}
 {{end}}
+</div>
 `))

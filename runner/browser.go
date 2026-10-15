@@ -290,6 +290,10 @@ func (s *session) open_game() (playwright.Rect, error) {
 	// La página tiene varios iframes: el juego es el visible más grande.
 	deadline := time.Now().Add(45 * time.Second)
 	for time.Now().Before(deadline) {
+		// Las pantallas previas pueden aparecer en cascada y con retraso: se atienden también mientras se espera.
+		if handled := s.handle_pregame(); len(handled) > 0 {
+			fmt.Println("   pantallas previas resueltas:", strings.Join(handled, ", "))
+		}
 		iframes, _ := s.page.Locator("iframe").All()
 		var best *playwright.Rect
 		best_src := ""

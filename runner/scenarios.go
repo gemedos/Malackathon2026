@@ -10,11 +10,22 @@ import (
 	"github.com/playwright-community/playwright-go"
 )
 
-const (
-	MOTION_STARTED = 0.05  // fracción de píxeles de los rodillos que cambian cuando giran
-	MOTION_STILL   = 0.005 // por debajo, dos capturas seguidas se consideran iguales
-	START_TIMEOUT  = 10 * time.Second
-)
+const START_TIMEOUT = 10 * time.Second
+
+// motion_thresholds: a partir de `started` los rodillos giran; por debajo de `still` dos capturas son iguales.
+// "pixel" medido con capturas reales de Big Bass Bonanza; "cells" (fracción de celdas cuyo símbolo cambió)
+// medido en reposo con Bubble Up (0 celdas cambiadas, incluido el aviso de saldo insuficiente encima).
+var MOTION_THRESHOLDS = map[string]struct{ started, still float64 }{
+	"pixel": {0.05, 0.005},
+	"cells": {0.25, 0.05},
+}
+
+func (g *game_run) motion_mode() string {
+	if g.s.config.MotionMode == "cells" {
+		return "cells"
+	}
+	return "pixel"
+}
 
 // game_run guarda lo necesario para capturar y analizar el juego de un caso.
 type game_run struct {
@@ -156,6 +167,7 @@ func (g *game_run) click_spin() (string, error) {
 func (g *game_run) watch_spin() (started bool, ended bool, evidence []string, err error) {
 	timing := g.s.config.Timing
 	reels := g.s.config.Regions["reels"]
+	thresholds := MOTION_THRESHOLDS[g.motion_mode()]
 	previous, err := g.frame("after_click")
 	if err != nil {
 		return false, false, nil, err
@@ -170,13 +182,13 @@ func (g *game_run) watch_spin() (started bool, ended bool, evidence []string, er
 		if err != nil {
 			return started, false, evidence, err
 		}
-		changed, err := g.vision.motion(previous, current, reels)
+		changed, err := g.vision.motion(previous, current, reels, g.motion_mode(), g.s.config.ReelGrid)
 		if err != nil {
 			return started, false, evidence, err
 		}
 		previous = current
 		if !started {
-			if changed >= MOTION_STARTED {
+			if changed >= thresholds.started {
 				started = true
 				evidence = append(evidence, current)
 			} else if time.Now().After(start_deadline) {
@@ -184,7 +196,7 @@ func (g *game_run) watch_spin() (started bool, ended bool, evidence []string, er
 			}
 			continue
 		}
-		if changed < MOTION_STILL {
+		if changed < thresholds.still {
 			still_frames++
 		} else {
 			still_frames = 0
@@ -199,8 +211,9 @@ func (g *game_run) watch_spin() (started bool, ended bool, evidence []string, er
 // outer_reels_changed mira solo las columnas exteriores de rodillos, que los avisos del juego no tapan.
 func (g *game_run) outer_reels_changed(image_a, image_b string) bool {
 	for _, name := range []string{"reels_left", "reels_right"} {
-		changed, err := g.vision.motion(image_a, image_b, g.s.config.Regions[name])
-		if err != nil || changed >= MOTION_STARTED {
+		// Cada región exterior es una sola columna de rodillos.
+		changed, err := g.vision.motion(image_a, image_b, g.s.config.Regions[name], g.motion_mode(), [2]int{1, g.s.config.ReelGrid[1]})
+		if err != nil || changed >= MOTION_THRESHOLDS[g.motion_mode()].started {
 			return true // sin poder medirlo no se afirma que no hubo giro
 		}
 	}
@@ -208,13 +221,20 @@ func (g *game_run) outer_reels_changed(image_a, image_b string) bool {
 }
 
 // open_and_enter abre el juego en Real Play y llega hasta la pantalla con el botón de giro.
+// Se reintenta una vez: ocurre antes de apostar, así que repetirlo no puede producir un giro adicional.
 func (g *game_run) open_and_enter() error {
-	rect, err := g.s.open_game()
-	if err != nil {
-		return err
+	var err error
+	for attempt := 0; attempt < 2; attempt++ {
+		var rect playwright.Rect
+		if rect, err = g.s.open_game(); err == nil {
+			g.rect = rect
+			if err = g.enter_game(); err == nil {
+				return nil
+			}
+		}
+		fmt.Println("   reintento al abrir el juego:", err)
 	}
-	g.rect = rect
-	return g.enter_game()
+	return err
 }
 
 func cents_value(reading region_reading) (int64, bool) {
@@ -231,12 +251,13 @@ func currency_check(before map[string]region_reading, betsson_text string, evide
 }
 
 // run_completed_spin es el escenario T01: un giro pagado que empieza, termina y cuadra los saldos.
-func run_completed_spin(s *session, vision *vision_client, dir string) []check {
+func run_completed_spin(s *session, vision *vision_client, dir string, figures map[string]string) []check {
 	g := &game_run{s: s, vision: vision, dir: dir}
 	betsson_before, betsson_before_text, err := s.stable_betsson_balance(0)
 	if err != nil {
 		return []check{error_check("Saldo Betsson antes", err)}
 	}
+	figures["betsson_before"] = format_cents(betsson_before)
 	if err := g.open_and_enter(); err != nil {
 		return []check{error_check("Abrir juego en Real Play", err)}
 	}
@@ -281,6 +302,8 @@ func run_completed_spin(s *session, vision *vision_client, dir string) []check {
 		checks = append(checks, check{"El giro empezó y terminó", INCONCLUSIVE, "los rodillos no llegaron a un reposo estable en el tiempo límite (¿bonus?)", spin_evidence})
 	}
 	checks = append(checks, currency_check(before, betsson_before_text, before_evidence))
+	figures["bet"] = show(before["bet"])
+	figures["win"] = show(win_reading)
 
 	balance_before, balance_before_ok := cents_value(before["game_balance"])
 	balance_after, balance_after_ok := cents_value(after["game_balance"])
@@ -301,6 +324,7 @@ func run_completed_spin(s *session, vision *vision_client, dir string) []check {
 	if err != nil {
 		return append(checks, error_check("Saldo Betsson después", err))
 	}
+	figures["betsson_after"] = format_cents(betsson_after)
 	checks = append(checks, verdict("Saldo Betsson = antes − apuesta + premio",
 		betsson_after == betsson_before-bet+win, win_ok && started && ended,
 		fmt.Sprintf("Betsson antes %s, después %s, apuesta %s, premio %s (esperado %s)",
@@ -309,12 +333,13 @@ func run_completed_spin(s *session, vision *vision_client, dir string) []check {
 }
 
 // run_insufficient_balance es el escenario T02: el intento se rechaza con mensaje y sin mover saldos.
-func run_insufficient_balance(s *session, vision *vision_client, dir string) []check {
+func run_insufficient_balance(s *session, vision *vision_client, dir string, figures map[string]string) []check {
 	g := &game_run{s: s, vision: vision, dir: dir}
 	betsson_before, betsson_before_text, err := s.stable_betsson_balance(0)
 	if err != nil {
 		return []check{error_check("Saldo Betsson antes", err)}
 	}
+	figures["betsson_before"] = format_cents(betsson_before)
 	if err := g.open_and_enter(); err != nil {
 		return []check{error_check("Abrir juego en Real Play", err)}
 	}
@@ -359,6 +384,10 @@ func run_insufficient_balance(s *session, vision *vision_client, dir string) []c
 		reels_moved = true
 	}
 
+	figures["bet"] = show(before["bet"])
+	if message_found {
+		figures["message"] = message
+	}
 	checks := []check{}
 	if message_found {
 		checks = append(checks, check{"Mensaje de saldo insuficiente en español", PASS, fmt.Sprintf("texto detectado: %q", message), message_evidence})
@@ -388,6 +417,7 @@ func run_insufficient_balance(s *session, vision *vision_client, dir string) []c
 	if err != nil {
 		return append(checks, error_check("Saldo Betsson después", err))
 	}
+	figures["betsson_after"] = format_cents(betsson_after)
 	checks = append(checks, verdict("Saldo Betsson sin cambios", betsson_after == betsson_before, true,
 		fmt.Sprintf("antes %s, después %s", betsson_before_text, betsson_after_text), nil))
 	return checks

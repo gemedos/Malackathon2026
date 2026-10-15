@@ -7,7 +7,7 @@ Un valor ilegible se devuelve como null con un error, nunca como cero.
   {"cmd": "ping"}
   {"cmd": "read", "image": ruta, "regions": {nombre: [x, y, ancho, alto]}, "text_hsv": [[h,s,v],[h,s,v]] (opcional)}
       (regiones en fracciones 0-1; con text_hsv solo se lee el texto de ese color y se exige unanimidad)
-  {"cmd": "motion", "image_a": ruta, "image_b": ruta, "region": [x, y, ancho, alto]}
+  {"cmd": "motion", "image_a": ruta, "image_b": ruta, "region": [x, y, ancho, alto], "mode": "pixel" | "cells", "grid": [columnas, filas] (modo cells)}
   {"cmd": "find_text", "image": ruta, "patterns": [regex, ...], "region": [x, y, ancho, alto] (opcional)}
   {"cmd": "locate", "image": ruta, "template": ruta, "reference_width": px, "threshold": 0-1}
 """
@@ -128,13 +128,45 @@ def read_regions(request):
     return {"readings": readings}
 
 
+# Modo "cells": la región se divide en la cuadrícula de rodillos y se compara el histograma de color de cada
+# celda. Ignora animaciones en reposo (símbolos que se mecen unos píxeles) y detecta cambios de símbolo.
+# Devuelve la fracción de celdas cuyo histograma dejó de parecerse.
+CELL_MIN_CORRELATION = 0.8
+
+
+def cell_histogram(image):
+    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    histogram = cv2.calcHist([hsv], [0, 1], None, [18, 8], [0, 180, 0, 256])
+    cv2.normalize(histogram, histogram)
+    return histogram
+
+
+def cells_changed(image_a, image_b, grid):
+    columns, rows = grid
+    height, width = image_a.shape[:2]
+    changed = 0
+    for column in range(columns):
+        for row in range(rows):
+            x0, x1 = column * width // columns, (column + 1) * width // columns
+            y0, y1 = row * height // rows, (row + 1) * height // rows
+            correlation = cv2.compareHist(cell_histogram(image_a[y0:y1, x0:x1]),
+                                          cell_histogram(image_b[y0:y1, x0:x1]), cv2.HISTCMP_CORREL)
+            changed += correlation < CELL_MIN_CORRELATION
+    return changed / (columns * rows)
+
+
 def motion(request):
     region = request["region"]
-    image_a = cv2.cvtColor(crop(load_image(request["image_a"]), region), cv2.COLOR_BGR2GRAY)
-    image_b = cv2.cvtColor(crop(load_image(request["image_b"]), region), cv2.COLOR_BGR2GRAY)
+    image_a = crop(load_image(request["image_a"]), region)
+    image_b = crop(load_image(request["image_b"]), region)
     if image_a.shape != image_b.shape:
         raise ValueError("las capturas tienen tamaños distintos")
-    changed = numpy.mean(cv2.absdiff(image_a, image_b) > MOTION_PIXEL_DELTA)
+    if request.get("mode") == "cells":
+        changed = cells_changed(image_a, image_b, request["grid"])
+    else:
+        gray_a = cv2.cvtColor(image_a, cv2.COLOR_BGR2GRAY)
+        gray_b = cv2.cvtColor(image_b, cv2.COLOR_BGR2GRAY)
+        changed = numpy.mean(cv2.absdiff(gray_a, gray_b) > MOTION_PIXEL_DELTA)
     return {"changed_fraction": float(changed)}
 
 

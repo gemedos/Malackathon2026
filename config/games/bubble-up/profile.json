@@ -1,0 +1,32 @@
+{
+  "provider": "Pragmatic Play",
+  "calibrated": true,
+  "game_name": "Bubble Up",
+  "game_path": "/casino/tragaperras-slots/bubble-up",
+  "calibration_note": "Calibrado el 2026-10-15 con capturas reales (iframe 770x433 CSS, capturas a 2x). Importes en blanco. T02 verificado en real; T01 pendiente de un giro real.",
+  "regions": {
+    "game_balance": [0.2338, 0.9007, 0.09, 0.0346],
+    "bet": [0.2338, 0.935, 0.09, 0.035],
+    "win": [0.36, 0.86, 0.28, 0.07],
+    "reels": [0.26, 0.13, 0.48, 0.71],
+    "reels_left": [0.26, 0.13, 0.08, 0.71],
+    "reels_right": [0.66, 0.13, 0.08, 0.71]
+  },
+  "win_idle_patterns": ["haga su apuesta"],
+  "splash_template": {
+    "path": "splash.png",
+    "reference_width": 1540,
+    "threshold": 0.8
+  },
+  "spin_template": {
+    "path": "spin.png",
+    "reference_width": 1540,
+    "threshold": 0.8
+  },
+  "amount_text_hsv": [
+    [0, 0, 230],
+    [180, 35, 255]
+  ],
+  "motion_mode": "cells",
+  "reel_grid": [6, 6]
+}

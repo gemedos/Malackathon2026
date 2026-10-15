@@ -4,7 +4,6 @@ package main
 
 import (
 	"bufio"
-	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
@@ -13,45 +12,12 @@ import (
 	"time"
 )
 
-type market_config struct {
-	Market               string                `json:"market"`
-	BaseURL              string                `json:"base_url"`
-	Language             string                `json:"language"`
-	Currency             string                `json:"currency"`
-	GameName             string                `json:"game_name"`
-	GamePath             string                `json:"game_path"`
-	Accounts             map[string]account    `json:"accounts"`
-	InsufficientPatterns []string              `json:"insufficient_patterns"`
-	Regions              map[string][4]float64 `json:"regions"`
-	AmountTextHSV        *[2][3]int            `json:"amount_text_hsv"`
-	WinIdlePatterns      []string              `json:"win_idle_patterns"`
-	SplashTemplate       template_config       `json:"splash_template"`
-	SpinTemplate         template_config       `json:"spin_template"`
-	Timing               struct {
-		SpinTimeoutS        int `json:"spin_timeout_s"`
-		PollIntervalMs      int `json:"poll_interval_ms"`
-		StillFramesToSettle int `json:"still_frames_to_settle"`
-		BalanceWaitS        int `json:"balance_wait_s"`
-	} `json:"timing"`
-}
-
-type template_config struct {
-	Path           string  `json:"path"`
-	ReferenceWidth int     `json:"reference_width"`
-	Threshold      float64 `json:"threshold"`
-}
-
-type account struct {
-	UserEnv string `json:"user_env"`
-	PassEnv string `json:"pass_env"`
-}
-
 // test_case une un escenario con su cuenta; el mercado viene de la configuración.
 type test_case struct {
 	id       string
 	scenario string
 	account  string
-	run      func(*session, *vision_client, string) []check
+	run      func(*session, *vision_client, string, map[string]string) []check
 }
 
 var CASES = []test_case{
@@ -61,6 +27,7 @@ var CASES = []test_case{
 
 func main() {
 	config_path := flag.String("config", "config/es.json", "configuración del mercado")
+	game_id := flag.String("game", "", "juego (carpeta en config/games/); por defecto el del mercado")
 	only := flag.String("case", "", "ejecutar solo este caso (T01 o T02)")
 	explore := flag.String("explore", "", "solo calibración: iniciar sesión con esta cuenta (funded/empty), abrir el juego y capturar, sin apostar")
 	headed := flag.Bool("headed", false, "mostrar el navegador")
@@ -70,17 +37,12 @@ func main() {
 	flag.Parse()
 
 	load_dotenv(".env")
-	raw, err := os.ReadFile(*config_path)
+	config, err := load_config(*config_path, *game_id)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "no se pudo leer la configuración:", err)
+		fmt.Fprintln(os.Stderr, err)
 		os.Exit(2)
 	}
-	var config market_config
-	if err := json.Unmarshal(raw, &config); err != nil {
-		fmt.Fprintln(os.Stderr, "configuración no válida:", err)
-		os.Exit(2)
-	}
-	options := run_options{config: config, out_dir: *out_dir, python_path: *python_path, headed: *headed}
+	options := run_options{config: config, config_path: *config_path, out_dir: *out_dir, python_path: *python_path, headed: *headed}
 
 	if *serve != "" {
 		if err := serve_ui(*serve, options); err != nil {
@@ -116,6 +78,7 @@ func main() {
 
 type run_options struct {
 	config      market_config
+	config_path string
 	out_dir     string
 	python_path string
 	headed      bool
@@ -124,6 +87,9 @@ type run_options struct {
 // run_cases ejecuta los casos (todos o solo `only`), escribe el informe y avisa del progreso con `progress`.
 func run_cases(options run_options, only string, progress func(string)) (string, []case_result, error) {
 	config := options.config
+	if !config.Calibrated {
+		return "", nil, fmt.Errorf("el juego %s no está calibrado: usa -explore y completa config/games/%s/profile.json", config.GameName, config.GameID)
+	}
 	run_dir := filepath.Join(options.out_dir, time.Now().Format("20060102-150405"))
 	if err := ensure_dir(run_dir); err != nil {
 		return "", nil, err
@@ -140,8 +106,9 @@ func run_cases(options run_options, only string, progress func(string)) (string,
 			continue
 		}
 		progress(fmt.Sprintf("== %s %s (%s)", tc.id, tc.scenario, config.Market))
-		checks := run_case(tc, config, vision, run_dir, options.headed)
-		result := case_result{tc.id, config.Market, tc.scenario, config.GameName, overall(checks), checks}
+		figures := map[string]string{}
+		checks := run_case(tc, config, vision, run_dir, options.headed, figures)
+		result := case_result{tc.id, config.Market, tc.scenario, config.GameName, config.GameID, overall(checks), checks, figures}
 		for _, c := range checks {
 			progress(fmt.Sprintf("   %-13s %s — %s", c.Status, c.Name, c.Detail))
 		}
@@ -154,7 +121,7 @@ func run_cases(options run_options, only string, progress func(string)) (string,
 	return run_dir, results, nil
 }
 
-func run_case(tc test_case, config market_config, vision *vision_client, run_dir string, headed bool) []check {
+func run_case(tc test_case, config market_config, vision *vision_client, run_dir string, headed bool, figures map[string]string) []check {
 	acc := config.Accounts[tc.account]
 	user, password := os.Getenv(acc.UserEnv), os.Getenv(acc.PassEnv)
 	if user == "" || password == "" {
@@ -169,10 +136,17 @@ func run_case(tc test_case, config market_config, vision *vision_client, run_dir
 		return []check{error_check("Abrir navegador", err)}
 	}
 	defer s.close()
+	// El login se reintenta una vez (la web falla a ratos); un rechazo explícito del WAF no se reintenta.
 	if err := s.login(user, password); err != nil {
-		return []check{error_check("Iniciar sesión", err)}
+		if strings.Contains(err.Error(), "rechazó") {
+			return []check{error_check("Iniciar sesión", err)}
+		}
+		fmt.Println("   reintento de inicio de sesión:", err)
+		if err := s.login(user, password); err != nil {
+			return []check{error_check("Iniciar sesión", err)}
+		}
 	}
-	return tc.run(s, vision, case_dir)
+	return tc.run(s, vision, case_dir, figures)
 }
 
 // load_dotenv carga variables de .env sin sobrescribir las que ya existen ni imprimirlas.
@@ -236,6 +210,45 @@ func run_explore(config market_config, account_name string, run_dir string, head
 	}
 	defer vision.close()
 	g := &game_run{s: s, vision: vision, rect: rect, dir: run_dir}
+	// Juego nuevo con plantilla de carga pero sin la de giro: se entra y se captura el marcador.
+	if config.SplashTemplate.Path != "" && config.SpinTemplate.Path == "" {
+		fmt.Println("juego sin plantilla de giro: se entra al juego y se captura el marcador, sin girar")
+		var splash location
+		for attempt := 0; attempt < 20 && !splash.Found; attempt++ {
+			time.Sleep(3 * time.Second)
+			path, err := g.frame("loading")
+			if err != nil {
+				return err
+			}
+			if splash, err = g.find(path, config.SplashTemplate); err != nil {
+				return err
+			}
+		}
+		if !splash.Found {
+			return fmt.Errorf("no se encontró el botón de la pantalla de carga")
+		}
+		if err := s.click_in_game(rect, [2]float64{*splash.X, *splash.Y}); err != nil {
+			return err
+		}
+		for i := 0; i < 3; i++ {
+			time.Sleep(4 * time.Second)
+			if _, err := g.frame("explore"); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	// Sin plantillas todavía (juego nuevo): solo se captura la pantalla de carga para recortarlas.
+	if config.SplashTemplate.Path == "" || config.SpinTemplate.Path == "" {
+		fmt.Println("juego sin plantillas: se capturan pantallas para calibrar, sin pulsar nada")
+		for i := 0; i < 6; i++ {
+			time.Sleep(4 * time.Second)
+			if _, err := g.frame("explore"); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
 	if err := g.enter_game(); err != nil {
 		return err
 	}
