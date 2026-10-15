@@ -33,7 +33,8 @@ Implementar y calibrar exclusivamente un módulo Python independiente que observ
 
 ## Reglas de implementación
 
-- Usar Docker como entorno de ejecución: `docker compose build` y `docker compose run --rm vision`. Para capturas, ejecutar `offline.py` dentro de ese servicio; consultar README.md. Mantener el módulo sin navegador.
+- Ejecución local sin Docker: `make setup`, `make test`, `make demo` (entorno `.venv` + Tesseract de Homebrew); consultar README.md. Mantener el módulo sin navegador.
+- Las especificaciones generales del proyecto están en `../CLAUDE.md` (mercados, escenarios SC-01/SC-02, matriz T01–T04, informe RR-03).
 
 - El perfil de ejemplo es ilustrativo y no está calibrado. No inventar plantillas ni presentar fixtures sintéticos como pruebas reales.
 - Timestamps monotónicos, timeouts finitos y umbrales de movimiento separados de reposo. Nunca exigir diferencia exactamente cero.

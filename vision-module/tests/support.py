@@ -59,7 +59,7 @@ def frame_with(template=None, at=(150, 60), size=(200, 100)) -> np.ndarray:
 def reading(field, text, sample_id, timestamp) -> OcrReading:
     value, error = None, None
     try:
-        if field in ('balance', 'wager', 'payout'):
+        if field in ('balance', 'wager', 'payout', 'betsson_balance'):
             value = str(parse_money(text))
         elif field == 'currency':
             value = detect_currency(text)

@@ -1,142 +1,104 @@
-# Módulo independiente: visión del iframe
+# Módulo de visión — Malackathon 2026
 
-Entrega para el equipo OpenCV + OCR. El navegador, el login y los clics los gestiona el equipo Playwright. Este motor solo observa imágenes del rectángulo visible del juego; no inspecciona el interior del iframe (ni DOM, ni canvas API, ni red).
-
-## Estructura
+Parte de **visión** del proyecto (ver `../CLAUDE.md`): recibe capturas del juego y decide, solo con lo que ve el jugador, si cada escenario es PASS, FAIL o INCONCLUSIVE. **No** abre el navegador, no hace login ni clics: eso lo hace la parte Playwright, que le pasa las capturas.
 
 ```
-vision-module/
-├── offline.py                 # CLI: analiza capturas ya tomadas (inspect / scenario)
-├── profile.example.json       # perfil ILUSTRATIVO betsson.com (EUR) — no calibrado
-├── profile.example.pe.json    # perfil ILUSTRATIVO betsson.pe (PEN) — no calibrado
-├── vision_engine/
-│   ├── errors.py      # errores explícitos (ProfileError, CalibrationError, SequenceError...)
-│   ├── profile.py     # GameProfile: carga y valida el perfil + ajustes de movimiento/consenso/listo
-│   ├── geometry.py    # ROI y page_point (imagen → CSS con offset y escala)
-│   ├── imaging.py     # decodificación PNG y preprocesado para OCR
-│   ├── matching.py    # localización multi-escala de plantillas (botón Spin)
-│   ├── ocr.py         # OCR por campo con evidencias (crop original + preprocesado)
-│   ├── money.py       # parse_money (Decimal estricto) y reconcile
-│   ├── currency.py    # detección explícita de moneda (EUR/€, PEN/S/...)
-│   ├── messages.py    # frases de saldo insuficiente; rechaza patrones genéricos
-│   ├── motion.py      # MotionTracker: movimiento → reposo, timeout, reanudación
-│   ├── ready.py       # ReadyDetector: control Spin habilitado visible
-│   ├── consensus.py   # consenso de >= 3 lecturas en frames distintos y separados
-│   ├── engine.py      # VisionEngine: fachada (check_size, locate_spin, read_hud...)
-│   ├── scenario.py    # SpinAttemptRecorder: un único intento antes/clic/después
-│   ├── evaluation.py  # evaluate_spin / evaluate_insufficient → PASS/FAIL/INCONCLUSIVE
-│   └── verdict.py     # Verdict, AssertionResult, ScenarioReport
-└── tests/             # pruebas SINTÉTICAS de lógica (no prueban compatibilidad con Betsson)
+Playwright (otro equipo) ──capturas──▶  este módulo  ──▶  reports/report.txt  (formato RR-03, T01–T04)
 ```
 
-Flujo de datos: `frame BGR → VisionEngine (Spin, OCR por campo) → SpinAttemptRecorder (antes · clic único · después, con MotionTracker y ReadyDetector) → ScenarioRecord → evaluate_* → ScenarioReport`.
-
-## Ejecutar con Docker (recomendado)
-
-Con Docker Desktop iniciado, en esta carpeta:
+## Puesta en marcha (local, macOS)
 
 ```sh
-docker compose build             # imagen con OpenCV, NumPy, Tesseract (eng + spa)
-docker compose run --rm vision   # ejecuta las pruebas automáticas
+brew install tesseract tesseract-lang   # motor OCR + idiomas (una sola vez)
+make setup                              # crea .venv e instala OpenCV, NumPy, pytesseract
+make check                              # comprueba Tesseract con inglés y español
+make test                               # 68 pruebas automáticas → debe terminar en "OK"
+make demo                               # demo completa T01–T04 con OCR real → "OVERALL: PASS"
 ```
 
-El contenedor de ejecución no tiene red y no incluye navegador. Las evidencias quedan en la carpeta local gracias al volumen compartido.
+`make demo` dibuja capturas **sintéticas** (no son de Betsson) para que veas el flujo completo funcionando; el informe queda en `reports/demo/report.txt` y las evidencias (recortes de cada lectura) en `reports/demo/T01/`, etc.
 
-### Instalación local sin Docker
+Sin `make`: `.venv/bin/python -m unittest discover -s tests -v` y `.venv/bin/python offline.py matrix --plan demo/plan.json`.
 
-Python 3.10+: `python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt`. Instalar Tesseract con inglés y español (`brew install tesseract tesseract-lang` o `apt-get install tesseract-ocr tesseract-ocr-eng tesseract-ocr-spa`) y verificar con `tesseract --list-langs`.
+## Qué es cada cosa
 
-## Calibrar un juego
+| Ruta | Para qué sirve |
+|---|---|
+| `offline.py` | Programa principal (línea de comandos): `inspect`, `scenario`, `matrix` |
+| `config/markets.json` | Datos de cada mercado: idioma, moneda, frases de "saldo insuficiente". Cambiar mercado = editar este JSON, no el código |
+| `config/profiles/*.example.json` | Calibración de un juego: dónde está cada cosa en la captura. Las coordenadas son **de ejemplo** |
+| `scripts/make_demo.py` | Genera la demo sintética |
+| `tests/` | Pruebas automáticas de la lógica |
+| `Makefile` | Atajos `setup`, `check`, `test`, `demo`, `clean` |
+| `vision_engine/` | El código del módulo (tabla siguiente) |
 
-1. Obtener capturas autorizadas del rectángulo completo de UN juego, sin redimensionar.
-2. Recortar el botón Spin habilitado → `assets/spin.png`. Opcional pero recomendado: el botón en estado ocupado/deshabilitado → `assets/spin_busy.png`. No se incluyen plantillas inventadas.
-3. Copiar `profile.example.json` (o `.pe.json`) a `profile.json` y ajustar `image_size` y cada región en píxeles LOCALES. Balance, apuesta, premio, moneda, rodillos y mensaje deben ir en regiones separadas.
-4. Ajustar `decimal_separator` a lo observado (no al dominio), `ocr_language` y `insufficient_patterns` al texto real (en minúsculas y sin tildes; se rechazan patrones genéricos como `saldo` o `balance`).
-5. Ajustar umbrales con clips etiquetados: `motion` (movimiento ≠ reposo; nunca cero), `consensus` (mínimo 3 lecturas), `ready`, `insufficient_window_seconds`.
-6. Solo tras validar con capturas reales, poner `"calibrated": true`. Con `false` ningún escenario puede salir PASS.
+| `vision_engine/` | Responsabilidad |
+|---|---|
+| `engine.py` | Punto de entrada: localizar Spin, leer HUD, mensaje y saldo Betsson |
+| `scenario.py` | Graba un intento: frames antes → **un** clic → frames después |
+| `evaluation.py` | Validaciones de SC-01 (giro completado) y SC-02 (saldo insuficiente) |
+| `report.py` | Matriz T01–T04 e informe de texto RR-03 |
+| `profile.py` | Carga y valida el perfil y `config/markets.json` |
+| `matching.py` / `ready.py` | Encontrar el botón Spin / saber si está activo |
+| `motion.py` | Detectar que los rodillos empiezan a moverse y se paran |
+| `ocr.py` | Leer texto de cada zona y guardar los recortes como evidencia |
+| `consensus.py` | Aceptar una lectura solo si se repite igual en ≥ 3 frames |
+| `money.py` / `currency.py` / `language.py` / `messages.py` | Importes con `Decimal`, moneda, idioma del mensaje, frases de rechazo |
+| `geometry.py` / `imaging.py` / `evidence.py` / `verdict.py` / `errors.py` | Utilidades: coordenadas, imágenes, guardado, resultados, errores |
 
-## Runner offline
+## Qué valida (según `../CLAUDE.md`)
 
-```sh
-# Captura aislada: Spin, control listo, OCR por campo. Siempre INCONCLUSIVE.
-docker compose run --rm vision python offline.py inspect \
-  --profile profile.json --template assets/spin.png --image assets/before.png --out evidence
+**SC-01 Completed Real Play Spin**: botón Spin localizado y juego listo · saldo inicial, apuesta y moneda leídos (≥ 3 lecturas iguales) · el giro empieza y termina (movimiento → reposo + botón listo) · premio leído de su zona (nunca deducido) · la apuesta no cambia · `saldo final = inicial − apuesta + premio` en el juego **y** en Betsson.
 
-# Secuencia de un único intento
-docker compose run --rm vision python offline.py scenario --kind spin \
-  --profile profile.json --template assets/spin.png --busy-template assets/spin_busy.png \
-  --sequence assets/sequence.json --out evidence \
-  --external-before 10.00 --external-after 14.00     # opcional: lo aporta Playwright
-```
+**SC-02 Insufficient Balance**: mensaje de saldo insuficiente en ≥ 3 frames · en el idioma del mercado (inglés en .com, español en .pe) · moneda correcta · saldo del juego sin cambios durante la ventana · ningún giro pagado · saldo Betsson sin cambios.
 
-`--kind insufficient` evalúa el escenario de saldo insuficiente. Formato de `sequence.json` (rutas relativas al JSON, tiempos crecientes en segundos, frames cada ~150–250 ms):
+Resultados: **PASS** solo con todas las pruebas; **FAIL** si se demuestra un error (p. ej. el saldo no cuadra); **INCONCLUSIVE** si algo no se pudo verificar (OCR ilegible, timeout, perfil sin calibrar); **ERROR** si falló la ejecución (imagen inexistente, Tesseract ausente). Código de salida: 0 PASS · 1 FAIL · 2 INCONCLUSIVE · 3 ERROR.
 
-```json
-{"click_timestamp": 1.2,
- "frames": [{"file": "f0.png", "timestamp": 0.0}, {"file": "f1.png", "timestamp": 0.5}, {"file": "f2.png", "timestamp": 1.0},
-            {"file": "f3.png", "timestamp": 1.4}, "..."]}
-```
+## Usarlo con capturas reales
 
-Se requieren ≥ 3 frames antes del clic (consenso del balance inicial) y ≥ 3 frames en reposo con control listo después. Se guardan frames, crops originales y preprocesados, y `scenario.json` / `observations.json`. Código de salida: `0` PASS, `1` FAIL, `2` INCONCLUSIVE, `3` error de entrada o calibración.
+1. **Calibrar** (una vez por juego y mercado): copiar `config/profiles/com.example.json` y ajustar `image_size` y cada región `[x, y, ancho, alto]` mirando una captura real. Recortar el botón Spin de esa captura → `assets/spin.png`. Comprobar con:
+   ```sh
+   .venv/bin/python offline.py inspect --profile config/profiles/com.json --template assets/spin.png --image assets/captura.png
+   ```
+   y revisar los recortes en `reports/inspect/`. Cuando lea bien, poner `"calibrated": true`.
+2. **Secuencia** de cada intento (la entrega Playwright), un JSON con los frames cada ~200 ms:
+   ```json
+   {"click_timestamp": 1.2,
+    "frames": [{"file": "f00.png", "timestamp": 0.0}, {"file": "f01.png", "timestamp": 0.5}, "..."]}
+   ```
+   Al menos 3 frames antes del clic y suficientes después para ver el giro terminado (o la ventana de rechazo).
+3. **Plan** con las 4 combinaciones (rutas relativas al plan; ver `demo/plan.json` tras `make demo`):
+   ```json
+   {"tests": [
+     {"profile": "config/profiles/com.json", "scenario": "spin", "template": "assets/spin.png",
+      "sequence": "capturas/T01/sequence.json", "betsson": {"before": "10.00", "after": "14.00"}},
+     "... T02, T03, T04 ..."]}
+   ```
+   El saldo Betsson puede darse como valores o como capturas de la página (`"before": [{"file": "p0.png", "timestamp": 0.0}, ...]`), que se leen por OCR en la región `betsson_page` del perfil.
+4. Ejecutar `.venv/bin/python offline.py matrix --plan plan.json` → `reports/report.txt` y `reports/report.json`.
 
-## Contrato con el equipo Playwright
-
-Entrada: captura PNG del rectángulo visible del iframe, caja CSS del mismo rectángulo, mercado y tiempos monotónicos. Salida: coordenadas LOCALES con confianza, OCR por campo, estados de movimiento/control listo, errores explícitos y veredictos por aserción.
-
-Ejemplo de integración síncrona (código del equipo navegador; Playwright no es dependencia de este módulo):
+## Integración en vivo con Playwright
 
 ```python
 import time
-from vision_engine import (GameProfile, VisionEngine, SpinAttemptRecorder, MotionState,
-                           ExternalBalance, decode_png, load_template, page_point, evaluate_spin)
+from vision_engine import (GameProfile, VisionEngine, SpinAttemptRecorder, BetssonBalance,
+                           decode_png, load_template, page_point, evaluate_spin)
 
-profile = GameProfile.load('profile.json')
-engine = VisionEngine(profile, 'evidence')
-recorder = SpinAttemptRecorder(engine, load_template('assets/spin.png'), load_template('assets/spin_busy.png'))
+profile = GameProfile.load('config/profiles/com.json')
+recorder = SpinAttemptRecorder(VisionEngine(profile, 'reports/T01'), load_template('assets/spin.png'))
+capture = lambda: decode_png(page.screenshot(clip=game_box, scale='css'))   # caja del iframe
 
-def capture():   # game_box: caja del iframe EXTERIOR; mismo rectángulo que la captura
-    return decode_png(page.screenshot(clip=game_box, scale='css'))
-
-for _ in range(3):                       # frames ANTES del clic, separados
-    recorder.observe_before(capture(), time.monotonic())
-    page.wait_for_timeout(350)
-
-hit = recorder.register_click(time.monotonic())   # lanza SpinNotFoundError si falta evidencia
-frame_size = (profile.image_size[0], profile.image_size[1])
-page.mouse.click(*page_point(hit.point, frame_size, game_box))   # exactamente un intento
-
-settled = 0
-while True:
-    page.wait_for_timeout(200)
-    frame = recorder.observe_after(capture(), time.monotonic())
-    if frame.motion.state is MotionState.TIMEOUT:
-        break                            # no reintentar: INCONCLUSIVE
-    settled = settled + 1 if frame.motion.state is MotionState.QUIET_AFTER_MOTION and frame.ready.ready else 0
-    if settled >= 4:                     # margen sobre min_readings para el consenso
-        break
-
-report = evaluate_spin(recorder.record(), ExternalBalance(before_ext, after_ext))
-print(report.to_dict())
+for _ in range(3):                                  # frames ANTES del clic
+    recorder.observe_before(capture(), time.monotonic()); page.wait_for_timeout(350)
+hit = recorder.register_click(time.monotonic())     # lanza error si no ve el Spin: no clicar
+page.mouse.click(*page_point(hit.point, profile.image_size, game_box))   # un único intento
+# ... recorder.observe_after(capture(), time.monotonic()) cada ~200 ms hasta reposo o timeout ...
+report = evaluate_spin(recorder.record(), BetssonBalance.from_values(before, after))
 ```
 
-La página debe estar en primer plano, sin overlays ni scroll durante la secuencia. Playwright fija viewport/zoom/escala y recalcula la caja si hay desplazamiento. No sumar offsets del iframe dos veces.
+## Limitaciones conocidas
 
-## Reglas que aplica el código
-
-- Spin por debajo del umbral ⇒ `None`; sin Spin no se registra clic. Un segundo clic lanza `SequenceError`.
-- Reposo de rodillos ≠ liquidación: se exige además control listo visible y consenso de lecturas monetarias.
-- OCR fallido ⇒ valor desconocido (nunca cero). El premio se lee de su propia región; nunca se deduce del balance.
-- Consenso: ≥ 3 lecturas válidas en frames distintos separados en el tiempo; cualquier discrepancia ⇒ INCONCLUSIVE.
-- Moneda ilegible ⇒ INCONCLUSIVE; moneda distinta observada ⇒ FAIL.
-- Insuficiencia: frase específica en ≥ 3 frames, ningún giro pagado completado y balance estable durante la ventana completa.
-- Movimiento reanudado tras el reposo ⇒ posible cascada/bonus ⇒ INCONCLUSIVE (requiere adaptación por juego).
-- Sin balance externo de Playwright o con perfil no calibrado ⇒ nunca PASS de extremo a extremo.
-
-## Qué falta para aprobar los escenarios reales
-
-- Capturas y plantillas reales calibradas para cada juego/resolución y ambos mercados (com/EUR, pe/PEN).
-- Clips etiquetados reales: victoria, derrota, bonus, rechazo, fallo OCR, resolución distinta, botón ausente y timeout.
-- Adaptación específica para cascadas, bonus y premios animados.
-- Integración con el balance externo y el informe global del equipo Playwright.
-
-Las pruebas sintéticas verifican la lógica, no la compatibilidad con Betsson ni la precisión real del OCR. Esta entrega es una base implementada, no una certificación de los escenarios reales.
+- Los perfiles de `config/profiles/` y la demo **no** están calibrados para Betsson: hace falta calibrar con capturas reales de cada juego y mercado.
+- Las frases de `config/markets.json` son un punto de partida; el reto no fija el texto exacto, así que hay que ajustarlas al mensaje real.
+- Bonus y cascadas se detectan como INCONCLUSIVE; requieren adaptación por juego.
+- La detección de idioma es una heurística de palabras frecuentes (inglés/español).

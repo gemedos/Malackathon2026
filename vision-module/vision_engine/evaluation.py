@@ -1,15 +1,14 @@
-"""Evaluación de los dos escenarios a partir de un ScenarioRecord.
+"""Evaluación de los dos escenarios del reto a partir de un ScenarioRecord.
 
-Escenario 1 (spin_settlement): un giro pagado se liquida y
-    balance_final = balance_inicial - apuesta + premio, con premio observado
-    independientemente (nunca deducido del balance).
-Escenario 2 (insufficient_funds): con saldo insuficiente aparece el mensaje
-    específico del idioma, no se completa ningún giro pagado y el balance no
-    cambia durante una ventana acotada.
+SC-01 Completed Real Play Spin: el giro empieza y termina visiblemente y
+    balance_final = balance_inicial - apuesta + premio, tanto en el juego como
+    en la cuenta Betsson. El premio se lee de su región, nunca se deduce.
+SC-02 Insufficient Balance: aparece un mensaje de saldo insuficiente en el
+    idioma del mercado, no se completa ningún giro pagado y ni el saldo del
+    juego ni el de Betsson cambian.
 
 Cada aserción devuelve PASS/FAIL/INCONCLUSIVE con referencias a evidencias.
-El balance externo lo aporta y valida el equipo Playwright; sin él, el
-escenario no puede ser PASS de extremo a extremo.
+INCONCLUSIVE significa "no se pudo verificar": nunca se informa PASS sin pruebas.
 """
 from __future__ import annotations
 
@@ -18,7 +17,10 @@ from decimal import Decimal
 from typing import Iterable, List, Optional, Sequence, Tuple
 
 from .consensus import consensus, spaced_indices
+from .language import detect_language
 from .money import reconcile
+from .ocr import BETSSON_BALANCE_FIELD, OcrReading
+from .profile import ConsensusSettings
 from .scenario import FrameRecord, ScenarioRecord
 from .verdict import AssertionResult, ScenarioReport, Verdict, combine
 
@@ -29,16 +31,32 @@ PASS, FAIL, INCONCLUSIVE = Verdict.PASS, Verdict.FAIL, Verdict.INCONCLUSIVE
 
 
 @dataclass(frozen=True)
-class ExternalBalance:
-    """Balance antes/después aportado y validado por el equipo Playwright."""
+class BetssonBalance:
+    """Saldo de la cuenta Betsson antes y después del intento. None = desconocido."""
 
-    before: Decimal
-    after: Decimal
+    before: Optional[Decimal]
+    after: Optional[Decimal]
+    detail: str = ''
+    evidence: Tuple[str, ...] = ()
+
+    @classmethod
+    def from_values(cls, before: Decimal, after: Decimal, source: str = 'aportado') -> 'BetssonBalance':
+        return cls(before, after, f'saldo Betsson {source}')
+
+    @classmethod
+    def from_readings(cls, before: Sequence[OcrReading], after: Sequence[OcrReading],
+                      settings: ConsensusSettings) -> 'BetssonBalance':
+        """Consenso de >= 3 lecturas visuales del saldo Betsson antes y después."""
+        first = consensus(BETSSON_BALANCE_FIELD, before, settings)
+        last = consensus(BETSSON_BALANCE_FIELD, after, settings)
+        return cls(Decimal(first.value) if first.agreed else None,
+                   Decimal(last.value) if last.agreed else None,
+                   f'antes: {first.reason}; después: {last.reason}', first.evidence + last.evidence)
 
 
 # --------------------------------------------------------------------------- escenarios
 
-def evaluate_spin(record: ScenarioRecord, external: Optional[ExternalBalance] = None) -> ScenarioReport:
+def evaluate_spin(record: ScenarioRecord, betsson: Optional[BetssonBalance] = None) -> ScenarioReport:
     before = record.before_frames
     settled = record.settled_frames()
     results = [_profile_calibrated(record), _spin_detected(record), _ready_before_click(record)]
@@ -58,30 +76,35 @@ def evaluate_spin(record: ScenarioRecord, external: Optional[ExternalBalance] = 
     results.append(result)
     payout, result = _money('payout', 'payout', settled, record)
     results.append(result)
-    results.append(_reconciliation(initial, wager, payout, final, before + settled))
-    results.append(_external(external, initial, final))
+    results.append(_wager_consistent(wager, settled, record))
+    results.append(_reconciliation('in_game_balance', initial, wager, payout, final,
+                                   _reading_paths(before + settled, ('balance', 'wager', 'payout'))))
+    results.append(_betsson_reconciliation(betsson, wager, payout))
 
-    observed = {'initial_balance': _s(initial), 'wager': _s(wager), 'payout': _s(payout), 'final_balance': _s(final)}
+    observed = {'initial_balance': _s(initial), 'wager': _s(wager), 'payout': _s(payout),
+                'final_balance': _s(final), **_betsson_observed(betsson)}
     return _report(SPIN_SETTLEMENT, record, results, observed)
 
 
-def evaluate_insufficient(record: ScenarioRecord, external: Optional[ExternalBalance] = None) -> ScenarioReport:
+def evaluate_insufficient(record: ScenarioRecord, betsson: Optional[BetssonBalance] = None) -> ScenarioReport:
     before = record.before_frames
     after = record.after_frames
-    results = [_profile_calibrated(record), _spin_detected(record)]
+    results = [_profile_calibrated(record), _spin_detected(record), _ready_before_click(record)]
 
     initial, result = _money('initial_balance', 'balance', before, record)
     results.append(result)
     results.append(_currency(before + after, record))
-    results.append(_rejection_message(record))
+    message = _rejection_message(record)
+    results.append(message)
+    results.append(_message_language(record))
 
-    window = _window_frames(record)
-    window_balance, balance_result = _balance_unchanged(record, window, initial)
-    results.append(_no_paid_spin(record, initial, window_balance))
+    window_balance, balance_result = _balance_unchanged(record, _window_frames(record), initial)
     results.append(balance_result)
-    results.append(_external(external, initial, window_balance))
+    results.append(_spin_rejected(record, balance_result, message))
+    results.append(_betsson_unchanged(betsson))
 
-    observed = {'initial_balance': _s(initial), 'balance_in_window': _s(window_balance)}
+    observed = {'initial_balance': _s(initial), 'balance_in_window': _s(window_balance),
+                **_betsson_observed(betsson)}
     return _report(INSUFFICIENT_FUNDS, record, results, observed)
 
 
@@ -133,25 +156,22 @@ def _currency(frames: Sequence[FrameRecord], record: ScenarioRecord) -> Assertio
     return AssertionResult('currency', PASS, f'Moneda {expected} observada ({result.reason})', result.evidence)
 
 
-def _external(external: Optional[ExternalBalance], before: Optional[Decimal],
-              after: Optional[Decimal]) -> AssertionResult:
-    if external is None:
-        return AssertionResult('external_balance', INCONCLUSIVE,
-                               'Balance externo no aportado; la validación integral corresponde al equipo Playwright')
-    if before is None or after is None:
-        return AssertionResult('external_balance', INCONCLUSIVE, 'Balance visual desconocido; no comparable')
-    if (external.before, external.after) == (before, after):
-        return AssertionResult('external_balance', PASS, f'Coincide con el externo {external.before} -> {external.after}')
-    return AssertionResult('external_balance', FAIL,
-                           f'Visual {before} -> {after} distinto del externo {external.before} -> {external.after}')
+def _reconciliation(name: str, initial, wager, payout, final, evidence: Tuple[str, ...]) -> AssertionResult:
+    values = {'saldo_inicial': initial, 'apuesta': wager, 'premio': payout, 'saldo_final': final}
+    unknown = [key for key, value in values.items() if value is None]
+    if unknown:
+        return AssertionResult(name, INCONCLUSIVE, f'Valores desconocidos: {unknown}', evidence)
+    expected = initial - wager + payout
+    if reconcile(initial, wager, payout, final):
+        return AssertionResult(name, PASS, f'{initial} - {wager} + {payout} = {final}', evidence)
+    return AssertionResult(name, FAIL, f'{initial} - {wager} + {payout} = {expected}, observado {final}', evidence)
 
 
-# --------------------------------------------------------------------------- escenario 1
+# --------------------------------------------------------------------------- SC-01
 
 def _motion(record: ScenarioRecord) -> List[AssertionResult]:
     summary = record.motion
-    after = record.after_frames
-    paths = _frame_paths(after)
+    paths = _frame_paths(record.after_frames)
     if summary.started_at is not None:
         started = AssertionResult('reels_started', PASS, f'Movimiento desde t={summary.started_at}', paths)
     else:
@@ -176,20 +196,28 @@ def _motion(record: ScenarioRecord) -> List[AssertionResult]:
     return [started, settled, cascade]
 
 
-def _reconciliation(initial, wager, payout, final, frames: Sequence[FrameRecord]) -> AssertionResult:
-    evidence = _reading_paths(frames, ('balance', 'wager', 'payout'))
-    values = {'balance_inicial': initial, 'apuesta': wager, 'premio': payout, 'balance_final': final}
-    unknown = [name for name, value in values.items() if value is None]
-    if unknown:
-        return AssertionResult('reconciliation', INCONCLUSIVE, f'Valores desconocidos: {unknown}', evidence)
-    expected = initial - wager + payout
-    if reconcile(initial, wager, payout, final):
-        return AssertionResult('reconciliation', PASS, f'{initial} - {wager} + {payout} = {final}', evidence)
-    return AssertionResult('reconciliation', FAIL,
-                           f'{initial} - {wager} + {payout} = {expected}, observado {final}', evidence)
+def _wager_consistent(wager: Optional[Decimal], settled: Sequence[FrameRecord],
+                      record: ScenarioRecord) -> AssertionResult:
+    """La apuesta mostrada tras el giro es la misma que antes: se apostó lo que se veía."""
+    after, result = _money('wager_consistent', 'wager', settled, record)
+    if wager is None or after is None:
+        return AssertionResult('wager_consistent', INCONCLUSIVE, 'Apuesta antes o después desconocida',
+                               result.evidence)
+    if after != wager:
+        return AssertionResult('wager_consistent', FAIL, f'Apuesta cambió {wager} -> {after}', result.evidence)
+    return AssertionResult('wager_consistent', PASS, f'Apuesta {wager} antes y después', result.evidence)
 
 
-# --------------------------------------------------------------------------- escenario 2
+def _betsson_reconciliation(betsson: Optional[BetssonBalance], wager, payout) -> AssertionResult:
+    if betsson is None:
+        return AssertionResult('betsson_balance', INCONCLUSIVE, 'Saldo Betsson no aportado')
+    result = _reconciliation('betsson_balance', betsson.before, wager, payout, betsson.after, betsson.evidence)
+    if betsson.detail:
+        return AssertionResult(result.name, result.verdict, f'{result.detail} ({betsson.detail})', result.evidence)
+    return result
+
+
+# --------------------------------------------------------------------------- SC-02
 
 def _rejection_message(record: ScenarioRecord) -> AssertionResult:
     matched = [f for f in record.after_frames if f.insufficient_message]
@@ -198,11 +226,35 @@ def _rejection_message(record: ScenarioRecord) -> AssertionResult:
     spaced = spaced_indices([f.timestamp for f in matched], settings.min_separation_seconds)
     if len(spaced) >= settings.min_readings:
         return AssertionResult('rejection_message', PASS,
-                               f'Mensaje específico en {len(spaced)} frames: {matched[-1].readings["message"].raw_text!r}',
+                               f'Mensaje en {len(spaced)} frames: {matched[-1].readings["message"].raw_text!r}',
                                evidence)
     return AssertionResult('rejection_message', INCONCLUSIVE,
-                           f'Mensaje específico en {len(spaced)} frames separados de {settings.min_readings} '
-                           'requeridos; una palabra genérica no prueba rechazo', evidence)
+                           f'Mensaje de saldo insuficiente en {len(spaced)} frames separados de '
+                           f'{settings.min_readings} requeridos; una palabra genérica no prueba rechazo', evidence)
+
+
+def _message_language(record: ScenarioRecord) -> AssertionResult:
+    expected = record.profile.language
+    settings = record.profile.consensus
+    detected = {}
+    for frame in record.after_frames:
+        language = detect_language(frame.readings['message'].raw_text)
+        if language is not None:
+            detected.setdefault(language, []).append(frame)
+    evidence = tuple(f.readings['message'].crop_path for frames in detected.values() for f in frames)
+
+    def spaced(frames):
+        return len(spaced_indices([f.timestamp for f in frames], settings.min_separation_seconds))
+
+    expected_count = spaced(detected.get(expected, []))
+    other = {language: spaced(frames) for language, frames in detected.items() if language != expected}
+    name = record.profile.language_name
+    if expected_count >= settings.min_readings and not other:
+        return AssertionResult('message_language', PASS, f'Mensaje en {name} en {expected_count} frames', evidence)
+    if expected_count == 0 and any(count >= settings.min_readings for count in other.values()):
+        return AssertionResult('message_language', FAIL, f'Mensaje en {sorted(other)}, se esperaba {name}', evidence)
+    return AssertionResult('message_language', INCONCLUSIVE,
+                           f'Idioma no confirmado (esperado {name}: {expected_count} frames, otros: {other})', evidence)
 
 
 def _window_frames(record: ScenarioRecord) -> Tuple[FrameRecord, ...]:
@@ -218,44 +270,50 @@ def _window_frames(record: ScenarioRecord) -> Tuple[FrameRecord, ...]:
     return tuple(frames)
 
 
-def _window_covered(record: ScenarioRecord, window: Sequence[FrameRecord]) -> bool:
-    end = (record.click_timestamp or 0) + record.profile.insufficient_window_seconds
-    return bool(window) and window[-1].timestamp >= end
-
-
 def _balance_unchanged(record: ScenarioRecord, window: Sequence[FrameRecord],
                        initial: Optional[Decimal]) -> Tuple[Optional[Decimal], AssertionResult]:
-    name = 'balance_unchanged_in_window'
+    name = 'in_game_balance_unchanged'
     seconds = record.profile.insufficient_window_seconds
     value, result = _money(name, 'balance', window, record)
-    if not _window_covered(record, window):
+    end = (record.click_timestamp or 0) + seconds
+    if not window or window[-1].timestamp < end:
         return value, AssertionResult(name, INCONCLUSIVE, f'Observación no cubre la ventana de {seconds}s',
                                       result.evidence)
     if value is None:
         return None, result
     if initial is None:
-        return value, AssertionResult(name, INCONCLUSIVE, 'Balance inicial desconocido', result.evidence)
+        return value, AssertionResult(name, INCONCLUSIVE, 'Saldo inicial desconocido', result.evidence)
     if value != initial:
-        return value, AssertionResult(name, FAIL, f'Balance cambió {initial} -> {value} en {seconds}s',
-                                      result.evidence)
-    return value, AssertionResult(name, PASS, f'Balance estable en {value} durante {seconds}s', result.evidence)
+        return value, AssertionResult(name, FAIL, f'Saldo cambió {initial} -> {value} en {seconds}s', result.evidence)
+    return value, AssertionResult(name, PASS, f'Saldo estable en {value} durante {seconds}s', result.evidence)
 
 
-def _no_paid_spin(record: ScenarioRecord, initial: Optional[Decimal],
-                  window_balance: Optional[Decimal]) -> AssertionResult:
-    name = 'no_paid_spin_completed'
+def _spin_rejected(record: ScenarioRecord, balance: AssertionResult, message: AssertionResult) -> AssertionResult:
+    """Un giro pagado descuenta la apuesta: saldo estable + (sin movimiento o mensaje de rechazo) => rechazado.
+
+    El movimiento por sí solo no prueba un giro: el propio aviso puede aparecer sobre los rodillos.
+    """
+    name = 'spin_rejected'
     paths = _frame_paths(record.after_frames)
     if record.click_timestamp is None:
         return AssertionResult(name, INCONCLUSIVE, 'Sin clic registrado', paths)
-    if record.motion.started_at is None:
-        if record.after_frames and _window_covered(record, _window_frames(record)):
-            return AssertionResult(name, PASS, 'Sin movimiento de rodillos durante la ventana', paths)
-        return AssertionResult(name, INCONCLUSIVE, 'Observación insuficiente tras el clic', paths)
-    if initial is not None and window_balance is not None and window_balance != initial:
-        return AssertionResult(name, FAIL, f'Movimiento y cambio de balance {initial} -> {window_balance}', paths)
-    return AssertionResult(name, INCONCLUSIVE,
-                           'Movimiento en la región de rodillos (¿overlay o giro?) sin cambio de balance demostrado',
-                           paths)
+    if balance.verdict is FAIL:
+        return AssertionResult(name, FAIL, f'Giro pagado: {balance.detail}', balance.evidence)
+    if balance.verdict is PASS and (record.motion.started_at is None or message.verdict is PASS):
+        return AssertionResult(name, PASS, 'Saldo sin cambios y ningún giro pagado completado', paths)
+    return AssertionResult(name, INCONCLUSIVE, 'No se puede demostrar el rechazo con lo observado', paths)
+
+
+def _betsson_unchanged(betsson: Optional[BetssonBalance]) -> AssertionResult:
+    name = 'betsson_balance_unchanged'
+    if betsson is None:
+        return AssertionResult(name, INCONCLUSIVE, 'Saldo Betsson no aportado')
+    if betsson.before is None or betsson.after is None:
+        return AssertionResult(name, INCONCLUSIVE, f'Saldo Betsson desconocido ({betsson.detail})', betsson.evidence)
+    if betsson.before != betsson.after:
+        return AssertionResult(name, FAIL, f'Saldo Betsson cambió {betsson.before} -> {betsson.after}',
+                               betsson.evidence)
+    return AssertionResult(name, PASS, f'Saldo Betsson estable en {betsson.before}', betsson.evidence)
 
 
 # --------------------------------------------------------------------------- utilidades
@@ -270,6 +328,12 @@ def _reading_paths(frames: Iterable[FrameRecord], fields: Sequence[str]) -> Tupl
 
 def _s(value: Optional[Decimal]) -> Optional[str]:
     return None if value is None else str(value)
+
+
+def _betsson_observed(betsson: Optional[BetssonBalance]) -> dict:
+    if betsson is None:
+        return {'betsson_before': None, 'betsson_after': None}
+    return {'betsson_before': _s(betsson.before), 'betsson_after': _s(betsson.after)}
 
 
 def _report(scenario: str, record: ScenarioRecord, results: List[AssertionResult], observed: dict) -> ScenarioReport:

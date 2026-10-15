@@ -14,10 +14,11 @@ def variant(**changes):
 
 class ProfileTests(unittest.TestCase):
     def test_examples_load_but_are_not_calibrated(self):
-        for name, currency in (('profile.example.json', 'EUR'), ('profile.example.pe.json', 'PEN')):
-            profile = GameProfile.load(ROOT / name)
+        for name, currency in (('com.example.json', 'EUR'), ('pe.example.json', 'PEN')):
+            profile = GameProfile.load(ROOT / 'config' / 'profiles' / name)
             self.assertFalse(profile.calibrated)
             self.assertEqual(profile.expected_currency, currency)
+            self.assertIsNotNone(profile.betsson_page)
 
     def test_missing_region(self):
         data = variant()
@@ -51,6 +52,17 @@ class ProfileTests(unittest.TestCase):
     def test_consensus_needs_three_readings(self):
         with self.assertRaises(ProfileError):
             GameProfile.from_dict(variant(consensus={'min_readings': 2}))
+
+    def test_market_defaults_come_from_config(self):
+        com = GameProfile.from_dict(variant())
+        pe = GameProfile.from_dict(variant(market='betsson.pe', expected_currency='PEN',
+                                           insufficient_patterns=None))
+        self.assertEqual((com.language, com.language_name), ('en', 'English'))
+        self.assertEqual((pe.language, pe.ocr_language), ('es', 'spa+eng'))
+
+    def test_betsson_region_outside_page(self):
+        with self.assertRaises(ProfileError):
+            GameProfile.from_dict(variant(betsson_page={'image_size': [100, 50], 'balance': [90, 0, 20, 20]}))
 
     def test_unknown_setting_rejected(self):
         with self.assertRaises(ProfileError):

@@ -1,8 +1,9 @@
 """Perfil de calibración de UN juego, en UNA resolución y UN mercado.
 
 Todas las coordenadas son píxeles LOCALES de la captura del rectángulo del
-juego. El perfil de ejemplo es ilustrativo: `calibrated` debe ponerse a true
-solo tras calibrarlo con capturas reales.
+juego. Los datos de cada mercado (idioma, moneda, frases de rechazo) viven en
+config/markets.json, separados de la lógica. Los perfiles de ejemplo son
+ilustrativos: `calibrated` debe ponerse a true solo tras calibrar con capturas reales.
 """
 from __future__ import annotations
 
@@ -12,19 +13,42 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 from types import MappingProxyType
-from typing import Any, Mapping, Tuple
+from typing import Any, Dict, Mapping, Optional, Tuple
 
 from .errors import ProfileError
 from .geometry import ROI
 from .messages import compile_patterns
 
 REQUIRED_REGIONS = ('spin_search', 'reels', 'balance', 'wager', 'payout', 'currency', 'message')
+DEFAULT_MARKETS_PATH = Path(__file__).resolve().parent.parent / 'config' / 'markets.json'
+SUPPORTED_LANGUAGES = ('en', 'es')
 
-# Moneda esperada e idioma OCR por defecto de cada mercado soportado.
-MARKETS = {
-    'betsson.com': {'currency': 'EUR', 'ocr_language': 'eng'},
-    'betsson.pe': {'currency': 'PEN', 'ocr_language': 'spa+eng'},
-}
+
+@dataclass(frozen=True)
+class Market:
+    """Configuración de un mercado (config/markets.json)."""
+
+    name: str
+    language: str              # 'en' | 'es'
+    language_name: str         # 'English' | 'Spanish' (para el informe)
+    currency: str              # código ISO esperado
+    ocr_language: str          # idiomas de Tesseract
+    insufficient_patterns: Tuple[str, ...]
+
+
+def load_markets(path: str | Path = DEFAULT_MARKETS_PATH) -> Dict[str, Market]:
+    try:
+        raw = json.loads(Path(path).read_text(encoding='utf-8'))
+        markets = {name: Market(name=name, language=d['language'], language_name=d['language_name'],
+                                currency=d['currency'], ocr_language=d['ocr_language'],
+                                insufficient_patterns=tuple(d['insufficient_patterns']))
+                   for name, d in raw.items()}
+    except (OSError, json.JSONDecodeError, KeyError, TypeError, AttributeError) as exc:
+        raise ProfileError(f'Configuración de mercados inválida en {path}: {exc}') from exc
+    for market in markets.values():
+        if market.language not in SUPPORTED_LANGUAGES:
+            raise ProfileError(f'{market.name}: idioma {market.language!r} no soportado')
+    return markets
 
 
 def _number(value: Any, name: str, *, allow_zero: bool = False) -> float:
@@ -78,11 +102,21 @@ class ReadySettings:
 
 
 @dataclass(frozen=True)
+class BetssonPage:
+    """Región del saldo Betsson en una captura de la PÁGINA (fuera del iframe del juego)."""
+
+    image_size: Tuple[int, int]
+    balance: ROI
+
+
+@dataclass(frozen=True)
 class GameProfile:
     game: str
     calibrated: bool
     image_size: Tuple[int, int]
     market: str
+    language: str
+    language_name: str
     expected_currency: str
     ocr_language: str
     decimal_separator: str
@@ -94,38 +128,36 @@ class GameProfile:
     motion: MotionSettings
     consensus: ConsensusSettings
     ready: ReadySettings
+    betsson_page: Optional[BetssonPage]
 
     @classmethod
-    def load(cls, path: str | Path) -> 'GameProfile':
+    def load(cls, path: str | Path, markets: Optional[Mapping[str, Market]] = None) -> 'GameProfile':
         try:
             data = json.loads(Path(path).read_text(encoding='utf-8'))
         except json.JSONDecodeError as exc:
             raise ProfileError(f'Perfil {path} no es JSON válido: {exc}') from exc
-        return cls.from_dict(data)
+        return cls.from_dict(data, markets)
 
     @classmethod
-    def from_dict(cls, data: Mapping[str, Any]) -> 'GameProfile':
+    def from_dict(cls, data: Mapping[str, Any],
+                  markets: Optional[Mapping[str, Market]] = None) -> 'GameProfile':
         try:
-            return cls._parse(data)
+            return cls._parse(data, markets if markets is not None else load_markets())
         except KeyError as exc:
             raise ProfileError(f'Falta el campo obligatorio {exc.args[0]!r} en el perfil') from None
         except TypeError as exc:
             raise ProfileError(f'Perfil con campos inválidos: {exc}') from None
 
     @classmethod
-    def _parse(cls, data: Mapping[str, Any]) -> 'GameProfile':
-        size = data['image_size']
-        if not (isinstance(size, list) and len(size) == 2
-                and all(isinstance(v, int) and not isinstance(v, bool) and v > 0 for v in size)):
-            raise ProfileError('image_size debe ser [ancho, alto] con enteros positivos')
-        width, height = size
+    def _parse(cls, data: Mapping[str, Any], markets: Mapping[str, Market]) -> 'GameProfile':
+        width, height = size = _image_size(data['image_size'], 'image_size')
 
-        market = data['market']
-        if market not in MARKETS:
-            raise ProfileError(f'Mercado {market!r} no soportado; usar uno de {sorted(MARKETS)}')
+        if data['market'] not in markets:
+            raise ProfileError(f'Mercado {data["market"]!r} no soportado; usar uno de {sorted(markets)}')
+        market = markets[data['market']]
         expected_currency = data['expected_currency']
-        if expected_currency != MARKETS[market]['currency']:
-            raise ProfileError(f'{market} exige moneda {MARKETS[market]["currency"]}, no {expected_currency!r}')
+        if expected_currency != market.currency:
+            raise ProfileError(f'{market.name} exige moneda {market.currency}, no {expected_currency!r}')
 
         separator = data['decimal_separator']
         if separator not in ('.', ','):
@@ -145,9 +177,10 @@ class GameProfile:
         regions = {name: ROI.from_list(values, name) for name, values in raw_regions.items()}
         outside = [name for name, roi in regions.items() if not roi.fits(width, height)]
         if outside:
-            raise ProfileError(f'Regiones fuera de image_size {size}: {outside}')
+            raise ProfileError(f'Regiones fuera de image_size {list(size)}: {outside}')
 
-        patterns = compile_patterns(data['insufficient_patterns'])
+        # Las frases del mercado son un punto de partida; el perfil puede ajustarlas al texto real.
+        patterns = compile_patterns(data.get('insufficient_patterns') or market.insufficient_patterns)
         if not patterns:
             raise ProfileError('insufficient_patterns no puede estar vacío')
 
@@ -159,9 +192,11 @@ class GameProfile:
             game=str(data.get('game', 'sin-nombre')),
             calibrated=calibrated,
             image_size=(width, height),
-            market=market,
+            market=market.name,
+            language=market.language,
+            language_name=market.language_name,
             expected_currency=expected_currency,
-            ocr_language=data.get('ocr_language', MARKETS[market]['ocr_language']),
+            ocr_language=data.get('ocr_language', market.ocr_language),
             decimal_separator=separator,
             template_threshold=threshold,
             template_scales=scales,
@@ -172,4 +207,22 @@ class GameProfile:
             motion=MotionSettings(**data.get('motion', {})),
             consensus=ConsensusSettings(**data.get('consensus', {})),
             ready=ReadySettings(**data.get('ready', {})),
+            betsson_page=_betsson_page(data.get('betsson_page')),
         )
+
+
+def _image_size(value: Any, name: str) -> Tuple[int, int]:
+    if not (isinstance(value, list) and len(value) == 2
+            and all(isinstance(v, int) and not isinstance(v, bool) and v > 0 for v in value)):
+        raise ProfileError(f'{name} debe ser [ancho, alto] con enteros positivos')
+    return value[0], value[1]
+
+
+def _betsson_page(data: Optional[Mapping[str, Any]]) -> Optional[BetssonPage]:
+    if data is None:
+        return None
+    size = _image_size(data['image_size'], 'betsson_page.image_size')
+    balance = ROI.from_list(data['balance'], 'betsson_page.balance')
+    if not balance.fits(*size):
+        raise ProfileError('betsson_page.balance fuera de betsson_page.image_size')
+    return BetssonPage(size, balance)

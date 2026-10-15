@@ -11,7 +11,8 @@ from .evidence import EvidenceStore
 from .geometry import ROI
 from .matching import TemplateMatch, best_match
 from .messages import matches_any
-from .ocr import HUD_FIELDS, MESSAGE_FIELD, FieldReader, OcrBackend, OcrReading, tesseract_backend
+from .ocr import (BETSSON_BALANCE_FIELD, HUD_FIELDS, MESSAGE_FIELD, FieldReader, OcrBackend, OcrReading,
+                  tesseract_backend)
 from .profile import GameProfile
 
 
@@ -54,6 +55,17 @@ class VisionEngine:
     def read_message(self, frame: np.ndarray, sample_id: str,
                      timestamp: Optional[float] = None) -> OcrReading:
         return self.read_field(frame, MESSAGE_FIELD, sample_id, timestamp)
+
+    def read_betsson_balance(self, page: np.ndarray, sample_id: str,
+                             timestamp: Optional[float] = None) -> OcrReading:
+        """Saldo de la cuenta Betsson en una captura de la PÁGINA (no del juego)."""
+        layout = self.profile.betsson_page
+        if layout is None:
+            raise ProfileError('El perfil no define betsson_page; no se puede leer el saldo Betsson')
+        size = (page.shape[1], page.shape[0])
+        if size != layout.image_size:
+            raise CalibrationError(f'Captura de página {size} distinta a betsson_page {layout.image_size}')
+        return self._reader.read(page, BETSSON_BALANCE_FIELD, sample_id, timestamp, roi=layout.balance)
 
     def is_insufficient_message(self, text: str) -> bool:
         """Frase específica calibrada por mercado; una palabra genérica no basta."""

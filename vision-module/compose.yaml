@@ -1,7 +1,0 @@
-services:
-  vision:
-    build: .
-    working_dir: /app
-    volumes:
-      - .:/app
-    network_mode: none

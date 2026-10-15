@@ -13,6 +13,7 @@ import numpy as np
 from .currency import detect_currency
 from .errors import OcrUnavailableError, ProfileError
 from .evidence import EvidenceStore
+from .geometry import ROI
 from .imaging import preprocess_for_ocr
 from .money import parse_money
 from .profile import GameProfile
@@ -20,8 +21,9 @@ from .profile import GameProfile
 MONEY_FIELDS = ('balance', 'wager', 'payout')
 CURRENCY_FIELD = 'currency'
 MESSAGE_FIELD = 'message'
+BETSSON_BALANCE_FIELD = 'betsson_balance'   # saldo de la cuenta, en la página fuera del iframe
 HUD_FIELDS = MONEY_FIELDS + (CURRENCY_FIELD,)
-OCR_FIELDS = HUD_FIELDS + (MESSAGE_FIELD,)
+OCR_FIELDS = HUD_FIELDS + (MESSAGE_FIELD, BETSSON_BALANCE_FIELD)
 
 # (imagen preprocesada, idioma, config de Tesseract) -> texto. Inyectable en pruebas.
 OcrBackend = Callable[[np.ndarray, str, str], str]
@@ -59,10 +61,11 @@ class FieldReader:
         self.backend = backend
 
     def read(self, frame: np.ndarray, field: str, sample_id: str,
-             timestamp: Optional[float] = None) -> OcrReading:
+             timestamp: Optional[float] = None, roi: Optional[ROI] = None) -> OcrReading:
+        """Lee `field` en su región del perfil (o en `roi` si se indica)."""
         if field not in OCR_FIELDS:
             raise ProfileError(f'Campo OCR desconocido {field!r}')
-        crop = self.profile.regions[field].crop(frame)
+        crop = (roi or self.profile.regions[field]).crop(frame)
         processed = preprocess_for_ocr(crop)
         crop_path = self.evidence.save_image(sample_id, field, crop)
         processed_path = self.evidence.save_image(sample_id, f'{field}-ocr', processed)
@@ -73,7 +76,7 @@ class FieldReader:
 
     def _interpret(self, field: str, raw: str) -> Tuple[Optional[str], Optional[str]]:
         try:
-            if field in MONEY_FIELDS:
+            if field in MONEY_FIELDS or field == BETSSON_BALANCE_FIELD:
                 return str(parse_money(raw, self.profile.decimal_separator)), None
             if field == CURRENCY_FIELD:
                 return detect_currency(raw), None

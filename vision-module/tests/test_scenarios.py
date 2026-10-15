@@ -2,11 +2,11 @@ import tempfile
 import unittest
 from decimal import Decimal
 
-from support import (M, Q, T, W, after, before_frames, frame_with, noise_template, scenario_record,
+from support import (M, Q, T, W, after, before_frames, frame_with, noise_template, reading, scenario_record,
                      synthetic_profile)
 from vision_engine.engine import VisionEngine
 from vision_engine.errors import SequenceError, SpinNotFoundError
-from vision_engine.evaluation import ExternalBalance, evaluate_insufficient, evaluate_spin
+from vision_engine.evaluation import BetssonBalance, evaluate_insufficient, evaluate_spin
 from vision_engine.motion import MotionSummary
 from vision_engine.scenario import SpinAttemptRecorder
 from vision_engine.verdict import Verdict
@@ -30,30 +30,30 @@ def spin_record(*, final='14.00', payout='5.00', summary=SETTLED, settled_kwargs
 
 
 class SpinScenarioTests(unittest.TestCase):
-    def test_win_reconciles_but_needs_external_balance(self):
+    def test_win_reconciles_but_needs_betsson_balance(self):
         report = evaluate_spin(spin_record())
-        self.assertEqual(verdicts(report)['reconciliation'], Verdict.PASS)
-        self.assertEqual(verdicts(report)['external_balance'], Verdict.INCONCLUSIVE)
+        self.assertEqual(verdicts(report)['in_game_balance'], Verdict.PASS)
+        self.assertEqual(verdicts(report)['betsson_balance'], Verdict.INCONCLUSIVE)
         self.assertIs(report.verdict, Verdict.INCONCLUSIVE)
 
-    def test_win_with_external_balance_passes(self):
-        report = evaluate_spin(spin_record(), ExternalBalance(Decimal('10.00'), Decimal('14.00')))
+    def test_win_with_betsson_balance_passes(self):
+        report = evaluate_spin(spin_record(), BetssonBalance.from_values(Decimal('10.00'), Decimal('14.00')))
         self.assertIs(report.verdict, Verdict.PASS, report.to_dict())
 
     def test_loss(self):
         report = evaluate_spin(spin_record(final='9.00', payout='0.00'),
-                               ExternalBalance(Decimal('10.00'), Decimal('9.00')))
+                               BetssonBalance.from_values(Decimal('10.00'), Decimal('9.00')))
         self.assertIs(report.verdict, Verdict.PASS)
 
     def test_wrong_balance_fails(self):
         report = evaluate_spin(spin_record(final='15.00'))
-        self.assertEqual(verdicts(report)['reconciliation'], Verdict.FAIL)
+        self.assertEqual(verdicts(report)['in_game_balance'], Verdict.FAIL)
         self.assertIs(report.verdict, Verdict.FAIL)
 
     def test_unreadable_payout_is_unknown_not_zero(self):
         report = evaluate_spin(spin_record(final='9.00', payout='0,0'))
         self.assertEqual(verdicts(report)['payout'], Verdict.INCONCLUSIVE)
-        self.assertEqual(verdicts(report)['reconciliation'], Verdict.INCONCLUSIVE)
+        self.assertEqual(verdicts(report)['in_game_balance'], Verdict.INCONCLUSIVE)
         self.assertIsNone(report.observed['payout'])
 
     def test_wrong_currency_fails_and_illegible_is_inconclusive(self):
@@ -80,7 +80,7 @@ class SpinScenarioTests(unittest.TestCase):
 
     def test_uncalibrated_profile_never_passes(self):
         report = evaluate_spin(spin_record(profile=synthetic_profile(calibrated=False)),
-                               ExternalBalance(Decimal('10.00'), Decimal('14.00')))
+                               BetssonBalance.from_values(Decimal('10.00'), Decimal('14.00')))
         self.assertIs(report.verdict, Verdict.INCONCLUSIVE)
 
 
@@ -95,7 +95,7 @@ def insufficient_record(*, message_frames=3, balance='10.00', last=3.4, summary=
 
 class InsufficientScenarioTests(unittest.TestCase):
     def test_rejection(self):
-        report = evaluate_insufficient(insufficient_record(), ExternalBalance(Decimal('10.00'), Decimal('10.00')))
+        report = evaluate_insufficient(insufficient_record(), BetssonBalance.from_values(Decimal('10.00'), Decimal('10.00')))
         self.assertIs(report.verdict, Verdict.PASS, report.to_dict())
 
     def test_message_in_too_few_frames(self):
@@ -104,12 +104,12 @@ class InsufficientScenarioTests(unittest.TestCase):
 
     def test_window_not_covered(self):
         report = evaluate_insufficient(insufficient_record(last=3.0))
-        self.assertEqual(verdicts(report)['balance_unchanged_in_window'], Verdict.INCONCLUSIVE)
+        self.assertEqual(verdicts(report)['in_game_balance_unchanged'], Verdict.INCONCLUSIVE)
 
     def test_paid_spin_completed_fails(self):
         report = evaluate_insufficient(insufficient_record(balance='9.00', summary=MotionSummary(started_at=1.4)))
-        self.assertEqual(verdicts(report)['no_paid_spin_completed'], Verdict.FAIL)
-        self.assertEqual(verdicts(report)['balance_unchanged_in_window'], Verdict.FAIL)
+        self.assertEqual(verdicts(report)['spin_rejected'], Verdict.FAIL)
+        self.assertEqual(verdicts(report)['in_game_balance_unchanged'], Verdict.FAIL)
         self.assertIs(report.verdict, Verdict.FAIL)
 
 
