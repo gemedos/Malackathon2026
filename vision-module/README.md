@@ -1,6 +1,6 @@
 # Módulo de visión — Malackathon 2026
 
-Parte de **visión** del proyecto (ver `../CLAUDE.md`): recibe capturas del juego y decide, solo con lo que ve el jugador, si cada escenario es PASS, FAIL o INCONCLUSIVE. **No** abre el navegador, no hace login ni clics: eso lo hace la parte Playwright, que le pasa las capturas.
+Parte de **visión** del proyecto (especificación y reglas del módulo: `../CLAUDE.md`, sección 13): recibe capturas del juego y decide, solo con lo que ve el jugador, si cada escenario es PASS, FAIL o INCONCLUSIVE. **No** abre el navegador, no hace login ni clics: eso lo hace la parte Playwright, que le pasa las capturas.
 
 ```
 Playwright (otro equipo) ──capturas──▶  este módulo  ──▶  reports/report.txt  (formato RR-03, T01–T04)

@@ -1,5 +1,3 @@
-<<<<<<< Updated upstream
-
 1. Solución implementada para Pragmatic Play debe ser extensible a otros proveedores.
 
 Flujo:
@@ -477,4 +475,33 @@ This architecture directly addresses the challenge while keeping implementation 
 
 The official brief gives **30 points for working scenarios and 20 for player-visible validation**. Together, these represent 50% of the base score. Prioritize those capabilities before adding advanced features.
 
-> > > > > > > Stashed changes
+---
+
+## 13. Módulo de visión (`vision-module/`)
+
+Módulo Python independiente (OpenCV + Tesseract) que recibe capturas del juego y devuelve PASS/FAIL/INCONCLUSIVE por validación. Uso y estructura: `vision-module/README.md`. Ejecución local sin Docker: `make setup`, `make test`, `make demo`.
+
+### Límites
+
+- Solo analiza imágenes: frames BGR del rectángulo visible del iframe, perfil del juego, timestamps y directorio de evidencias.
+- No implementa navegador, login, lobby, credenciales, selección de juego, clics ni CI: eso es la parte Playwright, que le entrega las capturas.
+- No consulta DOM del juego, canvas API, JavaScript, red, WebSocket ni estado privado. Sin agentes autónomos ni APIs de modelos.
+- La configuración de mercados vive en `vision-module/config/markets.json`; la calibración de cada juego en `vision-module/config/profiles/`.
+
+### Reglas de validación (no relajar)
+
+- Spin con umbral configurable; si falta evidencia devuelve `None` y no se hace clic. Solo un intento de Spin por escenario; no reintentar tras timeout.
+- Observar al menos un frame ANTES del clic. Reposo de rodillos ≠ liquidación: exigir además control listo visible y lecturas monetarias estables. Bonus/cascadas => INCONCLUSIVE hasta adaptarlos.
+- OCR en una región por campo (saldo, apuesta, premio, moneda, mensaje); conservar texto, crop original y preprocesado. No inferir campos por el orden de números en una barra.
+- Aceptar un valor solo con ≥ 3 lecturas iguales en frames distintos y separados en el tiempo; cualquier discrepancia => INCONCLUSIVE.
+- Usar `Decimal`. Un OCR fallido nunca es cero. El premio se lee de su región; nunca se deduce del saldo final.
+- Moneda observada explícitamente (EUR/€ en .com, PEN/S/ en .pe); ilegible => INCONCLUSIVE, distinta => FAIL.
+- Rechazo por saldo insuficiente: frase específica en el idioma del mercado, ningún giro pagado completado y saldos sin cambios durante una ventana acotada. Una palabra genérica ("saldo", "balance") no prueba rechazo.
+- Timestamps monotónicos, timeouts finitos, umbrales de movimiento y de reposo separados; nunca exigir diferencia exactamente cero.
+- PASS solo con todas las evidencias; perfil sin calibrar o saldo Betsson ausente => nunca PASS.
+
+### Honestidad sobre los datos
+
+- Los perfiles de ejemplo y la demo (`make demo`) son sintéticos: no presentarlos como pruebas reales ni inventar plantillas.
+- Pendiente: calibrar con capturas reales de cada juego y mercado, clips etiquetados (victoria, derrota, bonus, rechazo, fallo OCR, botón ausente, timeout) y adaptación de bonus/cascadas.
+- No prometer fiabilidad ni compatibilidad universal sin datos reales. No guardar secretos; evidencias limitadas al rectángulo del juego.
