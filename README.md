@@ -29,20 +29,6 @@ Este script se encarga de generar un report en formato html (report.html) a part
 | Nombres de los checks e informe | `src/validator/checks.py`, `src/validator/report.py`, `scripts/make_report.py` |
 | Tests | `tests/test_navigation.py`, `tests/test_game_scenarios.py` (dinero real), `tests/test_game_flow_offline.py` (juego falso) |
 
-### Puesta en marcha rápida (macOS)
-
-```bash
-brew install tesseract tesseract-lang     # OCR con español
-make setup                                # .venv + dependencias + Chromium
-make test                                 # pruebas sin dinero real ni betsson.es (incluye un juego falso en Chromium)
-cp .env.example .env                      # rellenar SOLO en tu máquina
-make calibrate                            # capturas reales del juego (sin spins) + config/games/...yaml
-make calibrate-check IMAGE=calibration/pragmatic-play/sweet-bonanza/frame-00.png
-make scenarios                            # Escenarios 1 y 2 con DINERO REAL + informe en artifacts/es/
-```
-
-`PROVIDER` y `GAME` se cambian así: `make scenarios PROVIDER="Pragmatic Play" GAME="Gates of Olympus"`.
-
 ### Calibrar un juego (obligatorio antes de los escenarios)
 
 Sin calibración el resultado es INCONCLUSIVE, nunca PASS.
