@@ -1,0 +1,53 @@
+# Mercado España. Única fuente de valores de mercado: el código no contiene ninguno.
+market: es
+base_url: https://www.betsson.es
+provider_path_template: /casino/proveedores/{provider_slug}
+lobby_path: /casino            # TODO: verificar con inspect_site.sh (plan B)
+language: es
+locale: es-ES
+timezone: Europe/Madrid
+currency: EUR
+currency_symbols: ["€", "EUR"]
+number_format: {decimal: ",", thousands: "."}
+
+# Override opcional del slug, p. ej. {"Pragmatic Play": "pragmatic-play"}
+provider_slugs: {}
+
+# Textos de los botones de lanzamiento (coincidencia exacta).
+real_play_labels: ["Jugar", "Jugar ahora", "Jugar con dinero real"]   # TODO: verificar con inspect_site.sh
+demo_labels: ["Demo", "Probar", "Jugar gratis", "Modo práctica"]       # TODO: verificar con inspect_site.sh
+
+# Fragmentos de URL (página o iframe) que delatan modo demo. Si aparecen, el test falla.
+demo_url_markers: ["gameaction=demo", "gameaction=fun", "playmode=fun", "mode=demo", "demo=true", "/demo/"]  # TODO: verificar con inspect_site.sh
+# Marcadores que indican Real Play (informativo: se registra en el detalle del check).
+real_play_url_markers: ["gameaction=play"]   # confirmado 2026-10-15 (returnUrl del lanzamiento sin sesión)
+
+# Catálogo de proveedores y juegos (scripts/update_catalog.py). Son las APIs públicas que carga la
+# propia web; se capturan desde un navegador normal, igual que las vería un jugador.
+catalog:
+  providers_page_path: /casino/proveedores          # confirmado 2026-10-15
+  games_api_path: /api/v2/games                      # confirmado 2026-10-15
+  studios_api_path: /api/v1/game-studios             # confirmado 2026-10-15
+  game_types: ["Slots"]   # los escenarios son spins: solo tragaperras (hay también TableGames, LiveCasino...)
+  min_providers: 10       # salvaguarda: si el scrape trae menos, no se sobrescribe el catálogo
+  min_games: 200
+
+# Tiempos y umbrales de navegación (ms salvo indicación).
+navigation:
+  default_timeout_ms: 15000
+  navigation_timeout_ms: 45000
+  settle_timeout_ms: 3000        # espera a red en reposo tras navegar (la web casi nunca reposa)
+  cookie_banner_timeout_ms: 6000
+  login_confirm_timeout_ms: 30000
+  card_search_timeout_ms: 8000
+  max_scrolls: 12
+  launch_button_timeout_ms: 6000
+  iframe_timeout_ms: 45000
+  iframe_min_width: 400
+  iframe_min_height: 300
+  iframe_stable_ms: 2000
+  canvas_poll_ms: 500
+  canvas_timeout_ms: 60000
+  canvas_diff_threshold: 0.02     # fracción de píxeles que cambian entre capturas seguidas
+  canvas_pixel_delta: 12          # diferencia (0-255) para considerar que un píxel cambió
+  canvas_min_stddev: 6.0          # evita dar por cargado un frame plano (negro/blanco)
