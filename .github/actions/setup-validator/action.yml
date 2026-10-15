@@ -1,0 +1,47 @@
+name: Preparar validador
+description: Python 3.12, dependencias de requirements.txt, Chromium de Playwright y (opcional) Tesseract spa+eng.
+
+inputs:
+  python-version:
+    default: "3.12"
+  tesseract:
+    description: Instalar Tesseract con español e inglés (lo necesitan los escenarios, no la navegación)
+    default: "true"
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.python-version }}
+        cache: pip
+
+    - name: Tesseract (spa + eng)
+      if: inputs.tesseract == 'true'
+      shell: bash
+      run: |
+        langs="$(tesseract --list-langs 2>/dev/null | tr -d '\r' || true)"   # Windows: fin de línea CRLF
+        if printf '%s\n' "$langs" | grep -qx spa && printf '%s\n' "$langs" | grep -qx eng; then
+          echo "Tesseract con spa y eng ya instalado."; exit 0
+        fi
+        if [ "$RUNNER_OS" = Windows ]; then
+          echo "::error::Falta Tesseract con spa y eng en el PATH del runner de Windows. Ver docs/GITHUB_ACTIONS_ES.md (runner de Windows)."
+          exit 1
+        fi
+        if [ "$RUNNER_ENVIRONMENT" != github-hosted ] && ! sudo -n true 2>/dev/null; then
+          echo "::error::Falta Tesseract (spa+eng) en el runner propio y no hay sudo sin contraseña. Instálalo una vez: sudo apt-get install tesseract-ocr tesseract-ocr-spa tesseract-ocr-eng"
+          exit 1
+        fi
+        sudo apt-get update -q
+        sudo apt-get install -y -q --no-install-recommends tesseract-ocr tesseract-ocr-spa tesseract-ocr-eng
+
+    - name: Dependencias Python y Chromium
+      shell: bash
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        if [ "$RUNNER_ENVIRONMENT" = github-hosted ]; then
+          python -m playwright install --with-deps chromium
+        else
+          python -m playwright install chromium   # en un runner propio las librerías del sistema se instalan una vez a mano
+        fi

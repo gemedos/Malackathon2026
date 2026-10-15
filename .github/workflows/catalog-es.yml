@@ -1,0 +1,120 @@
+name: Actualizar catálogo (salida por España)
+
+# Igual que update-catalog.yml, pero saliendo por España (betsson.es bloquea las IP de EE. UU. de los runners de
+# GitHub) y regenerando también los desplegables de betsson-es.yml. Abre un PR con los cambios.
+#
+# GITHUB_TOKEN no puede modificar workflows: hace falta CATALOG_PAT (fine-grained, este repo: Contents,
+# Pull requests y Workflows en lectura y escritura). Sin él, los archivos se suben como artifact.
+on:
+  workflow_dispatch:
+    inputs:
+      egress:
+        description: "Salida por España (auto = vars.EGRESS_MODE, por defecto self-hosted)"
+        type: choice
+        default: auto
+        options: [auto, self-hosted, tailscale, wireguard, none]
+  schedule:
+    - cron: "30 5 * * 1"   # lunes 05:30 UTC
+
+permissions:
+  contents: read
+
+concurrency:
+  group: update-catalog-es
+  cancel-in-progress: true
+
+# Bash también en el runner propio de Windows (Git Bash): los pasos usan sintaxis POSIX.
+defaults:
+  run:
+    shell: bash
+
+env:
+  MARKET: es
+  # auto (o vacío en la ejecución programada) => vars.EGRESS_MODE => self-hosted
+  EGRESS: ${{ ((!inputs.egress || inputs.egress == 'auto') && (vars.EGRESS_MODE || 'self-hosted')) || inputs.egress }}
+
+jobs:
+  update:
+    # Misma regla que scripts/ci/plan_run.py: self-hosted => vars.ES_RUNNER_LABELS; el resto => ubuntu-latest + túnel.
+    runs-on: ${{ (((!inputs.egress || inputs.egress == 'auto') && (vars.EGRESS_MODE || 'self-hosted')) || inputs.egress) == 'self-hosted' && fromJSON(vars.ES_RUNNER_LABELS || '["self-hosted","betsson-es"]') || 'ubuntu-latest' }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Salida por España
+        uses: ./.github/actions/spain-egress
+        with:
+          mode: ${{ env.EGRESS }}
+          tailscale-oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          tailscale-oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tailscale-exit-node: ${{ secrets.TS_EXIT_NODE }}
+          wireguard-config: ${{ secrets.WG_CONFIG }}
+
+      - uses: ./.github/actions/setup-validator
+        with:
+          tesseract: "false"
+
+      - name: Comprobar salida por España
+        run: python scripts/ci/geo_check.py
+
+      - name: Scrape y regenerar desplegables (tests.yml y betsson-es.yml)
+        run: |
+          python scripts/update_catalog.py
+          python scripts/ci/render_dropdowns.py
+
+      - name: ¿Hay cambios?
+        id: diff
+        run: |
+          paths="config/catalog .github/workflows/tests.yml .github/workflows/betsson-es.yml"
+          if git diff --quiet -- $paths; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"; echo "Catálogo sin cambios."
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"; git diff --stat -- $paths
+          fi
+
+      - name: Subir archivos generados
+        if: steps.diff.outputs.changed == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: catalogo-es-${{ github.run_id }}
+          path: |
+            config/catalog/
+            .github/workflows/tests.yml
+            .github/workflows/betsson-es.yml
+
+      - name: Comprobar CATALOG_PAT
+        if: steps.diff.outputs.changed == 'true'
+        env:
+          CATALOG_PAT: ${{ secrets.CATALOG_PAT }}
+        run: |
+          if [ -z "$CATALOG_PAT" ]; then
+            echo "::error::Falta el secreto CATALOG_PAT (Contents + Pull requests + Workflows). Descarga el artifact 'catalogo-es-*' y commitéalo a mano."
+            exit 1
+          fi
+
+      - name: Abrir PR
+        if: steps.diff.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.CATALOG_PAT }}
+          branch: chore/actualizar-catalogo-es
+          commit-message: "Actualiza catálogo de proveedores y juegos de betsson.es"
+          title: "Actualiza catálogo de proveedores y juegos de betsson.es"
+          body: |
+            Generado por el workflow **Actualizar catálogo (salida por España)**.
+            Actualiza `config/catalog/es.json` y los desplegables de `tests.yml` y `betsson-es.yml`.
+          add-paths: |
+            config/catalog/es.json
+            .github/workflows/tests.yml
+            .github/workflows/betsson-es.yml
+
+      - name: Cerrar salida por España
+        if: always()
+        uses: ./.github/actions/spain-egress
+        with:
+          mode: ${{ env.EGRESS }}
+          action: down
+
+      - name: Limpiar runner propio
+        if: always() && runner.environment == 'self-hosted'
+        run: rm -rf artifacts .auth

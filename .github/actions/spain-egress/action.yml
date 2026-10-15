@@ -1,0 +1,127 @@
+name: Salida a internet por España
+description: >
+  Hace que el tráfico del runner (Chromium, DNS, iframe del juego) salga desde España, porque betsson.es bloquea
+  las IP de fuera (los runners de GitHub están en EE. UU.). Llamar con action=up al principio del job y con
+  action=down e `if: always()` al final. La comprobación real del país la hace después scripts/ci/geo_check.py.
+  Es un cambio de ubicación de red, no una evasión: CAPTCHA, 2FA o WAF siguen haciendo fallar el test.
+
+inputs:
+  mode:
+    description: "self-hosted | tailscale | wireguard | none"
+    required: true
+  action:
+    description: "up | down"
+    default: up
+  tailscale-oauth-client-id:
+    description: Cliente OAuth de Tailscale (secreto TS_OAUTH_CLIENT_ID)
+    default: ""
+  tailscale-oauth-secret:
+    description: Secreto OAuth de Tailscale (secreto TS_OAUTH_SECRET)
+    default: ""
+  tailscale-exit-node:
+    description: Nodo de salida en España, nombre o IP de la tailnet (secreto TS_EXIT_NODE)
+    default: ""
+  tailscale-tags:
+    description: Etiquetas del nodo efímero del runner
+    default: "tag:ci"
+  wireguard-config:
+    description: Contenido completo de wg0.conf con un peer en España (secreto WG_CONFIG)
+    default: ""
+
+runs:
+  using: composite
+  steps:
+    - name: Validar modo
+      shell: bash
+      env:
+        MODE: ${{ inputs.mode }}
+        ACTION: ${{ inputs.action }}
+      run: |
+        case "$MODE" in self-hosted|tailscale|wireguard|none) ;; *) echo "::error::mode '$MODE' no válido (self-hosted|tailscale|wireguard|none)"; exit 1;; esac
+        case "$ACTION" in up|down) ;; *) echo "::error::action '$ACTION' no válida (up|down)"; exit 1;; esac
+        if [ "$ACTION" = up ] && [ "$MODE" = self-hosted ] && [ "$RUNNER_ENVIRONMENT" != self-hosted ]; then
+          echo "::error::egress=self-hosted pero el job corre en un runner de GitHub. Revisa vars.ES_RUNNER_LABELS."; exit 1
+        fi
+        if [ "$ACTION" = up ] && [ "$MODE" != self-hosted ] && [ "$MODE" != none ] && [ "$RUNNER_ENVIRONMENT" != github-hosted ]; then
+          echo "::warning::Túnel $MODE en un runner propio: se modifica la red de esa máquina durante el job."
+        fi
+        if [ "$ACTION" = up ] && [ "$MODE" = none ]; then
+          echo "::warning::egress=none: sin túnel. Desde EE. UU. betsson.es estará bloqueado."
+        fi
+
+    # Sin IPv6 el tráfico no puede rodear el túnel (los túneles de abajo solo enrutan IPv4 por defecto).
+    - name: Desactivar IPv6
+      if: inputs.action == 'up' && (inputs.mode == 'tailscale' || inputs.mode == 'wireguard') && runner.environment == 'github-hosted'
+      shell: bash
+      run: sudo sysctl -q -w net.ipv6.conf.all.disable_ipv6=1 net.ipv6.conf.default.disable_ipv6=1
+
+    # ---------------------------------------------------------------- Tailscale
+    - name: Comprobar secretos de Tailscale
+      if: inputs.action == 'up' && inputs.mode == 'tailscale'
+      shell: bash
+      env:
+        ID: ${{ inputs.tailscale-oauth-client-id }}
+        SECRET: ${{ inputs.tailscale-oauth-secret }}
+        EXIT_NODE: ${{ inputs.tailscale-exit-node }}
+      run: |
+        missing=""
+        [ -n "$ID" ] || missing="$missing TS_OAUTH_CLIENT_ID"
+        [ -n "$SECRET" ] || missing="$missing TS_OAUTH_SECRET"
+        [ -n "$EXIT_NODE" ] || missing="$missing TS_EXIT_NODE"
+        if [ -n "$missing" ]; then echo "::error::Faltan secretos para egress=tailscale:$missing"; exit 1; fi
+
+    - name: Unirse a la tailnet
+      if: inputs.action == 'up' && inputs.mode == 'tailscale'
+      uses: tailscale/github-action@v3
+      with:
+        oauth-client-id: ${{ inputs.tailscale-oauth-client-id }}
+        oauth-secret: ${{ inputs.tailscale-oauth-secret }}
+        tags: ${{ inputs.tailscale-tags }}
+
+    - name: Usar el nodo de salida en España
+      if: inputs.action == 'up' && inputs.mode == 'tailscale'
+      shell: bash
+      env:
+        EXIT_NODE: ${{ inputs.tailscale-exit-node }}
+      run: |
+        sudo tailscale set --exit-node="$EXIT_NODE" --exit-node-allow-lan-access=false
+        for _ in $(seq 1 30); do
+          if [ "$(tailscale status --json | jq -r '.ExitNodeStatus.Online // false')" = "true" ]; then
+            echo "Nodo de salida activo."; exit 0
+          fi
+          sleep 1
+        done
+        echo "::error::El nodo de salida de Tailscale no está en línea (¿máquina apagada o sin 'Use as exit node' aprobado?)"
+        exit 1
+
+    - name: Salir de la tailnet
+      if: inputs.action == 'down' && inputs.mode == 'tailscale'
+      shell: bash
+      run: |
+        sudo tailscale set --exit-node= 2>/dev/null || true
+        sudo tailscale logout 2>/dev/null || true
+
+    # ---------------------------------------------------------------- WireGuard
+    - name: Levantar WireGuard
+      if: inputs.action == 'up' && inputs.mode == 'wireguard'
+      shell: bash
+      env:
+        WG_CONFIG: ${{ inputs.wireguard-config }}
+      run: |
+        if [ -z "$WG_CONFIG" ]; then echo "::error::Falta el secreto WG_CONFIG para egress=wireguard"; exit 1; fi
+        if ! command -v wg-quick >/dev/null; then
+          sudo apt-get update -q && sudo apt-get install -y -q --no-install-recommends wireguard-tools
+        fi
+        # wg-quick usa `resolvconf` para el DNS= del túnel; en Ubuntu con systemd-resolved lo hace resolvectl.
+        command -v resolvconf >/dev/null || sudo ln -sf "$(command -v resolvectl)" /usr/local/bin/resolvconf
+        sudo install -d -m 700 /etc/wireguard
+        printf '%s\n' "$WG_CONFIG" | sudo tee /etc/wireguard/wg-es.conf >/dev/null
+        sudo chmod 600 /etc/wireguard/wg-es.conf
+        sudo wg-quick up wg-es
+
+    - name: Bajar WireGuard
+      if: inputs.action == 'down' && inputs.mode == 'wireguard'
+      shell: bash
+      run: |
+        sudo wg-quick down wg-es 2>/dev/null || true
+        sudo rm -f /etc/wireguard/wg-es.conf

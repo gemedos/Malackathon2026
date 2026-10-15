@@ -1,0 +1,33 @@
+# Comprobación previa de red en GitHub Actions (scripts/ci/geo_check.py).
+# betsson.es solo atiende desde España: los runners de GitHub (EE. UU.) se bloquean. Este archivo dice
+# qué país se espera y cómo reconocer un bloqueo. Solo se diagnostica: nunca se intenta saltar nada.
+expected_country: ES
+timeout_s: 8
+
+# Servicios que devuelven solo el código ISO del país (texto plano, sin la IP).
+# Basta con que responda uno; si alguno responde un país distinto, la comprobación falla.
+country_services:
+  - {name: ipinfo.io, url: "https://ipinfo.io/country"}
+  - {name: ifconfig.co, url: "https://ifconfig.co/country-iso"}
+  - {name: ipapi.co, url: "https://ipapi.co/country/"}
+
+# Sonda del sitio con Chromium (mismo navegador y contexto que los tests). Los marcadores se buscan en minúsculas
+# en la URL final y en el TEXTO VISIBLE de la página (no en el HTML: los scripts de CAPTCHA del login darían falsos positivos).
+site:
+  probe_wait_ms: 3000
+  blocked_status: [403, 451]
+  blocked_url_markers: ["restricted", "blocked", "not-available", "no-disponible"]   # TODO: verificar con un runner de EE. UU.
+  blocked_text_markers:
+    - "no está disponible en tu país"
+    - "no esta disponible en tu pais"
+    - "not available in your country"
+    - "not available in your region"
+    - "acceso restringido"
+    - "access denied"
+    - "access restricted"
+  challenge_markers:
+    - "verify you are human"
+    - "verifica que eres humano"
+    - "checking your browser"
+    - "comprobando tu navegador"
+    - "captcha"
