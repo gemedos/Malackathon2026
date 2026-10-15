@@ -53,6 +53,9 @@ login:
   error:
     - {text: "incorrect", fuzzy: true}                    # TODO: verificar con inspect_site.sh
     - {text: "no son válid", fuzzy: true}                 # TODO: verificar con inspect_site.sh
+  temporarily_blocked:   # el sitio rechaza el login temporalmente: no se reintenta
+    - {text: "vuelve a intentarlo en breve", fuzzy: true}   # confirmado 2026-10-15 (runner self-hosted)
+    - {text: "puede demorar hasta 10 minutos", fuzzy: true} # confirmado 2026-10-15
   verification:   # CAPTCHA / 2FA / email: nunca se intenta saltar
     - {css: "iframe[src*=captcha]"}                       # genérico
     - {css: "iframe[title*=captcha i]"}                   # genérico

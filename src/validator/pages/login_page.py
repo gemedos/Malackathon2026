@@ -82,6 +82,13 @@ class LoginPage(BasePage):
         deadline = time.monotonic() + self.nav.login_confirm_timeout_ms / 1000
         while time.monotonic() < deadline:
             self._check_verification(evidence, fields)
+            if self.is_any_visible(sel.temporarily_blocked):
+                shot = evidence.login_screenshot(self.page, "login_temporarily_blocked.png", fields)
+                raise LoginBlockedError(
+                    "betsson.es rechaza el login temporalmente ('vuelve a intentarlo en breve'). "
+                    "No se reintenta: espera al menos 10 minutos antes de volver a lanzar",
+                    evidence.relative(shot),
+                )
             if self.is_any_visible(sel.error):
                 self._fail(evidence, "login_rejected.png", "Login rechazado por el sitio (credenciales no válidas)", fields)
             if self.is_logged_in(0):

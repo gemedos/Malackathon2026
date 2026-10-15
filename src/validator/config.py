@@ -159,6 +159,7 @@ class LoginSelectors(_Strict):
     submit: Candidates
     logged_in: Candidates
     error: Candidates = Field(default_factory=list)
+    temporarily_blocked: Candidates = Field(default_factory=list)
     verification: Candidates = Field(default_factory=list)
 
 
