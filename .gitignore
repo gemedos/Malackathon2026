@@ -1,1 +1,16 @@
+# Secretos y sesión: NUNCA al repositorio (CLAUDE.md §3)
 .env
+.env.*
+!.env.example
+.auth/
+
+# Evidencias y salidas de pruebas
+artifacts/
+test-results/
+playwright-report/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
