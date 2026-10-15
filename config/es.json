@@ -1,0 +1,94 @@
+{
+  "market": "es",
+  "base_url": "https://www.betsson.es",
+  "language": "Español",
+  "currency": "EUR",
+  "game_name": "Big Bass Bonanza",
+  "game_path": "/casino/tragaperras-slots/big-bass-bonanza",
+  "accounts": {
+    "funded": {
+      "user_env": "BETSSON_ES_FUNDED_USER",
+      "pass_env": "BETSSON_ES_FUNDED_PASS"
+    },
+    "empty": {
+      "user_env": "BETSSON_ES_EMPTY_USER",
+      "pass_env": "BETSSON_ES_EMPTY_PASS"
+    }
+  },
+  "insufficient_patterns": [
+    "saldo insuficiente",
+    "fondos insuficientes",
+    "credito insuficiente",
+    "no (tienes|tiene|hay) (suficiente saldo|saldo suficiente|fondos suficientes|credito suficiente)"
+  ],
+  "calibration_note": "Regiones (x, y, ancho, alto) en fracciones del rectángulo del juego. Calibradas el 2026-10-15 con capturas reales de Big Bass Bonanza (iframe 770x433 CSS, capturas a 2x).",
+  "regions": {
+    "game_balance": [
+      0.2312,
+      0.9007,
+      0.0935,
+      0.0346
+    ],
+    "bet": [
+      0.2312,
+      0.935,
+      0.0935,
+      0.035
+    ],
+    "win": [
+      0.36,
+      0.86,
+      0.28,
+      0.07
+    ],
+    "reels": [
+      0.12,
+      0.12,
+      0.76,
+      0.7
+    ],
+    "reels_left": [
+      0.12,
+      0.12,
+      0.16,
+      0.72
+    ],
+    "reels_right": [
+      0.72,
+      0.12,
+      0.16,
+      0.72
+    ]
+  },
+  "splash_template": {
+    "path": "config/templates/bigbass_splash.png",
+    "reference_width": 770,
+    "threshold": 0.8
+  },
+  "spin_template": {
+    "path": "config/templates/bigbass_spin.png",
+    "reference_width": 1540,
+    "threshold": 0.8
+  },
+  "timing": {
+    "spin_timeout_s": 60,
+    "poll_interval_ms": 500,
+    "still_frames_to_settle": 4,
+    "balance_wait_s": 8
+  },
+  "amount_text_hsv": [
+    [
+      15,
+      80,
+      140
+    ],
+    [
+      40,
+      255,
+      255
+    ]
+  ],
+  "win_idle_patterns": [
+    "haga su apuesta"
+  ]
+}
