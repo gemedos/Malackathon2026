@@ -1,0 +1,50 @@
+[
+  {
+    "scenario": "spin_completado",
+    "market": "es",
+    "provider": "Pragmatic Play",
+    "game": "Bubble Up",
+    "check": "Spin iniciado",
+    "status": "pass",
+    "detail": "Control Spin ocupado tras el clic",
+    "evidence": null,
+    "expected": "los rodillos cambian tras el clic",
+    "observed": "Control Spin ocupado tras el clic"
+  },
+  {
+    "scenario": "spin_completado",
+    "market": "es",
+    "provider": "Pragmatic Play",
+    "game": "Bubble Up",
+    "check": "Apuesta leída",
+    "status": "pass",
+    "detail": "2.00 (3 lecturas coincidentes)",
+    "evidence": null,
+    "expected": ">= 3 lecturas iguales",
+    "observed": "2.00"
+  },
+  {
+    "scenario": "spin_completado",
+    "market": "es",
+    "provider": "Pragmatic Play",
+    "game": "Bubble Up",
+    "check": "Moneda = EUR",
+    "status": "pass",
+    "detail": "Moneda EUR observada",
+    "evidence": null,
+    "expected": "EUR visible en el juego",
+    "observed": "EUR"
+  },
+  {
+    "scenario": "spin_completado",
+    "market": "es",
+    "provider": "Pragmatic Play",
+    "game": "Bubble Up",
+    "check": "Saldo del juego final leído",
+    "status": "fail",
+    "detail": "Error de reconciliación: Se esperaba un saldo final coherente tras el giro, pero el saldo visual permaneció estático en 59.40 sin deducir la apuesta.",
+    "evidence": null,
+    "expected": "después = antes - apuesta + premio",
+    "observed": "Saldo no actualizado (59.40 EUR)"
+  }
+]

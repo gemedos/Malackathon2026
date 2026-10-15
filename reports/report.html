@@ -1,0 +1,31 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8">
+<title>Reporte PoC Betsson .es</title>
+<style>
+ body{font-family:system-ui,sans-serif;max-width:1100px;margin:2rem auto;padding:0 1rem;color:#222}
+ table{border-collapse:collapse;width:100%;margin:.5rem 0 1rem}
+ th,td{border:1px solid #ddd;padding:8px 12px;text-align:left;vertical-align:top}
+ th{background:#f4f4f4}
+ .b{padding:2px 8px;border-radius:6px;font-size:.8em;font-weight:bold}
+ .ok{background:#d8f5d8;color:#0a5c0a} .ko{background:#fbd5d5;color:#900} .inc{background:#fff3cd;color:#856404}
+ pre{background:#f7f7f7;padding:8px;overflow:auto}
+</style></head><body>
+<h1>Reporte PoC: Validación visual en betsson.es (EUR)</h1>
+<p>Mercado: betsson.es · Divisa: EUR · Total de aserciones evaluadas: 4</p>
+<h2>Resumen ejecutivo</h2><table><tr><th>Escenario</th><th>Resultado</th><th>Criterios</th></tr><tr><td>Escenario 1 — Giro completado en juego real</td><td><span class="b ko">FALLIDO</span></td><td>4 aserciones</td></tr></table>
+
+        <section>
+          <h2>Escenario 1 — Giro completado en juego real <span class="b ko">FALLIDO</span></h2>
+          <p><b>Mercado:</b> betsson.es | <b>Proveedor:</b> Pragmatic Play | <b>Juego:</b> Bubble Up</p>
+          <h3>Aserciones de negocio verificadas</h3>
+          <table><tr><th>Estado</th><th>Criterio de Validación Requerido</th><th>Detalle Técnico / Observado</th></tr><tr><td><span class="b ok">APROBADO</span></td><td>El giro realmente comenzó y se completó. Hacer clic en un control por sí solo no cuenta como aprobado.</td><td>Control Spin ocupado tras el clic</td></tr><tr><td><span class="b ok">APROBADO</span></td><td>La apuesta mostrada coincide con la apuesta utilizada para el giro.</td><td>2.00 (3 lecturas coincidentes)</td></tr><tr><td><span class="b ok">APROBADO</span></td><td>La divisa mostrada coincide con el mercado objetivo.</td><td>Moneda EUR observada</td></tr><tr><td><span class="b ko">FALLIDO</span></td><td>El saldo dentro del juego es coherente con el giro completado.</td><td>Error de reconciliación: Se esperaba un saldo final coherente tras el giro, pero el saldo visual permaneció estático en 59.40 sin deducir la apuesta.</td></tr></table>
+        </section>
+        
+<h2>Seguridad y cumplimiento</h2>
+<ul><li>Credenciales gestionadas con variables de entorno / GitHub Secrets.</li>
+<li>Sin credenciales en repositorio, capturas ni reporte.</li>
+<li>Usuario enmascarado.</li></ul>
+<h2>Limitaciones</h2>
+<ul><li>Dependencia de IP española (ejecutor local).</li>
+<li>Fragilidad ante cambios de interfaz del proveedor (Pragmatic Play).</li>
+<li>Posibles errores de lectura visual, mitigados con lecturas múltiples y umbrales de confianza.</li></ul>
+</body></html>

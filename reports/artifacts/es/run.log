@@ -1,0 +1,848 @@
+2026-10-15 15:58:22,476 INFO validator.browser: Lanzando Chromium (headless=False)
+2026-10-15 15:58:22,714 INFO validator.browser: Contexto creado (locale=es-ES, tz=Europe/Madrid, sesión=False, vídeo=False)
+2026-10-15 15:58:26,678 INFO validator.pages.base_page: find_first[cookies]: funcionó role='button', name='Configuración de cookies'
+2026-10-15 15:58:26,686 INFO validator.pages.base_page: find_first[cookies-rechazar]: ninguna alternativa visible en 0 ms
+2026-10-15 15:58:26,693 INFO validator.pages.base_page: find_first[cookies-configurar]: funcionó role='button', name='Configuración de cookies'
+2026-10-15 15:58:27,551 INFO validator.pages.base_page: find_first[cookies-rechazar]: funcionó role='button', name='Rechazarlas todas'
+2026-10-15 15:58:28,083 INFO validator.pages.cookie_banner: Banner de cookies cerrado: rechazadas
+2026-10-15 15:58:28,085 INFO validator.secrets: Variables cargadas desde .env
+2026-10-15 15:58:28,085 INFO validator.secrets: Credenciales de la cuenta FUNDED cargadas desde BETSSON_ES_FUNDED_USER / BETSSON_ES_FUNDED_PASS
+2026-10-15 15:58:30,340 INFO validator.pages.base_page: find_first[usuario]: ninguna alternativa visible en 2000 ms
+2026-10-15 15:58:32,580 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 2000 ms
+2026-10-15 15:58:32,585 INFO validator.pages.base_page: find_first[abrir-login]: funcionó role='button', name='Iniciar sesión' exact
+2026-10-15 15:58:33,176 INFO validator.pages.base_page: find_first[usuario]: funcionó label='Usuario/email'
+2026-10-15 15:58:33,207 INFO validator.pages.base_page: find_first[contraseña]: funcionó label='Contraseña' exact
+2026-10-15 15:58:33,256 INFO validator.pages.base_page: find_first[enviar-login]: funcionó role='button', name='Iniciar sesión' exact
+2026-10-15 15:58:33,360 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 15:58:33,909 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 15:58:34,469 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 15:58:35,035 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 15:58:35,604 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 15:58:36,155 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 15:58:36,712 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 15:58:37,256 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 15:58:37,803 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 15:58:38,364 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 15:58:38,944 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 15:58:39,504 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 15:58:40,063 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 15:58:40,611 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 15:58:41,160 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 15:58:41,714 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 15:58:42,264 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 15:58:42,823 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 15:58:43,373 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 15:58:43,933 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 15:58:44,495 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 15:58:45,059 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 15:58:45,628 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 15:58:46,187 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 15:58:46,749 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 15:58:47,305 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 15:58:48,396 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 15:58:50,112 INFO validator.pages.base_page: find_first[sesión-iniciada]: funcionó text='Saldo'
+2026-10-15 15:58:50,112 INFO validator.pages.login_page: Login confirmado: el botón de inicio de sesión desapareció
+2026-10-15 15:58:50,215 INFO validator.navigation: storage_state guardado en .auth/ (fuera de artifacts)
+2026-10-15 15:58:50,215 INFO results: [PASS] Pragmatic Play | - | Login correcto: cuenta FUNDED: botón de login desaparecido 
+2026-10-15 15:58:50,508 INFO validator.browser: Contexto creado (locale=es-ES, tz=Europe/Madrid, sesión=True, vídeo=True)
+2026-10-15 15:58:50,515 INFO validator.navigation: Contexto de trabajo creado (traza y vídeo posteriores al login)
+2026-10-15 15:58:54,722 INFO validator.pages.provider_page: La red no llegó a reposo en 3000 ms; se continúa
+2026-10-15 15:58:54,767 INFO validator.pages.provider_page: URL de proveedor accesible: https://www.betsson.es/casino/proveedores/pragmatic-play (HTTP 200)
+2026-10-15 15:58:56,904 INFO validator.pages.base_page: find_first[cookies]: ninguna alternativa visible en 2000 ms
+2026-10-15 15:58:56,904 INFO validator.pages.cookie_banner: No apareció banner de cookies
+2026-10-15 15:58:57,015 INFO validator.evidence: Evidencia guardada: artifacts/es/pragmatic-play/bubble-up/spin_completado/provider_page.png
+2026-10-15 15:58:57,015 INFO results: [PASS] Pragmatic Play | Bubble Up | URL de proveedor accesible: https://www.betsson.es/casino/proveedores/pragmatic-play -> HTTP 200 artifacts/es/pragmatic-play/bubble-up/spin_completado/provider_page.png
+2026-10-15 15:59:00,184 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 3000 ms
+2026-10-15 15:59:00,184 WARNING validator.navigation: No se ve el indicador de sesión en el contexto de trabajo
+2026-10-15 15:59:00,205 INFO validator.pages.base_page: find_first[tarjeta-juego]: funcionó alt_text='Bubble Up' fuzzy
+2026-10-15 15:59:00,656 INFO validator.evidence: Evidencia guardada: artifacts/es/pragmatic-play/bubble-up/spin_completado/game_card.png
+2026-10-15 15:59:00,656 INFO results: [PASS] Pragmatic Play | Bubble Up | Juego encontrado: tarjeta 'Bubble Up' artifacts/es/pragmatic-play/bubble-up/spin_completado/game_card.png
+2026-10-15 15:59:03,411 INFO validator.pages.base_page: find_first[lanzar]: ninguna alternativa visible en 2000 ms
+2026-10-15 15:59:03,432 INFO results: [FAIL] Pragmatic Play | Bubble Up | Real Play lanzado: LaunchError: La web pide iniciar sesión para jugar: la sesión del login no se conservó 
+2026-10-15 15:59:03,433 INFO results: [NOT_RUN] Pragmatic Play | Bubble Up | Iframe cargado: bloqueado por 'Real Play lanzado' 
+2026-10-15 15:59:03,871 INFO validator.navigation: Traza guardada: artifacts/es/pragmatic-play/bubble-up/spin_completado/trace.zip
+2026-10-15 15:59:04,085 INFO validator.evidence: Vídeo guardado: artifacts/es/pragmatic-play/bubble-up/spin_completado/video.webm
+2026-10-15 15:59:04,086 INFO results: [ERROR] Pragmatic Play | Bubble Up | Ejecución del escenario: LaunchError: La web pide iniciar sesión para jugar: la sesión del login no se conservó 
+2026-10-15 16:02:34,697 INFO validator.browser: Lanzando Chromium (headless=False)
+2026-10-15 16:02:34,873 INFO validator.browser: Contexto creado (locale=es-ES, tz=Europe/Madrid, sesión=False, vídeo=False)
+2026-10-15 16:02:38,627 INFO validator.pages.base_page: find_first[cookies]: funcionó role='button', name='Configuración de cookies'
+2026-10-15 16:02:38,635 INFO validator.pages.base_page: find_first[cookies-rechazar]: ninguna alternativa visible en 0 ms
+2026-10-15 16:02:38,640 INFO validator.pages.base_page: find_first[cookies-configurar]: funcionó role='button', name='Configuración de cookies'
+2026-10-15 16:02:40,027 INFO validator.pages.base_page: find_first[cookies-rechazar]: funcionó role='button', name='Rechazarlas todas'
+2026-10-15 16:02:40,554 INFO validator.pages.cookie_banner: Banner de cookies cerrado: rechazadas
+2026-10-15 16:02:40,555 INFO validator.secrets: Variables cargadas desde .env
+2026-10-15 16:02:40,556 INFO validator.secrets: Credenciales de la cuenta FUNDED cargadas desde BETSSON_ES_FUNDED_USER / BETSSON_ES_FUNDED_PASS
+2026-10-15 16:02:42,811 INFO validator.pages.base_page: find_first[usuario]: ninguna alternativa visible en 2000 ms
+2026-10-15 16:02:45,002 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 2000 ms
+2026-10-15 16:02:45,007 INFO validator.pages.base_page: find_first[abrir-login]: funcionó role='button', name='Iniciar sesión' exact
+2026-10-15 16:02:45,595 INFO validator.pages.base_page: find_first[usuario]: funcionó label='Usuario/email'
+2026-10-15 16:02:45,624 INFO validator.pages.base_page: find_first[contraseña]: funcionó label='Contraseña' exact
+2026-10-15 16:02:45,669 INFO validator.pages.base_page: find_first[enviar-login]: funcionó role='button', name='Iniciar sesión' exact
+2026-10-15 16:02:45,775 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 16:02:46,328 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 16:02:46,875 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 16:02:47,425 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 16:02:47,985 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 16:02:48,555 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 16:02:49,106 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 16:02:50,645 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 16:02:50,658 INFO validator.pages.login_page: Login confirmado: el botón de inicio de sesión desapareció
+2026-10-15 16:02:50,733 INFO validator.navigation: sessionStorage de la sesión guardado (10 claves: __gti__, _fs_tab_id, _tc, authReducer, gaming:route-history, gaming:savedLobbyTab, rum_page_url_parts, rum_referrer_url_parts, rum_session, subcollection-route)
+2026-10-15 16:02:50,734 INFO validator.navigation: storage_state guardado en .auth/ (fuera de artifacts)
+2026-10-15 16:02:50,734 INFO results: [PASS] Pragmatic Play | - | Login correcto: cuenta FUNDED: botón de login desaparecido 
+2026-10-15 16:02:50,973 INFO validator.browser: Contexto creado (locale=es-ES, tz=Europe/Madrid, sesión=True, vídeo=True)
+2026-10-15 16:02:50,980 INFO validator.navigation: Contexto de trabajo creado (traza y vídeo posteriores al login)
+2026-10-15 16:02:54,725 INFO validator.pages.provider_page: La red no llegó a reposo en 3000 ms; se continúa
+2026-10-15 16:02:54,784 INFO validator.pages.provider_page: URL de proveedor accesible: https://www.betsson.es/casino/proveedores/pragmatic-play (HTTP 200)
+2026-10-15 16:02:56,865 INFO validator.pages.base_page: find_first[cookies]: ninguna alternativa visible en 2000 ms
+2026-10-15 16:02:56,865 INFO validator.pages.cookie_banner: No apareció banner de cookies
+2026-10-15 16:02:56,977 INFO validator.evidence: Evidencia guardada: artifacts/es/pragmatic-play/bubble-up/spin_completado/provider_page.png
+2026-10-15 16:02:56,977 INFO results: [PASS] Pragmatic Play | Bubble Up | URL de proveedor accesible: https://www.betsson.es/casino/proveedores/pragmatic-play -> HTTP 200 artifacts/es/pragmatic-play/bubble-up/spin_completado/provider_page.png
+2026-10-15 16:03:00,157 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 3000 ms
+2026-10-15 16:03:00,157 WARNING validator.navigation: No se ve el indicador de sesión en el contexto de trabajo
+2026-10-15 16:03:00,178 INFO validator.pages.base_page: find_first[tarjeta-juego]: funcionó alt_text='Bubble Up' fuzzy
+2026-10-15 16:03:00,633 INFO validator.evidence: Evidencia guardada: artifacts/es/pragmatic-play/bubble-up/spin_completado/game_card.png
+2026-10-15 16:03:00,633 INFO results: [PASS] Pragmatic Play | Bubble Up | Juego encontrado: tarjeta 'Bubble Up' artifacts/es/pragmatic-play/bubble-up/spin_completado/game_card.png
+2026-10-15 16:03:01,358 INFO validator.pages.base_page: find_first[lanzar]: funcionó role='button', name='Jugar' exact
+2026-10-15 16:03:01,433 INFO validator.pages.provider_page: Real Play lanzado con el botón ''
+2026-10-15 16:03:01,433 INFO results: [PASS] Pragmatic Play | Bubble Up | Real Play lanzado: botón '' 
+2026-10-15 16:03:01,452 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:03:01,470 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:03:01,485 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:03:02,125 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:03:02,150 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:03:02,179 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:03:04,623 INFO validator.pages.game_page: Marcadores de Real Play en la URL: ['gameaction=play']
+2026-10-15 16:03:04,999 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: funcionó text='Cerrar y no volver a mostrar' exact
+2026-10-15 16:03:04,999 INFO validator.pages.game_page: Pantalla previa: panel de torneos tapando el juego
+2026-10-15 16:03:05,114 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: funcionó text='Cerrar y no volver a mostrar' exact
+2026-10-15 16:03:06,237 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:03:06,280 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:03:06,315 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:03:07,045 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:03:07,077 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:03:07,103 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:03:07,252 INFO validator.pages.game_page: Canvas estable (diferencia 0.0001 < 0.0200)
+2026-10-15 16:03:07,459 INFO validator.evidence: Evidencia guardada: artifacts/es/pragmatic-play/bubble-up/spin_completado/game_loaded.png
+2026-10-15 16:03:07,460 INFO validator.pages.game_page: Juego cargado (Bubble Up): caja {'x': 100.75, 'y': 172.671875, 'width': 758.5, 'height': 426.65625}; evidencia artifacts/es/pragmatic-play/bubble-up/spin_completado/game_loaded.png
+2026-10-15 16:03:07,461 INFO results: [PASS] Pragmatic Play | Bubble Up | Iframe cargado: iframe 758x427 en (101,173) artifacts/es/pragmatic-play/bubble-up/spin_completado/game_loaded.png
+2026-10-15 16:03:07,463 INFO validator.game.calibration: Sin calibración propia de Bubble Up: se usa la del proveedor (_default.yaml)
+2026-10-15 16:03:07,467 INFO validator.game.calibration: Calibración cargada: _default.yaml (calibrated=True)
+2026-10-15 16:03:07,734 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:03:07,782 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:03:07,843 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:03:13,178 INFO validator.navigation: Traza guardada: artifacts/es/pragmatic-play/bubble-up/spin_completado/trace.zip
+2026-10-15 16:03:13,348 INFO validator.evidence: Vídeo guardado: artifacts/es/pragmatic-play/bubble-up/spin_completado/video.webm
+2026-10-15 16:03:13,349 INFO results: [ERROR] Pragmatic Play | Bubble Up | Ejecución del escenario: OcrUnavailableError: Tesseract no está instalado; usar el contenedor Docker 
+2026-10-15 16:08:18,101 INFO validator.browser: Lanzando Chromium (headless=False)
+2026-10-15 16:08:18,285 INFO validator.browser: Contexto creado (locale=es-ES, tz=Europe/Madrid, sesión=False, vídeo=False)
+2026-10-15 16:08:21,673 INFO validator.pages.base_page: find_first[cookies]: funcionó role='button', name='Configuración de cookies'
+2026-10-15 16:08:21,681 INFO validator.pages.base_page: find_first[cookies-rechazar]: ninguna alternativa visible en 0 ms
+2026-10-15 16:08:21,688 INFO validator.pages.base_page: find_first[cookies-configurar]: funcionó role='button', name='Configuración de cookies'
+2026-10-15 16:08:23,039 INFO validator.pages.base_page: find_first[cookies-rechazar]: funcionó role='button', name='Rechazarlas todas'
+2026-10-15 16:08:23,565 INFO validator.pages.cookie_banner: Banner de cookies cerrado: rechazadas
+2026-10-15 16:08:23,567 INFO validator.secrets: Variables cargadas desde .env
+2026-10-15 16:08:23,567 INFO validator.secrets: Credenciales de la cuenta FUNDED cargadas desde BETSSON_ES_FUNDED_USER / BETSSON_ES_FUNDED_PASS
+2026-10-15 16:08:25,807 INFO validator.pages.base_page: find_first[usuario]: ninguna alternativa visible en 2000 ms
+2026-10-15 16:08:28,009 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 2000 ms
+2026-10-15 16:08:28,014 INFO validator.pages.base_page: find_first[abrir-login]: funcionó role='button', name='Iniciar sesión' exact
+2026-10-15 16:08:28,624 INFO validator.pages.base_page: find_first[usuario]: funcionó label='Usuario/email'
+2026-10-15 16:08:28,651 INFO validator.pages.base_page: find_first[contraseña]: funcionó label='Contraseña' exact
+2026-10-15 16:08:28,697 INFO validator.pages.base_page: find_first[enviar-login]: funcionó role='button', name='Iniciar sesión' exact
+2026-10-15 16:08:28,797 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 16:08:29,349 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 16:08:29,915 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 16:08:30,473 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 16:08:31,036 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 16:08:31,593 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 16:08:32,153 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 16:08:33,701 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 16:08:33,714 INFO validator.pages.login_page: Login confirmado: el botón de inicio de sesión desapareció
+2026-10-15 16:08:33,793 INFO validator.navigation: sessionStorage de la sesión guardado (10 claves: __gti__, _fs_tab_id, _tc, authReducer, gaming:route-history, gaming:savedLobbyTab, rum_page_url_parts, rum_referrer_url_parts, rum_session, subcollection-route)
+2026-10-15 16:08:33,793 INFO validator.navigation: storage_state guardado en .auth/ (fuera de artifacts)
+2026-10-15 16:08:33,793 INFO results: [PASS] Pragmatic Play | - | Login correcto: cuenta FUNDED: botón de login desaparecido 
+2026-10-15 16:08:34,028 INFO validator.browser: Contexto creado (locale=es-ES, tz=Europe/Madrid, sesión=True, vídeo=True)
+2026-10-15 16:08:34,034 INFO validator.navigation: Contexto de trabajo creado (traza y vídeo posteriores al login)
+2026-10-15 16:08:37,686 INFO validator.pages.provider_page: La red no llegó a reposo en 3000 ms; se continúa
+2026-10-15 16:08:37,746 INFO validator.pages.provider_page: URL de proveedor accesible: https://www.betsson.es/casino/proveedores/pragmatic-play (HTTP 200)
+2026-10-15 16:08:39,818 INFO validator.pages.base_page: find_first[cookies]: ninguna alternativa visible en 2000 ms
+2026-10-15 16:08:39,818 INFO validator.pages.cookie_banner: No apareció banner de cookies
+2026-10-15 16:08:39,927 INFO validator.evidence: Evidencia guardada: artifacts/es/pragmatic-play/bubble-up/spin_completado/provider_page.png
+2026-10-15 16:08:39,927 INFO results: [PASS] Pragmatic Play | Bubble Up | URL de proveedor accesible: https://www.betsson.es/casino/proveedores/pragmatic-play -> HTTP 200 artifacts/es/pragmatic-play/bubble-up/spin_completado/provider_page.png
+2026-10-15 16:08:43,119 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 3000 ms
+2026-10-15 16:08:43,119 WARNING validator.navigation: No se ve el indicador de sesión en el contexto de trabajo
+2026-10-15 16:08:43,140 INFO validator.pages.base_page: find_first[tarjeta-juego]: funcionó alt_text='Bubble Up' fuzzy
+2026-10-15 16:08:43,600 INFO validator.evidence: Evidencia guardada: artifacts/es/pragmatic-play/bubble-up/spin_completado/game_card.png
+2026-10-15 16:08:43,601 INFO results: [PASS] Pragmatic Play | Bubble Up | Juego encontrado: tarjeta 'Bubble Up' artifacts/es/pragmatic-play/bubble-up/spin_completado/game_card.png
+2026-10-15 16:08:44,330 INFO validator.pages.base_page: find_first[lanzar]: funcionó role='button', name='Jugar' exact
+2026-10-15 16:08:44,397 INFO validator.pages.provider_page: Real Play lanzado con el botón ''
+2026-10-15 16:08:44,397 INFO results: [PASS] Pragmatic Play | Bubble Up | Real Play lanzado: botón '' 
+2026-10-15 16:08:44,412 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:08:44,427 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:08:44,446 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:08:45,083 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:08:45,133 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:08:45,167 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:09:30,542 INFO results: [FAIL] Pragmatic Play | Bubble Up | Iframe cargado: GameLoadError: El iframe del juego no se estabilizó (tamaño o posición cambiando) 
+2026-10-15 16:09:42,562 INFO validator.navigation: Traza guardada: artifacts/es/pragmatic-play/bubble-up/spin_completado/trace.zip
+2026-10-15 16:09:42,769 INFO validator.evidence: Vídeo guardado: artifacts/es/pragmatic-play/bubble-up/spin_completado/video.webm
+2026-10-15 16:09:42,769 INFO results: [ERROR] Pragmatic Play | Bubble Up | Ejecución del escenario: GameLoadError: El iframe del juego no se estabilizó (tamaño o posición cambiando) 
+2026-10-15 16:11:09,584 INFO validator.browser: Lanzando Chromium (headless=False)
+2026-10-15 16:11:09,765 INFO validator.browser: Contexto creado (locale=es-ES, tz=Europe/Madrid, sesión=False, vídeo=False)
+2026-10-15 16:11:12,775 INFO validator.pages.base_page: find_first[cookies]: funcionó role='button', name='Configuración de cookies'
+2026-10-15 16:11:12,782 INFO validator.pages.base_page: find_first[cookies-rechazar]: ninguna alternativa visible en 0 ms
+2026-10-15 16:11:12,788 INFO validator.pages.base_page: find_first[cookies-configurar]: funcionó role='button', name='Configuración de cookies'
+2026-10-15 16:11:13,726 INFO validator.pages.base_page: find_first[cookies-rechazar]: funcionó role='button', name='Rechazarlas todas'
+2026-10-15 16:11:14,254 INFO validator.pages.cookie_banner: Banner de cookies cerrado: rechazadas
+2026-10-15 16:11:14,255 INFO validator.secrets: Variables cargadas desde .env
+2026-10-15 16:11:14,256 INFO validator.secrets: Credenciales de la cuenta FUNDED cargadas desde BETSSON_ES_FUNDED_USER / BETSSON_ES_FUNDED_PASS
+2026-10-15 16:11:16,505 INFO validator.pages.base_page: find_first[usuario]: ninguna alternativa visible en 2000 ms
+2026-10-15 16:11:18,744 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 2000 ms
+2026-10-15 16:11:18,750 INFO validator.pages.base_page: find_first[abrir-login]: funcionó role='button', name='Iniciar sesión' exact
+2026-10-15 16:11:19,372 INFO validator.pages.base_page: find_first[usuario]: funcionó label='Usuario/email'
+2026-10-15 16:11:19,399 INFO validator.pages.base_page: find_first[contraseña]: funcionó label='Contraseña' exact
+2026-10-15 16:11:19,444 INFO validator.pages.base_page: find_first[enviar-login]: funcionó role='button', name='Iniciar sesión' exact
+2026-10-15 16:11:19,543 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 16:11:20,098 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 16:11:20,659 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 16:11:21,217 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 16:11:21,783 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 16:11:22,337 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 16:11:22,892 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 16:11:24,433 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 16:11:24,467 INFO validator.pages.login_page: Login confirmado: el botón de inicio de sesión desapareció
+2026-10-15 16:11:24,550 INFO validator.navigation: sessionStorage de la sesión guardado (10 claves: __gti__, _fs_tab_id, _tc, authReducer, gaming:route-history, gaming:savedLobbyTab, rum_page_url_parts, rum_referrer_url_parts, rum_session, subcollection-route)
+2026-10-15 16:11:24,550 INFO validator.navigation: storage_state guardado en .auth/ (fuera de artifacts)
+2026-10-15 16:11:24,550 INFO results: [PASS] Pragmatic Play | - | Login correcto: cuenta FUNDED: botón de login desaparecido 
+2026-10-15 16:11:24,780 INFO validator.browser: Contexto creado (locale=es-ES, tz=Europe/Madrid, sesión=True, vídeo=True)
+2026-10-15 16:11:24,787 INFO validator.navigation: Contexto de trabajo creado (traza y vídeo posteriores al login)
+2026-10-15 16:11:28,444 INFO validator.pages.provider_page: La red no llegó a reposo en 3000 ms; se continúa
+2026-10-15 16:11:28,509 INFO validator.pages.provider_page: URL de proveedor accesible: https://www.betsson.es/casino/proveedores/pragmatic-play (HTTP 200)
+2026-10-15 16:11:30,514 INFO validator.pages.base_page: find_first[cookies]: ninguna alternativa visible en 2000 ms
+2026-10-15 16:11:30,514 INFO validator.pages.cookie_banner: No apareció banner de cookies
+2026-10-15 16:11:30,633 INFO validator.evidence: Evidencia guardada: artifacts/es/pragmatic-play/bubble-up/spin_completado/provider_page.png
+2026-10-15 16:11:30,634 INFO results: [PASS] Pragmatic Play | Bubble Up | URL de proveedor accesible: https://www.betsson.es/casino/proveedores/pragmatic-play -> HTTP 200 artifacts/es/pragmatic-play/bubble-up/spin_completado/provider_page.png
+2026-10-15 16:11:33,846 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 3000 ms
+2026-10-15 16:11:33,846 WARNING validator.navigation: No se ve el indicador de sesión en el contexto de trabajo
+2026-10-15 16:11:33,868 INFO validator.pages.base_page: find_first[tarjeta-juego]: funcionó alt_text='Bubble Up' fuzzy
+2026-10-15 16:11:34,337 INFO validator.evidence: Evidencia guardada: artifacts/es/pragmatic-play/bubble-up/spin_completado/game_card.png
+2026-10-15 16:11:34,337 INFO results: [PASS] Pragmatic Play | Bubble Up | Juego encontrado: tarjeta 'Bubble Up' artifacts/es/pragmatic-play/bubble-up/spin_completado/game_card.png
+2026-10-15 16:11:35,058 INFO validator.pages.base_page: find_first[lanzar]: funcionó role='button', name='Jugar' exact
+2026-10-15 16:11:35,128 INFO validator.pages.provider_page: Real Play lanzado con el botón ''
+2026-10-15 16:11:35,128 INFO results: [PASS] Pragmatic Play | Bubble Up | Real Play lanzado: botón '' 
+2026-10-15 16:11:35,146 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:11:35,162 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:11:35,182 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:11:35,829 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:11:35,862 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:11:35,890 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:11:55,724 INFO validator.pages.game_page: Marcadores de Real Play en la URL: ['gameaction=play']
+2026-10-15 16:11:56,000 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: funcionó text='Cerrar y no volver a mostrar' exact
+2026-10-15 16:11:56,001 INFO validator.pages.game_page: Pantalla previa: panel de torneos tapando el juego
+2026-10-15 16:11:56,180 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: funcionó text='Cerrar y no volver a mostrar' exact
+2026-10-15 16:11:57,295 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:11:57,322 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:11:57,342 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:11:58,017 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:11:58,040 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:11:58,060 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:11:58,150 INFO validator.pages.game_page: Canvas estable (diferencia 0.0001 < 0.0200)
+2026-10-15 16:11:58,269 INFO validator.evidence: Evidencia guardada: artifacts/es/pragmatic-play/bubble-up/spin_completado/game_loaded.png
+2026-10-15 16:11:58,270 INFO validator.pages.game_page: Juego cargado (Bubble Up): caja {'x': 94.8125, 'y': 169.328125, 'width': 770.359375, 'height': 433.328125}; evidencia artifacts/es/pragmatic-play/bubble-up/spin_completado/game_loaded.png
+2026-10-15 16:11:58,271 INFO results: [PASS] Pragmatic Play | Bubble Up | Iframe cargado: iframe 770x433 en (95,169) artifacts/es/pragmatic-play/bubble-up/spin_completado/game_loaded.png
+2026-10-15 16:11:58,272 INFO validator.game.calibration: Sin calibración propia de Bubble Up: se usa la del proveedor (_default.yaml)
+2026-10-15 16:11:58,275 INFO validator.game.calibration: Calibración cargada: _default.yaml (calibrated=True)
+2026-10-15 16:11:58,414 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:11:58,435 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:11:58,460 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:12:00,835 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:12:00,866 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:12:00,893 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:12:03,772 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:12:03,979 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:12:04,588 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:12:07,336 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:12:07,367 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:12:07,404 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:12:08,793 INFO validator.game.scenarios: Pantalla de carga: pulsando Spin (0.98)
+2026-10-15 16:12:09,054 INFO validator.game.driver: Clic en (692, 473) de la página
+2026-10-15 16:12:12,107 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:12:12,125 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:12:12,145 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:12:12,770 INFO validator.game.scenarios: HUD visible (crédito 64.90, apuesta 2.00)
+2026-10-15 16:12:12,917 INFO validator.pages.base_page: find_first[saldo-betsson]: funcionó css='[class*=balance i]'
+2026-10-15 16:12:13,800 INFO validator.pages.base_page: find_first[saldo-betsson]: funcionó css='[class*=balance i]'
+2026-10-15 16:12:14,762 INFO validator.pages.base_page: find_first[saldo-betsson]: funcionó css='[class*=balance i]'
+2026-10-15 16:12:17,601 INFO validator.game.driver: Clic en (690, 556) de la página
+2026-10-15 16:12:39,254 INFO validator.pages.base_page: find_first[saldo-betsson]: funcionó css='[class*=balance i]'
+2026-10-15 16:12:41,689 INFO validator.pages.base_page: find_first[saldo-betsson]: funcionó css='[class*=balance i]'
+2026-10-15 16:12:44,119 INFO validator.pages.base_page: find_first[saldo-betsson]: funcionó css='[class*=balance i]'
+2026-10-15 16:12:46,557 INFO validator.pages.base_page: find_first[saldo-betsson]: funcionó css='[class*=balance i]'
+2026-10-15 16:12:48,960 INFO validator.pages.base_page: find_first[saldo-betsson]: funcionó css='[class*=balance i]'
+2026-10-15 16:12:51,377 INFO validator.pages.base_page: find_first[saldo-betsson]: funcionó css='[class*=balance i]'
+2026-10-15 16:12:53,783 INFO validator.pages.base_page: find_first[saldo-betsson]: funcionó css='[class*=balance i]'
+2026-10-15 16:12:56,204 INFO validator.pages.base_page: find_first[saldo-betsson]: funcionó css='[class*=balance i]'
+2026-10-15 16:12:58,636 INFO validator.pages.base_page: find_first[saldo-betsson]: funcionó css='[class*=balance i]'
+2026-10-15 16:13:01,102 INFO validator.pages.base_page: find_first[saldo-betsson]: funcionó css='[class*=balance i]'
+2026-10-15 16:13:03,558 INFO validator.pages.base_page: find_first[saldo-betsson]: funcionó css='[class*=balance i]'
+2026-10-15 16:13:06,000 INFO validator.pages.base_page: find_first[saldo-betsson]: funcionó css='[class*=balance i]'
+2026-10-15 16:13:08,435 INFO validator.pages.base_page: find_first[saldo-betsson]: funcionó css='[class*=balance i]'
+2026-10-15 16:13:10,905 INFO validator.pages.base_page: find_first[saldo-betsson]: funcionó css='[class*=balance i]'
+2026-10-15 16:13:11,258 WARNING validator.game.account: Saldo Betsson sin lectura estable tras 32 s
+2026-10-15 16:13:11,463 INFO validator.game.scenarios: Escenario 1 — Spin completado en Real Play: INCONCLUSIVE ({'initial_balance': '64.90', 'wager': '2.00', 'payout': '0.00', 'final_balance': '62.90', 'betsson_before': None, 'betsson_after': None})
+2026-10-15 16:13:29,453 INFO validator.navigation: Traza guardada: artifacts/es/pragmatic-play/bubble-up/spin_completado/trace.zip
+2026-10-15 16:13:30,009 INFO validator.evidence: Vídeo guardado: artifacts/es/pragmatic-play/bubble-up/spin_completado/video.webm
+2026-10-15 16:13:30,010 INFO results: [PASS] Pragmatic Play | Bubble Up | Juego calibrado: Perfil calibrado: Pragmatic Play / _default 
+2026-10-15 16:13:30,011 INFO results: [PASS] Pragmatic Play | Bubble Up | Botón Spin localizado: Spin en (596.5, 387.0) con confianza 0.956 artifacts/es/pragmatic-play/bubble-up/spin_completado/vision/annotated-before.png
+2026-10-15 16:13:30,012 INFO results: [PASS] Pragmatic Play | Bubble Up | Juego listo: Spin habilitado visible artifacts/es/pragmatic-play/bubble-up/spin_completado/vision/annotated-before.png
+2026-10-15 16:13:30,013 INFO results: [PASS] Pragmatic Play | Bubble Up | Saldo del juego inicial leído: 64.90 (3 lecturas coincidentes (0 fallos OCR)) artifacts/es/pragmatic-play/bubble-up/spin_completado/vision/annotated-before.png
+2026-10-15 16:13:30,014 INFO results: [PASS] Pragmatic Play | Bubble Up | Apuesta leída: 2.00 (3 lecturas coincidentes (0 fallos OCR)) artifacts/es/pragmatic-play/bubble-up/spin_completado/vision/annotated-before.png
+2026-10-15 16:13:30,015 INFO results: [PASS] Pragmatic Play | Bubble Up | Moneda = EUR: Moneda EUR observada (9 lecturas coincidentes (0 fallos OCR)) artifacts/es/pragmatic-play/bubble-up/spin_completado/vision/annotated-before.png
+2026-10-15 16:13:30,016 INFO results: [PASS] Pragmatic Play | Bubble Up | Spin iniciado: Control Spin ocupado tras el clic artifacts/es/pragmatic-play/bubble-up/spin_completado/vision/spin-strip.png
+2026-10-15 16:13:30,018 INFO results: [PASS] Pragmatic Play | Bubble Up | Spin completado: Control Spin listo de nuevo con crédito estable en 6 frames artifacts/es/pragmatic-play/bubble-up/spin_completado/vision/spin-strip.png
+2026-10-15 16:13:30,019 INFO results: [PASS] Pragmatic Play | Bubble Up | Sin bonus ni cascada pendiente: Un único ciclo ocupado → listo artifacts/es/pragmatic-play/bubble-up/spin_completado/vision/spin-strip.png
+2026-10-15 16:13:30,020 INFO results: [PASS] Pragmatic Play | Bubble Up | Juego listo tras el spin: 6 frames en reposo con control listo artifacts/es/pragmatic-play/bubble-up/spin_completado/vision/annotated-after.png
+2026-10-15 16:13:30,021 INFO results: [PASS] Pragmatic Play | Bubble Up | Saldo del juego final leído: 62.90 (6 lecturas coincidentes (0 fallos OCR)) artifacts/es/pragmatic-play/bubble-up/spin_completado/vision/annotated-after.png
+2026-10-15 16:13:30,021 INFO results: [PASS] Pragmatic Play | Bubble Up | Premio leído: 0.00 (6 lecturas coincidentes (0 fallos OCR)) artifacts/es/pragmatic-play/bubble-up/spin_completado/vision/annotated-after.png
+2026-10-15 16:13:30,023 INFO results: [PASS] Pragmatic Play | Bubble Up | Apuesta mostrada = apuesta usada: Apuesta 2.00 antes y después artifacts/es/pragmatic-play/bubble-up/spin_completado/vision/annotated-after.png
+2026-10-15 16:13:30,024 INFO results: [PASS] Pragmatic Play | Bubble Up | Saldo del juego coherente: 64.90 - 2.00 + 0.00 = 62.90 artifacts/es/pragmatic-play/bubble-up/spin_completado/vision/annotated-after.png
+2026-10-15 16:13:30,025 INFO results: [INCONCLUSIVE] Pragmatic Play | Bubble Up | Saldo Betsson reconcilia: Valores desconocidos: ['saldo_inicial', 'saldo_final'] (antes: 0 lecturas válidas separadas >= 0.3s de 3 requeridas (3 fallos OCR); después: 0 lecturas válidas separadas >= 0.3s de 3 requeridas (3 fallos OCR)) artifacts/es/pragmatic-play/bubble-up/spin_completado/vision/betsson-antes-00-betsson_balance.png
+2026-10-15 16:19:07,904 INFO validator.browser: Lanzando Chromium (headless=False)
+2026-10-15 16:19:08,087 INFO validator.browser: Contexto creado (locale=es-ES, tz=Europe/Madrid, sesión=False, vídeo=False)
+2026-10-15 16:19:12,195 INFO validator.pages.base_page: find_first[cookies]: funcionó role='button', name='Configuración de cookies'
+2026-10-15 16:19:12,206 INFO validator.pages.base_page: find_first[cookies-rechazar]: ninguna alternativa visible en 0 ms
+2026-10-15 16:19:12,219 INFO validator.pages.base_page: find_first[cookies-configurar]: funcionó role='button', name='Configuración de cookies'
+2026-10-15 16:19:13,639 INFO validator.pages.base_page: find_first[cookies-rechazar]: funcionó role='button', name='Rechazarlas todas'
+2026-10-15 16:19:14,174 INFO validator.pages.cookie_banner: Banner de cookies cerrado: rechazadas
+2026-10-15 16:19:14,176 INFO validator.secrets: Variables cargadas desde .env
+2026-10-15 16:19:14,176 INFO validator.secrets: Credenciales de la cuenta FUNDED cargadas desde BETSSON_ES_FUNDED_USER / BETSSON_ES_FUNDED_PASS
+2026-10-15 16:19:16,447 INFO validator.pages.base_page: find_first[usuario]: ninguna alternativa visible en 2000 ms
+2026-10-15 16:19:18,681 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 2000 ms
+2026-10-15 16:19:18,686 INFO validator.pages.base_page: find_first[abrir-login]: funcionó role='button', name='Iniciar sesión' exact
+2026-10-15 16:19:19,285 INFO validator.pages.base_page: find_first[usuario]: funcionó label='Usuario/email'
+2026-10-15 16:19:19,316 INFO validator.pages.base_page: find_first[contraseña]: funcionó label='Contraseña' exact
+2026-10-15 16:19:19,363 INFO validator.pages.base_page: find_first[enviar-login]: funcionó role='button', name='Iniciar sesión' exact
+2026-10-15 16:19:19,466 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 16:19:20,024 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 16:19:20,584 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 16:19:21,131 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 16:19:21,703 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 16:19:22,264 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 16:19:22,827 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 16:19:24,379 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 16:19:24,392 INFO validator.pages.login_page: Login confirmado: el botón de inicio de sesión desapareció
+2026-10-15 16:19:24,472 INFO validator.navigation: sessionStorage de la sesión guardado (10 claves: __gti__, _fs_tab_id, _tc, authReducer, gaming:route-history, gaming:savedLobbyTab, rum_page_url_parts, rum_referrer_url_parts, rum_session, subcollection-route)
+2026-10-15 16:19:24,472 INFO validator.navigation: storage_state guardado en .auth/ (fuera de artifacts)
+2026-10-15 16:19:24,472 INFO results: [PASS] Pragmatic Play | - | Login correcto: cuenta FUNDED: botón de login desaparecido 
+2026-10-15 16:19:24,702 INFO validator.browser: Contexto creado (locale=es-ES, tz=Europe/Madrid, sesión=True, vídeo=True)
+2026-10-15 16:19:24,708 INFO validator.navigation: Contexto de trabajo creado (traza y vídeo posteriores al login)
+2026-10-15 16:19:28,808 INFO validator.pages.provider_page: La red no llegó a reposo en 3000 ms; se continúa
+2026-10-15 16:19:28,873 INFO validator.pages.provider_page: URL de proveedor accesible: https://www.betsson.es/casino/proveedores/pragmatic-play (HTTP 200)
+2026-10-15 16:19:30,988 INFO validator.pages.base_page: find_first[cookies]: ninguna alternativa visible en 2000 ms
+2026-10-15 16:19:30,988 INFO validator.pages.cookie_banner: No apareció banner de cookies
+2026-10-15 16:19:31,118 INFO validator.evidence: Evidencia guardada: artifacts/es/pragmatic-play/bubble-up/spin_completado/provider_page.png
+2026-10-15 16:19:31,118 INFO results: [PASS] Pragmatic Play | Bubble Up | URL de proveedor accesible: https://www.betsson.es/casino/proveedores/pragmatic-play -> HTTP 200 artifacts/es/pragmatic-play/bubble-up/spin_completado/provider_page.png
+2026-10-15 16:19:34,308 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 3000 ms
+2026-10-15 16:19:34,308 WARNING validator.navigation: No se ve el indicador de sesión en el contexto de trabajo
+2026-10-15 16:19:34,328 INFO validator.pages.base_page: find_first[tarjeta-juego]: funcionó alt_text='Bubble Up' fuzzy
+2026-10-15 16:19:34,785 INFO validator.evidence: Evidencia guardada: artifacts/es/pragmatic-play/bubble-up/spin_completado/game_card.png
+2026-10-15 16:19:34,786 INFO results: [PASS] Pragmatic Play | Bubble Up | Juego encontrado: tarjeta 'Bubble Up' artifacts/es/pragmatic-play/bubble-up/spin_completado/game_card.png
+2026-10-15 16:19:35,499 INFO validator.pages.base_page: find_first[lanzar]: funcionó role='button', name='Jugar' exact
+2026-10-15 16:19:35,569 INFO validator.pages.provider_page: Real Play lanzado con el botón ''
+2026-10-15 16:19:35,569 INFO results: [PASS] Pragmatic Play | Bubble Up | Real Play lanzado: botón '' 
+2026-10-15 16:19:35,588 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:19:35,600 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:19:35,612 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:19:36,195 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:19:36,220 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:19:36,233 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:19:36,812 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:19:36,828 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:19:36,861 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:19:37,039 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:19:37,056 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:19:37,070 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:19:37,388 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:19:37,399 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:19:37,410 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:19:37,724 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:19:37,736 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:19:37,749 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:19:38,119 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: funcionó text='Cerrar y no volver a mostrar' exact
+2026-10-15 16:19:38,120 INFO validator.pages.game_page: Pantalla previa: panel de torneos tapando el juego
+2026-10-15 16:19:38,157 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: funcionó text='Cerrar y no volver a mostrar' exact
+2026-10-15 16:19:39,335 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:19:39,354 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:19:39,370 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:19:39,969 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:19:40,237 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:19:40,287 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:19:40,650 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:19:40,668 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:19:40,684 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:19:41,029 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:19:41,048 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:19:41,063 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:19:41,408 INFO validator.pages.game_page: Marcadores de Real Play en la URL: ['gameaction=play']
+2026-10-15 16:19:41,428 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:19:41,446 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:19:41,466 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:19:42,123 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:19:42,139 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:19:42,155 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:19:42,273 INFO validator.pages.game_page: Canvas estable (diferencia 0.0003 < 0.0200)
+2026-10-15 16:19:42,391 INFO validator.evidence: Evidencia guardada: artifacts/es/pragmatic-play/bubble-up/spin_completado/game_loaded.png
+2026-10-15 16:19:42,392 INFO validator.pages.game_page: Juego cargado (Bubble Up): caja {'x': 100.75, 'y': 172.671875, 'width': 758.5, 'height': 426.65625}; evidencia artifacts/es/pragmatic-play/bubble-up/spin_completado/game_loaded.png
+2026-10-15 16:19:42,393 INFO results: [PASS] Pragmatic Play | Bubble Up | Iframe cargado: iframe 758x427 en (101,173) artifacts/es/pragmatic-play/bubble-up/spin_completado/game_loaded.png
+2026-10-15 16:19:42,394 INFO validator.game.calibration: Sin calibración propia de Bubble Up: se usa la del proveedor (_default.yaml)
+2026-10-15 16:19:42,398 INFO validator.game.calibration: Calibración cargada: _default.yaml (calibrated=True)
+2026-10-15 16:19:42,528 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:19:42,550 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:19:42,569 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:19:44,951 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:19:44,980 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:19:45,003 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:19:47,780 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:19:47,874 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:19:48,272 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:19:51,270 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:19:51,329 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:19:51,392 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:19:52,942 INFO validator.game.scenarios: Pantalla de carga: pulsando Spin (0.98)
+2026-10-15 16:19:53,242 INFO validator.game.driver: Clic en (689, 472) de la página
+2026-10-15 16:19:56,284 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:19:56,300 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:19:56,314 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:19:57,277 INFO validator.game.scenarios: HUD visible (crédito 62.90, apuesta 2.00)
+2026-10-15 16:19:59,546 INFO validator.pages.base_page: find_first[saldo-betsson]: ninguna alternativa visible en 2000 ms
+2026-10-15 16:19:59,546 INFO validator.game.account: Saldo Betsson no visible en la página del juego: se lee desde el lobby
+2026-10-15 16:20:04,230 INFO validator.pages.base_page: find_first[saldo-betsson]: funcionó css='span[data-cs-mask]:text-matches("^\\\\s*\\\\d[\\\\d.,]*\\\\s*(€|EUR)\\\\s*$")'
+2026-10-15 16:20:05,398 INFO validator.pages.base_page: find_first[saldo-betsson]: funcionó css='span[data-cs-mask]:text-matches("^\\\\s*\\\\d[\\\\d.,]*\\\\s*(€|EUR)\\\\s*$")'
+2026-10-15 16:20:06,187 INFO validator.pages.base_page: find_first[saldo-betsson]: funcionó css='span[data-cs-mask]:text-matches("^\\\\s*\\\\d[\\\\d.,]*\\\\s*(€|EUR)\\\\s*$")'
+2026-10-15 16:20:08,843 INFO validator.game.driver: Clic en (688, 554) de la página
+2026-10-15 16:20:59,406 INFO validator.navigation: Traza guardada: artifacts/es/pragmatic-play/bubble-up/spin_completado/trace.zip
+2026-10-15 16:20:59,883 INFO validator.evidence: Vídeo guardado: artifacts/es/pragmatic-play/bubble-up/spin_completado/video.webm
+2026-10-15 16:20:59,883 INFO results: [ERROR] Pragmatic Play | Bubble Up | Ejecución del escenario: TargetClosedError: Page.reload: Target page, context or browser has been closed 
+2026-10-15 16:23:50,295 INFO validator.browser: Lanzando Chromium (headless=False)
+2026-10-15 16:23:50,486 INFO validator.browser: Contexto creado (locale=es-ES, tz=Europe/Madrid, sesión=False, vídeo=False)
+2026-10-15 16:23:53,458 INFO validator.pages.base_page: find_first[cookies]: funcionó role='button', name='Configuración de cookies'
+2026-10-15 16:23:53,469 INFO validator.pages.base_page: find_first[cookies-rechazar]: ninguna alternativa visible en 0 ms
+2026-10-15 16:23:53,477 INFO validator.pages.base_page: find_first[cookies-configurar]: funcionó role='button', name='Configuración de cookies'
+2026-10-15 16:23:54,852 INFO validator.pages.base_page: find_first[cookies-rechazar]: funcionó role='button', name='Rechazarlas todas'
+2026-10-15 16:23:55,388 INFO validator.pages.cookie_banner: Banner de cookies cerrado: rechazadas
+2026-10-15 16:23:55,390 INFO validator.secrets: Variables cargadas desde .env
+2026-10-15 16:23:55,390 INFO validator.secrets: Credenciales de la cuenta FUNDED cargadas desde BETSSON_ES_FUNDED_USER / BETSSON_ES_FUNDED_PASS
+2026-10-15 16:23:57,634 INFO validator.pages.base_page: find_first[usuario]: ninguna alternativa visible en 2000 ms
+2026-10-15 16:23:59,846 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 2000 ms
+2026-10-15 16:23:59,851 INFO validator.pages.base_page: find_first[abrir-login]: funcionó role='button', name='Iniciar sesión' exact
+2026-10-15 16:24:00,462 INFO validator.pages.base_page: find_first[usuario]: funcionó label='Usuario/email'
+2026-10-15 16:24:00,487 INFO validator.pages.base_page: find_first[contraseña]: funcionó label='Contraseña' exact
+2026-10-15 16:24:00,534 INFO validator.pages.base_page: find_first[enviar-login]: funcionó role='button', name='Iniciar sesión' exact
+2026-10-15 16:24:00,636 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 16:24:01,195 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 16:24:01,740 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 16:24:02,299 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 16:24:02,857 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 16:24:03,410 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 16:24:04,960 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 16:24:04,976 INFO validator.pages.login_page: Login confirmado: el botón de inicio de sesión desapareció
+2026-10-15 16:24:05,053 INFO validator.navigation: sessionStorage de la sesión guardado (10 claves: __gti__, _fs_tab_id, _tc, authReducer, gaming:route-history, gaming:savedLobbyTab, rum_page_url_parts, rum_referrer_url_parts, rum_session, subcollection-route)
+2026-10-15 16:24:05,053 INFO validator.navigation: storage_state guardado en .auth/ (fuera de artifacts)
+2026-10-15 16:24:05,053 INFO results: [PASS] Pragmatic Play | - | Login correcto: cuenta FUNDED: botón de login desaparecido 
+2026-10-15 16:24:05,297 INFO validator.browser: Contexto creado (locale=es-ES, tz=Europe/Madrid, sesión=True, vídeo=True)
+2026-10-15 16:24:05,303 INFO validator.navigation: Contexto de trabajo creado (traza y vídeo posteriores al login)
+2026-10-15 16:24:08,689 INFO validator.pages.provider_page: URL de proveedor accesible: https://www.betsson.es/casino/proveedores/pragmatic-play (HTTP 200)
+2026-10-15 16:24:10,798 INFO validator.pages.base_page: find_first[cookies]: ninguna alternativa visible en 2000 ms
+2026-10-15 16:24:10,798 INFO validator.pages.cookie_banner: No apareció banner de cookies
+2026-10-15 16:24:10,905 INFO validator.evidence: Evidencia guardada: artifacts/es/pragmatic-play/bubble-up/spin_completado/provider_page.png
+2026-10-15 16:24:10,905 INFO results: [PASS] Pragmatic Play | Bubble Up | URL de proveedor accesible: https://www.betsson.es/casino/proveedores/pragmatic-play -> HTTP 200 artifacts/es/pragmatic-play/bubble-up/spin_completado/provider_page.png
+2026-10-15 16:24:14,089 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 3000 ms
+2026-10-15 16:24:14,090 WARNING validator.navigation: No se ve el indicador de sesión en el contexto de trabajo
+2026-10-15 16:24:14,110 INFO validator.pages.base_page: find_first[tarjeta-juego]: funcionó alt_text='Bubble Up' fuzzy
+2026-10-15 16:24:14,547 INFO validator.evidence: Evidencia guardada: artifacts/es/pragmatic-play/bubble-up/spin_completado/game_card.png
+2026-10-15 16:24:14,547 INFO results: [PASS] Pragmatic Play | Bubble Up | Juego encontrado: tarjeta 'Bubble Up' artifacts/es/pragmatic-play/bubble-up/spin_completado/game_card.png
+2026-10-15 16:24:15,272 INFO validator.pages.base_page: find_first[lanzar]: funcionó role='button', name='Jugar' exact
+2026-10-15 16:24:15,348 INFO validator.pages.provider_page: Real Play lanzado con el botón ''
+2026-10-15 16:24:15,349 INFO results: [PASS] Pragmatic Play | Bubble Up | Real Play lanzado: botón '' 
+2026-10-15 16:24:15,363 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:24:15,376 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:24:15,386 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:24:16,000 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:24:16,021 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:24:16,052 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:24:16,213 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:24:16,224 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:24:16,237 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:24:16,557 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:24:16,568 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:24:16,580 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:24:16,890 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:24:16,902 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:24:16,918 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:24:17,314 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:24:17,351 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:24:17,365 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:24:17,693 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: funcionó text='Cerrar y no volver a mostrar' exact
+2026-10-15 16:24:17,693 INFO validator.pages.game_page: Pantalla previa: panel de torneos tapando el juego
+2026-10-15 16:24:17,736 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: funcionó text='Cerrar y no volver a mostrar' exact
+2026-10-15 16:24:22,760 WARNING validator.pages.game_page: Pantalla previa 'panel de torneos tapando el juego': clic no aplicado (TimeoutError)
+2026-10-15 16:24:22,802 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: funcionó text='Cerrar y no volver a mostrar' exact
+2026-10-15 16:24:22,803 INFO validator.pages.game_page: Pantalla previa: panel de torneos tapando el juego
+2026-10-15 16:24:22,834 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: funcionó text='Cerrar y no volver a mostrar' exact
+2026-10-15 16:24:27,851 WARNING validator.pages.game_page: Pantalla previa 'panel de torneos tapando el juego': clic no aplicado (TimeoutError)
+2026-10-15 16:24:27,903 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: funcionó text='Cerrar y no volver a mostrar' exact
+2026-10-15 16:24:27,904 INFO validator.pages.game_page: Pantalla previa: panel de torneos tapando el juego
+2026-10-15 16:24:27,941 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: funcionó text='Cerrar y no volver a mostrar' exact
+2026-10-15 16:24:32,957 WARNING validator.pages.game_page: Pantalla previa 'panel de torneos tapando el juego': clic no aplicado (TimeoutError)
+2026-10-15 16:24:33,015 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: funcionó text='Cerrar y no volver a mostrar' exact
+2026-10-15 16:24:33,015 INFO validator.pages.game_page: Pantalla previa: panel de torneos tapando el juego
+2026-10-15 16:24:33,050 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: funcionó text='Cerrar y no volver a mostrar' exact
+2026-10-15 16:24:38,067 WARNING validator.pages.game_page: Pantalla previa 'panel de torneos tapando el juego': clic no aplicado (TimeoutError)
+2026-10-15 16:24:38,122 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: funcionó text='Cerrar y no volver a mostrar' exact
+2026-10-15 16:24:38,122 INFO validator.pages.game_page: Pantalla previa: panel de torneos tapando el juego
+2026-10-15 16:24:38,159 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: funcionó text='Cerrar y no volver a mostrar' exact
+2026-10-15 16:24:43,184 WARNING validator.pages.game_page: Pantalla previa 'panel de torneos tapando el juego': clic no aplicado (TimeoutError)
+2026-10-15 16:24:43,225 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: funcionó text='Cerrar y no volver a mostrar' exact
+2026-10-15 16:24:43,225 INFO validator.pages.game_page: Pantalla previa: panel de torneos tapando el juego
+2026-10-15 16:24:43,257 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: funcionó text='Cerrar y no volver a mostrar' exact
+2026-10-15 16:24:48,275 WARNING validator.pages.game_page: Pantalla previa 'panel de torneos tapando el juego': clic no aplicado (TimeoutError)
+2026-10-15 16:24:48,321 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: funcionó text='Cerrar y no volver a mostrar' exact
+2026-10-15 16:24:48,321 INFO validator.pages.game_page: Pantalla previa: panel de torneos tapando el juego
+2026-10-15 16:24:48,355 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: funcionó text='Cerrar y no volver a mostrar' exact
+2026-10-15 16:24:53,379 WARNING validator.pages.game_page: Pantalla previa 'panel de torneos tapando el juego': clic no aplicado (TimeoutError)
+2026-10-15 16:24:53,422 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: funcionó text='Cerrar y no volver a mostrar' exact
+2026-10-15 16:24:53,422 INFO validator.pages.game_page: Pantalla previa: panel de torneos tapando el juego
+2026-10-15 16:24:53,451 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: funcionó text='Cerrar y no volver a mostrar' exact
+2026-10-15 16:24:58,467 WARNING validator.pages.game_page: Pantalla previa 'panel de torneos tapando el juego': clic no aplicado (TimeoutError)
+2026-10-15 16:24:58,511 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: funcionó text='Cerrar y no volver a mostrar' exact
+2026-10-15 16:24:58,512 INFO validator.pages.game_page: Pantalla previa: panel de torneos tapando el juego
+2026-10-15 16:24:58,543 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: funcionó text='Cerrar y no volver a mostrar' exact
+2026-10-15 16:25:03,568 WARNING validator.pages.game_page: Pantalla previa 'panel de torneos tapando el juego': clic no aplicado (TimeoutError)
+2026-10-15 16:25:03,580 INFO results: [FAIL] Pragmatic Play | Bubble Up | Iframe cargado: GameLoadError: El iframe del juego no se estabilizó (tamaño o posición cambiando) 
+2026-10-15 16:25:08,483 INFO validator.navigation: Traza guardada: artifacts/es/pragmatic-play/bubble-up/spin_completado/trace.zip
+2026-10-15 16:25:08,910 INFO validator.evidence: Vídeo guardado: artifacts/es/pragmatic-play/bubble-up/spin_completado/video.webm
+2026-10-15 16:25:08,910 INFO results: [ERROR] Pragmatic Play | Bubble Up | Ejecución del escenario: GameLoadError: El iframe del juego no se estabilizó (tamaño o posición cambiando) 
+2026-10-15 14:28:34,292 INFO validator.browser: Lanzando Chromium (headless=True)
+2026-10-15 14:28:34,469 INFO validator.game.calibration: Sin calibración propia de Juego Que No Existe: se usa la del proveedor (_default.yaml)
+2026-10-15 14:28:34,474 INFO validator.game.calibration: Calibración cargada: _default.yaml (calibrated=True)
+2026-10-15 14:28:34,491 INFO validator.game.calibration: Sin calibración propia de Bubble Up: se usa la del proveedor (_default.yaml)
+2026-10-15 14:28:34,495 INFO validator.game.calibration: Calibración cargada: _default.yaml (calibrated=True)
+2026-10-15 14:28:34,499 INFO validator.secrets: Variables cargadas desde .env
+2026-10-15 16:30:28,805 INFO validator.browser: Lanzando Chromium (headless=False)
+2026-10-15 16:30:29,007 INFO validator.browser: Contexto creado (locale=es-ES, tz=Europe/Madrid, sesión=False, vídeo=False)
+2026-10-15 16:30:32,060 INFO validator.pages.base_page: find_first[cookies]: funcionó role='button', name='Configuración de cookies'
+2026-10-15 16:30:32,077 INFO validator.pages.base_page: find_first[cookies-rechazar]: ninguna alternativa visible en 0 ms
+2026-10-15 16:30:32,097 INFO validator.pages.base_page: find_first[cookies-configurar]: funcionó role='button', name='Configuración de cookies'
+2026-10-15 16:30:33,559 INFO validator.pages.base_page: find_first[cookies-rechazar]: funcionó role='button', name='Rechazarlas todas'
+2026-10-15 16:30:34,094 INFO validator.pages.cookie_banner: Banner de cookies cerrado: rechazadas
+2026-10-15 16:30:34,095 INFO validator.secrets: Variables cargadas desde .env
+2026-10-15 16:30:34,095 INFO validator.secrets: Credenciales de la cuenta FUNDED cargadas desde BETSSON_ES_FUNDED_USER / BETSSON_ES_FUNDED_PASS
+2026-10-15 16:30:36,341 INFO validator.pages.base_page: find_first[usuario]: ninguna alternativa visible en 2000 ms
+2026-10-15 16:30:38,523 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 2000 ms
+2026-10-15 16:30:38,527 INFO validator.pages.base_page: find_first[abrir-login]: funcionó role='button', name='Iniciar sesión' exact
+2026-10-15 16:30:39,142 INFO validator.pages.base_page: find_first[usuario]: funcionó label='Usuario/email'
+2026-10-15 16:30:39,168 INFO validator.pages.base_page: find_first[contraseña]: funcionó label='Contraseña' exact
+2026-10-15 16:30:39,214 INFO validator.pages.base_page: find_first[enviar-login]: funcionó role='button', name='Iniciar sesión' exact
+2026-10-15 16:30:39,316 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 16:30:39,878 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 16:30:40,430 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 16:30:40,989 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 16:30:41,558 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 16:30:42,126 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 16:30:43,677 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 16:30:43,690 INFO validator.pages.login_page: Login confirmado: el botón de inicio de sesión desapareció
+2026-10-15 16:30:43,764 INFO validator.navigation: sessionStorage de la sesión guardado (10 claves: __gti__, _fs_tab_id, _tc, authReducer, gaming:route-history, gaming:savedLobbyTab, rum_page_url_parts, rum_referrer_url_parts, rum_session, subcollection-route)
+2026-10-15 16:30:43,764 INFO validator.navigation: storage_state guardado en .auth/ (fuera de artifacts)
+2026-10-15 16:30:43,765 INFO results: [PASS] Pragmatic Play | - | Login correcto: cuenta FUNDED: botón de login desaparecido 
+2026-10-15 16:30:44,003 INFO validator.browser: Contexto creado (locale=es-ES, tz=Europe/Madrid, sesión=True, vídeo=True)
+2026-10-15 16:30:44,009 INFO validator.navigation: Contexto de trabajo creado (traza y vídeo posteriores al login)
+2026-10-15 16:30:47,859 INFO validator.pages.provider_page: La red no llegó a reposo en 3000 ms; se continúa
+2026-10-15 16:30:47,883 INFO validator.pages.provider_page: URL de proveedor accesible: https://www.betsson.es/casino/proveedores/pragmatic-play (HTTP 200)
+2026-10-15 16:30:50,150 INFO validator.pages.base_page: find_first[cookies]: ninguna alternativa visible en 2000 ms
+2026-10-15 16:30:50,151 INFO validator.pages.cookie_banner: No apareció banner de cookies
+2026-10-15 16:30:50,254 INFO validator.evidence: Evidencia guardada: artifacts/es/pragmatic-play/bubble-up/spin_completado/provider_page.png
+2026-10-15 16:30:50,254 INFO results: [PASS] Pragmatic Play | Bubble Up | URL de proveedor accesible: https://www.betsson.es/casino/proveedores/pragmatic-play -> HTTP 200 artifacts/es/pragmatic-play/bubble-up/spin_completado/provider_page.png
+2026-10-15 16:30:53,274 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 3000 ms
+2026-10-15 16:30:53,274 WARNING validator.navigation: No se ve el indicador de sesión en el contexto de trabajo
+2026-10-15 16:30:53,279 INFO validator.pages.base_page: find_first[tarjeta-juego]: funcionó alt_text='Bubble Up' fuzzy
+2026-10-15 16:30:53,523 INFO validator.evidence: Evidencia guardada: artifacts/es/pragmatic-play/bubble-up/spin_completado/game_card.png
+2026-10-15 16:30:53,523 INFO results: [PASS] Pragmatic Play | Bubble Up | Juego encontrado: tarjeta 'Bubble Up' artifacts/es/pragmatic-play/bubble-up/spin_completado/game_card.png
+2026-10-15 16:30:54,190 INFO validator.pages.base_page: find_first[lanzar]: funcionó role='button', name='Jugar' exact
+2026-10-15 16:30:54,234 INFO validator.pages.provider_page: Real Play lanzado con el botón ''
+2026-10-15 16:30:54,234 INFO results: [PASS] Pragmatic Play | Bubble Up | Real Play lanzado: botón '' 
+2026-10-15 16:30:54,240 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:30:54,247 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:30:54,253 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:30:54,779 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:30:54,786 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:30:54,790 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:30:54,856 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:30:54,868 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:30:54,877 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:30:55,146 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:30:55,171 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:30:55,176 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:30:55,446 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:30:55,455 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:30:55,460 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:30:55,732 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:30:55,739 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:30:55,744 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:30:56,006 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:30:56,012 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:30:56,017 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:30:56,280 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:30:56,288 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: funcionó css='[data-test-id="start-new-session-buttons-btn-2"]'
+2026-10-15 16:30:56,288 INFO validator.pages.game_page: Pantalla previa: aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")
+2026-10-15 16:30:56,295 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: funcionó css='[data-test-id="start-new-session-buttons-btn-2"]'
+2026-10-15 16:30:57,506 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: funcionó css='[data-test-id="session-settings"]'
+2026-10-15 16:30:57,506 INFO validator.pages.game_page: Pantalla previa: límites de sesión (tiempo y pérdidas)
+2026-10-15 16:30:57,513 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: funcionó css='[data-test-id="session-settings_time-limit-option-3600"]'
+2026-10-15 16:30:57,855 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: funcionó css='[data-test-id="session-settings_spending-limit-option-25"]'
+2026-10-15 16:30:58,195 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: funcionó css='[data-test-id="session-settings_submit-button-btn-1"]'
+2026-10-15 16:30:59,248 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:30:59,258 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:30:59,274 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: funcionó text='Cerrar y no volver a mostrar' exact
+2026-10-15 16:30:59,274 INFO validator.pages.game_page: Pantalla previa: panel de torneos tapando el juego
+2026-10-15 16:30:59,294 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: funcionó text='Cerrar y no volver a mostrar' exact
+2026-10-15 16:31:00,353 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:31:00,364 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:31:00,370 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:31:00,638 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:31:00,650 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:31:00,660 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:31:00,929 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:31:00,939 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:31:00,950 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:31:01,226 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:31:01,237 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:31:01,247 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:31:01,521 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:31:01,533 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:31:01,544 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:31:01,818 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:31:01,831 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:31:01,838 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:31:02,110 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:31:02,121 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:31:02,129 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:31:02,406 INFO validator.pages.game_page: Marcadores de Real Play en la URL: ['gameaction=play']
+2026-10-15 16:31:02,409 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:31:02,420 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:31:02,429 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:31:03,020 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:31:03,036 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:31:03,043 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:31:03,106 INFO validator.pages.game_page: Canvas estable (diferencia 0.0002 < 0.0200)
+2026-10-15 16:31:03,227 INFO validator.evidence: Evidencia guardada: artifacts/es/pragmatic-play/bubble-up/spin_completado/game_loaded.png
+2026-10-15 16:31:03,227 INFO validator.pages.game_page: Juego cargado (Bubble Up): caja {'x': 94.8125, 'y': 169.328125, 'width': 770.359375, 'height': 433.328125}; evidencia artifacts/es/pragmatic-play/bubble-up/spin_completado/game_loaded.png
+2026-10-15 16:31:03,228 INFO results: [PASS] Pragmatic Play | Bubble Up | Iframe cargado: iframe 770x433 en (95,169) artifacts/es/pragmatic-play/bubble-up/spin_completado/game_loaded.png
+2026-10-15 16:31:03,229 INFO validator.game.calibration: Sin calibración propia de Bubble Up: se usa la del proveedor (_default.yaml)
+2026-10-15 16:31:03,232 INFO validator.game.calibration: Calibración cargada: _default.yaml (calibrated=True)
+2026-10-15 16:31:03,298 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:31:03,308 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:31:03,318 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:31:05,668 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:31:05,682 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:31:05,690 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:31:07,864 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:31:07,873 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:31:07,881 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:31:10,222 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:31:10,231 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:31:10,237 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:31:12,598 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:31:12,606 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:31:12,612 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:31:13,863 INFO validator.game.scenarios: Pantalla de carga: pulsando Spin (0.90)
+2026-10-15 16:31:14,005 INFO validator.game.driver: Clic en (692, 473) de la página
+2026-10-15 16:31:17,019 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:31:17,032 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:31:17,043 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:31:17,563 INFO validator.game.scenarios: HUD visible (crédito 60.90, apuesta 2.00)
+2026-10-15 16:31:19,655 INFO validator.pages.base_page: find_first[saldo-betsson]: ninguna alternativa visible en 2000 ms
+2026-10-15 16:31:19,655 INFO validator.game.account: Saldo Betsson no visible en la página del juego: se lee desde el lobby
+2026-10-15 16:31:24,014 INFO validator.pages.base_page: find_first[saldo-betsson]: funcionó css='span[data-cs-mask]:text-matches("^\\\\s*\\\\d[\\\\d.,]*\\\\s*(€|EUR)\\\\s*$")'
+2026-10-15 16:31:25,274 INFO validator.pages.base_page: find_first[saldo-betsson]: funcionó css='span[data-cs-mask]:text-matches("^\\\\s*\\\\d[\\\\d.,]*\\\\s*(€|EUR)\\\\s*$")'
+2026-10-15 16:31:25,987 INFO validator.pages.base_page: find_first[saldo-betsson]: funcionó css='span[data-cs-mask]:text-matches("^\\\\s*\\\\d[\\\\d.,]*\\\\s*(€|EUR)\\\\s*$")'
+2026-10-15 16:31:28,354 INFO validator.game.driver: Clic en (690, 556) de la página
+2026-10-15 16:31:42,762 INFO validator.pages.base_page: find_first[saldo-betsson]: funcionó css='span[data-cs-mask]:text-matches("^\\\\s*\\\\d[\\\\d.,]*\\\\s*(€|EUR)\\\\s*$")'
+2026-10-15 16:31:49,738 INFO validator.pages.base_page: find_first[saldo-betsson]: funcionó css='span[data-cs-mask]:text-matches("^\\\\s*\\\\d[\\\\d.,]*\\\\s*(€|EUR)\\\\s*$")'
+2026-10-15 16:31:55,527 INFO validator.pages.base_page: find_first[saldo-betsson]: funcionó css='span[data-cs-mask]:text-matches("^\\\\s*\\\\d[\\\\d.,]*\\\\s*(€|EUR)\\\\s*$")'
+2026-10-15 16:31:56,545 INFO validator.game.scenarios: Escenario 1 — Spin completado en Real Play: INCONCLUSIVE ({'initial_balance': '60.90', 'wager': '2.00', 'payout': None, 'final_balance': '59.40', 'betsson_before': '60.90', 'betsson_after': '59.40'})
+2026-10-15 16:31:56,583 INFO validator.navigation: Traza guardada: artifacts/es/pragmatic-play/bubble-up/spin_completado/trace.zip
+2026-10-15 16:31:57,028 INFO validator.evidence: Vídeo guardado: artifacts/es/pragmatic-play/bubble-up/spin_completado/video.webm
+2026-10-15 16:31:57,028 INFO results: [PASS] Pragmatic Play | Bubble Up | Juego calibrado: Perfil calibrado: Pragmatic Play / _default 
+2026-10-15 16:31:57,029 INFO results: [PASS] Pragmatic Play | Bubble Up | Botón Spin localizado: Spin en (596.5, 387.0) con confianza 0.956 artifacts/es/pragmatic-play/bubble-up/spin_completado/vision/annotated-before.png
+2026-10-15 16:31:57,030 INFO results: [PASS] Pragmatic Play | Bubble Up | Juego listo: Spin habilitado visible artifacts/es/pragmatic-play/bubble-up/spin_completado/vision/annotated-before.png
+2026-10-15 16:31:57,031 INFO results: [PASS] Pragmatic Play | Bubble Up | Saldo del juego inicial leído: 60.90 (3 lecturas coincidentes (0 fallos OCR)) artifacts/es/pragmatic-play/bubble-up/spin_completado/vision/annotated-before.png
+2026-10-15 16:31:57,032 INFO results: [PASS] Pragmatic Play | Bubble Up | Apuesta leída: 2.00 (3 lecturas coincidentes (0 fallos OCR)) artifacts/es/pragmatic-play/bubble-up/spin_completado/vision/annotated-before.png
+2026-10-15 16:31:57,033 INFO results: [PASS] Pragmatic Play | Bubble Up | Moneda = EUR: Moneda EUR observada (9 lecturas coincidentes (0 fallos OCR)) artifacts/es/pragmatic-play/bubble-up/spin_completado/vision/annotated-before.png
+2026-10-15 16:31:57,034 INFO results: [PASS] Pragmatic Play | Bubble Up | Spin iniciado: Control Spin ocupado tras el clic artifacts/es/pragmatic-play/bubble-up/spin_completado/vision/spin-strip.png
+2026-10-15 16:31:57,035 INFO results: [PASS] Pragmatic Play | Bubble Up | Spin completado: Control Spin listo de nuevo con crédito estable en 6 frames artifacts/es/pragmatic-play/bubble-up/spin_completado/vision/spin-strip.png
+2026-10-15 16:31:57,036 INFO results: [PASS] Pragmatic Play | Bubble Up | Sin bonus ni cascada pendiente: Un único ciclo ocupado → listo artifacts/es/pragmatic-play/bubble-up/spin_completado/vision/spin-strip.png
+2026-10-15 16:31:57,037 INFO results: [PASS] Pragmatic Play | Bubble Up | Juego listo tras el spin: 6 frames en reposo con control listo artifacts/es/pragmatic-play/bubble-up/spin_completado/vision/annotated-after.png
+2026-10-15 16:31:57,038 INFO results: [PASS] Pragmatic Play | Bubble Up | Saldo del juego final leído: 59.40 (6 lecturas coincidentes (0 fallos OCR)) artifacts/es/pragmatic-play/bubble-up/spin_completado/vision/annotated-after.png
+2026-10-15 16:31:57,038 INFO results: [INCONCLUSIVE] Pragmatic Play | Bubble Up | Premio leído: Valor desconocido: 0 lecturas válidas separadas >= 0.3s de 3 requeridas (6 fallos OCR) artifacts/es/pragmatic-play/bubble-up/spin_completado/vision/annotated-after.png
+2026-10-15 16:31:57,039 INFO results: [PASS] Pragmatic Play | Bubble Up | Apuesta mostrada = apuesta usada: Apuesta 2.00 antes y después artifacts/es/pragmatic-play/bubble-up/spin_completado/vision/annotated-after.png
+2026-10-15 16:31:57,040 INFO results: [INCONCLUSIVE] Pragmatic Play | Bubble Up | Saldo del juego coherente: Valores desconocidos: ['premio'] artifacts/es/pragmatic-play/bubble-up/spin_completado/vision/annotated-after.png
+2026-10-15 16:31:57,041 INFO results: [INCONCLUSIVE] Pragmatic Play | Bubble Up | Saldo Betsson reconcilia: Valores desconocidos: ['premio'] (antes: 3 lecturas coincidentes (0 fallos OCR); después: 3 lecturas coincidentes (0 fallos OCR)) artifacts/es/pragmatic-play/bubble-up/spin_completado/vision/betsson-antes-00-betsson_balance.png
+2026-10-15 16:32:14,512 INFO validator.browser: Lanzando Chromium (headless=False)
+2026-10-15 16:32:14,684 INFO validator.browser: Contexto creado (locale=es-ES, tz=Europe/Madrid, sesión=False, vídeo=False)
+2026-10-15 16:32:17,650 INFO validator.pages.base_page: find_first[cookies]: funcionó role='button', name='Configuración de cookies'
+2026-10-15 16:32:17,659 INFO validator.pages.base_page: find_first[cookies-rechazar]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:17,665 INFO validator.pages.base_page: find_first[cookies-configurar]: funcionó role='button', name='Configuración de cookies'
+2026-10-15 16:32:19,061 INFO validator.pages.base_page: find_first[cookies-rechazar]: funcionó role='button', name='Rechazarlas todas'
+2026-10-15 16:32:19,588 INFO validator.pages.cookie_banner: Banner de cookies cerrado: rechazadas
+2026-10-15 16:32:19,589 INFO validator.secrets: Variables cargadas desde .env
+2026-10-15 16:32:19,590 INFO validator.secrets: Credenciales de la cuenta FUNDED cargadas desde BETSSON_ES_FUNDED_USER / BETSSON_ES_FUNDED_PASS
+2026-10-15 16:32:21,857 INFO validator.pages.base_page: find_first[usuario]: ninguna alternativa visible en 2000 ms
+2026-10-15 16:32:24,082 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 2000 ms
+2026-10-15 16:32:24,088 INFO validator.pages.base_page: find_first[abrir-login]: funcionó role='button', name='Iniciar sesión' exact
+2026-10-15 16:32:24,695 INFO validator.pages.base_page: find_first[usuario]: funcionó label='Usuario/email'
+2026-10-15 16:32:24,724 INFO validator.pages.base_page: find_first[contraseña]: funcionó label='Contraseña' exact
+2026-10-15 16:32:24,771 INFO validator.pages.base_page: find_first[enviar-login]: funcionó role='button', name='Iniciar sesión' exact
+2026-10-15 16:32:24,875 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:25,446 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:25,995 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:26,563 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:27,124 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:27,684 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:29,225 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:29,238 INFO validator.pages.login_page: Login confirmado: el botón de inicio de sesión desapareció
+2026-10-15 16:32:29,315 INFO validator.navigation: sessionStorage de la sesión guardado (10 claves: __gti__, _fs_tab_id, _tc, authReducer, gaming:route-history, gaming:savedLobbyTab, rum_page_url_parts, rum_referrer_url_parts, rum_session, subcollection-route)
+2026-10-15 16:32:29,315 INFO validator.navigation: storage_state guardado en .auth/ (fuera de artifacts)
+2026-10-15 16:32:29,315 INFO results: [PASS] Pragmatic Play | - | Login correcto: cuenta FUNDED: botón de login desaparecido 
+2026-10-15 16:32:29,536 INFO validator.browser: Contexto creado (locale=es-ES, tz=Europe/Madrid, sesión=True, vídeo=True)
+2026-10-15 16:32:29,542 INFO validator.navigation: Contexto de trabajo creado (traza y vídeo posteriores al login)
+2026-10-15 16:32:33,066 INFO validator.pages.provider_page: La red no llegó a reposo en 3000 ms; se continúa
+2026-10-15 16:32:33,090 INFO validator.pages.provider_page: URL de proveedor accesible: https://www.betsson.es/casino/proveedores/pragmatic-play (HTTP 200)
+2026-10-15 16:32:35,358 INFO validator.pages.base_page: find_first[cookies]: ninguna alternativa visible en 2000 ms
+2026-10-15 16:32:35,358 INFO validator.pages.cookie_banner: No apareció banner de cookies
+2026-10-15 16:32:35,457 INFO validator.evidence: Evidencia guardada: artifacts/es/pragmatic-play/bubble-up/spin_completado/provider_page.png
+2026-10-15 16:32:35,457 INFO results: [PASS] Pragmatic Play | Bubble Up | URL de proveedor accesible: https://www.betsson.es/casino/proveedores/pragmatic-play -> HTTP 200 artifacts/es/pragmatic-play/bubble-up/spin_completado/provider_page.png
+2026-10-15 16:32:38,558 INFO validator.pages.base_page: find_first[sesión-iniciada]: ninguna alternativa visible en 3000 ms
+2026-10-15 16:32:38,559 WARNING validator.navigation: No se ve el indicador de sesión en el contexto de trabajo
+2026-10-15 16:32:38,575 INFO validator.pages.base_page: find_first[tarjeta-juego]: funcionó alt_text='Bubble Up' fuzzy
+2026-10-15 16:32:38,807 INFO validator.evidence: Evidencia guardada: artifacts/es/pragmatic-play/bubble-up/spin_completado/game_card.png
+2026-10-15 16:32:38,807 INFO results: [PASS] Pragmatic Play | Bubble Up | Juego encontrado: tarjeta 'Bubble Up' artifacts/es/pragmatic-play/bubble-up/spin_completado/game_card.png
+2026-10-15 16:32:39,480 INFO validator.pages.base_page: find_first[lanzar]: funcionó role='button', name='Jugar' exact
+2026-10-15 16:32:39,524 INFO validator.pages.provider_page: Real Play lanzado con el botón ''
+2026-10-15 16:32:39,524 INFO results: [PASS] Pragmatic Play | Bubble Up | Real Play lanzado: botón '' 
+2026-10-15 16:32:39,530 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:39,536 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:39,541 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:40,076 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:40,109 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:40,147 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:40,228 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:40,240 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:40,245 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:40,513 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:40,520 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:40,524 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:40,791 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:40,796 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:40,803 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:41,075 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:41,082 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:41,090 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:41,358 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:41,365 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:41,370 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:41,640 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:41,650 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:41,665 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: funcionó text='Cerrar y no volver a mostrar' exact
+2026-10-15 16:32:41,665 INFO validator.pages.game_page: Pantalla previa: panel de torneos tapando el juego
+2026-10-15 16:32:41,680 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: funcionó text='Cerrar y no volver a mostrar' exact
+2026-10-15 16:32:42,744 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:42,750 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: funcionó css='[data-test-id="start-new-session-buttons-btn-2"]'
+2026-10-15 16:32:42,750 INFO validator.pages.game_page: Pantalla previa: aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")
+2026-10-15 16:32:42,758 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: funcionó css='[data-test-id="start-new-session-buttons-btn-2"]'
+2026-10-15 16:32:43,804 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: funcionó css='[data-test-id="session-settings"]'
+2026-10-15 16:32:43,805 INFO validator.pages.game_page: Pantalla previa: límites de sesión (tiempo y pérdidas)
+2026-10-15 16:32:43,811 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: funcionó css='[data-test-id="session-settings_time-limit-option-3600"]'
+2026-10-15 16:32:44,144 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: funcionó css='[data-test-id="session-settings_spending-limit-option-25"]'
+2026-10-15 16:32:44,474 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: funcionó css='[data-test-id="session-settings_submit-button-btn-1"]'
+2026-10-15 16:32:45,535 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:45,546 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:45,554 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:45,828 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:45,837 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:45,845 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:46,124 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:46,135 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:46,145 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:46,421 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:46,429 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:46,439 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:46,705 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:46,715 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:46,722 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:46,991 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:47,002 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:47,012 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:47,278 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:47,287 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:47,300 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:47,579 INFO validator.pages.game_page: Marcadores de Real Play en la URL: ['gameaction=play']
+2026-10-15 16:32:47,582 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:47,592 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:47,602 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:48,199 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:48,211 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:48,222 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:48,286 INFO validator.pages.game_page: Canvas estable (diferencia 0.0005 < 0.0200)
+2026-10-15 16:32:48,393 INFO validator.evidence: Evidencia guardada: artifacts/es/pragmatic-play/bubble-up/spin_completado/game_loaded.png
+2026-10-15 16:32:48,394 INFO validator.pages.game_page: Juego cargado (Bubble Up): caja {'x': 94.8125, 'y': 169.328125, 'width': 770.359375, 'height': 433.328125}; evidencia artifacts/es/pragmatic-play/bubble-up/spin_completado/game_loaded.png
+2026-10-15 16:32:48,394 INFO results: [PASS] Pragmatic Play | Bubble Up | Iframe cargado: iframe 770x433 en (95,169) artifacts/es/pragmatic-play/bubble-up/spin_completado/game_loaded.png
+2026-10-15 16:32:48,395 INFO validator.game.calibration: Sin calibración propia de Bubble Up: se usa la del proveedor (_default.yaml)
+2026-10-15 16:32:48,398 INFO validator.game.calibration: Calibración cargada: _default.yaml (calibrated=True)
+2026-10-15 16:32:48,480 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:48,495 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:48,505 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:50,780 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:50,797 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:50,806 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:53,007 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:53,018 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:53,026 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:55,218 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:55,227 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:55,233 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:57,517 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:57,526 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:57,536 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:32:58,900 INFO validator.game.scenarios: Pantalla de carga: pulsando Spin (0.87)
+2026-10-15 16:32:59,014 INFO validator.game.driver: Clic en (692, 473) de la página
+2026-10-15 16:33:02,024 INFO validator.pages.base_page: find_first[pregame:límites de sesión (tiempo y pérdidas)]: ninguna alternativa visible en 0 ms
+2026-10-15 16:33:02,040 INFO validator.pages.base_page: find_first[pregame:aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")]: ninguna alternativa visible en 0 ms
+2026-10-15 16:33:02,046 INFO validator.pages.base_page: find_first[pregame:panel de torneos tapando el juego]: ninguna alternativa visible en 0 ms
+2026-10-15 16:33:02,563 INFO validator.game.scenarios: HUD visible (crédito 59.40, apuesta 2.00)
+2026-10-15 16:33:04,640 INFO validator.pages.base_page: find_first[saldo-betsson]: ninguna alternativa visible en 2000 ms
+2026-10-15 16:33:04,640 INFO validator.game.account: Saldo Betsson no visible en la página del juego: se lee desde el lobby
+2026-10-15 16:33:09,809 INFO validator.pages.base_page: find_first[saldo-betsson]: funcionó css='span[data-cs-mask]:text-matches("^\\\\s*\\\\d[\\\\d.,]*\\\\s*(€|EUR)\\\\s*$")'
+2026-10-15 16:33:10,791 INFO validator.pages.base_page: find_first[saldo-betsson]: funcionó css='span[data-cs-mask]:text-matches("^\\\\s*\\\\d[\\\\d.,]*\\\\s*(€|EUR)\\\\s*$")'
+2026-10-15 16:33:11,474 INFO validator.pages.base_page: find_first[saldo-betsson]: funcionó css='span[data-cs-mask]:text-matches("^\\\\s*\\\\d[\\\\d.,]*\\\\s*(€|EUR)\\\\s*$")'
+2026-10-15 16:33:13,833 INFO validator.game.driver: Clic en (690, 556) de la página
+2026-10-15 16:33:27,685 INFO validator.pages.base_page: find_first[saldo-betsson]: funcionó css='span[data-cs-mask]:text-matches("^\\\\s*\\\\d[\\\\d.,]*\\\\s*(€|EUR)\\\\s*$")'
+2026-10-15 16:33:32,911 INFO validator.pages.base_page: find_first[saldo-betsson]: funcionó css='span[data-cs-mask]:text-matches("^\\\\s*\\\\d[\\\\d.,]*\\\\s*(€|EUR)\\\\s*$")'
+2026-10-15 16:33:38,649 INFO validator.pages.base_page: find_first[saldo-betsson]: funcionó css='span[data-cs-mask]:text-matches("^\\\\s*\\\\d[\\\\d.,]*\\\\s*(€|EUR)\\\\s*$")'
+2026-10-15 16:33:39,516 INFO validator.game.scenarios: Escenario 1 — Spin completado en Real Play: INCONCLUSIVE ({'initial_balance': '59.40', 'wager': '2.00', 'payout': None, 'final_balance': '59.40', 'betsson_before': '59.40', 'betsson_after': '59.40'})
+2026-10-15 16:33:39,550 INFO validator.navigation: Traza guardada: artifacts/es/pragmatic-play/bubble-up/spin_completado/trace.zip
+2026-10-15 16:33:39,973 INFO validator.evidence: Vídeo guardado: artifacts/es/pragmatic-play/bubble-up/spin_completado/video.webm
+2026-10-15 16:33:39,973 INFO results: [PASS] Pragmatic Play | Bubble Up | Juego calibrado: Perfil calibrado: Pragmatic Play / _default 
+2026-10-15 16:33:39,974 INFO results: [PASS] Pragmatic Play | Bubble Up | Botón Spin localizado: Spin en (596.5, 387.0) con confianza 0.956 artifacts/es/pragmatic-play/bubble-up/spin_completado/vision/annotated-before.png
+2026-10-15 16:33:39,975 INFO results: [PASS] Pragmatic Play | Bubble Up | Juego listo: Spin habilitado visible artifacts/es/pragmatic-play/bubble-up/spin_completado/vision/annotated-before.png
+2026-10-15 16:33:39,975 INFO results: [PASS] Pragmatic Play | Bubble Up | Saldo del juego inicial leído: 59.40 (3 lecturas coincidentes (0 fallos OCR)) artifacts/es/pragmatic-play/bubble-up/spin_completado/vision/annotated-before.png
+2026-10-15 16:33:39,976 INFO results: [PASS] Pragmatic Play | Bubble Up | Apuesta leída: 2.00 (3 lecturas coincidentes (0 fallos OCR)) artifacts/es/pragmatic-play/bubble-up/spin_completado/vision/annotated-before.png
+2026-10-15 16:33:39,977 INFO results: [PASS] Pragmatic Play | Bubble Up | Moneda = EUR: Moneda EUR observada (9 lecturas coincidentes (0 fallos OCR)) artifacts/es/pragmatic-play/bubble-up/spin_completado/vision/annotated-before.png
+2026-10-15 16:33:39,978 INFO results: [PASS] Pragmatic Play | Bubble Up | Spin iniciado: Control Spin ocupado tras el clic artifacts/es/pragmatic-play/bubble-up/spin_completado/vision/spin-strip.png
+2026-10-15 16:33:39,979 INFO results: [PASS] Pragmatic Play | Bubble Up | Spin completado: Control Spin listo de nuevo con crédito estable en 6 frames artifacts/es/pragmatic-play/bubble-up/spin_completado/vision/spin-strip.png
+2026-10-15 16:33:39,979 INFO results: [PASS] Pragmatic Play | Bubble Up | Sin bonus ni cascada pendiente: Un único ciclo ocupado → listo artifacts/es/pragmatic-play/bubble-up/spin_completado/vision/spin-strip.png
+2026-10-15 16:33:39,980 INFO results: [PASS] Pragmatic Play | Bubble Up | Juego listo tras el spin: 6 frames en reposo con control listo artifacts/es/pragmatic-play/bubble-up/spin_completado/vision/annotated-after.png
+2026-10-15 16:33:39,981 INFO results: [PASS] Pragmatic Play | Bubble Up | Saldo del juego final leído: 59.40 (6 lecturas coincidentes (0 fallos OCR)) artifacts/es/pragmatic-play/bubble-up/spin_completado/vision/annotated-after.png
+2026-10-15 16:33:39,982 INFO results: [INCONCLUSIVE] Pragmatic Play | Bubble Up | Premio leído: Valor desconocido: 0 lecturas válidas separadas >= 0.3s de 3 requeridas (6 fallos OCR) artifacts/es/pragmatic-play/bubble-up/spin_completado/vision/annotated-after.png
+2026-10-15 16:33:39,983 INFO results: [PASS] Pragmatic Play | Bubble Up | Apuesta mostrada = apuesta usada: Apuesta 2.00 antes y después artifacts/es/pragmatic-play/bubble-up/spin_completado/vision/annotated-after.png
+2026-10-15 16:33:39,984 INFO results: [INCONCLUSIVE] Pragmatic Play | Bubble Up | Saldo del juego coherente: Valores desconocidos: ['premio'] artifacts/es/pragmatic-play/bubble-up/spin_completado/vision/annotated-after.png
+2026-10-15 16:33:39,985 INFO results: [INCONCLUSIVE] Pragmatic Play | Bubble Up | Saldo Betsson reconcilia: Valores desconocidos: ['premio'] (antes: 3 lecturas coincidentes (0 fallos OCR); después: 3 lecturas coincidentes (0 fallos OCR)) artifacts/es/pragmatic-play/bubble-up/spin_completado/vision/betsson-antes-00-betsson_balance.png
