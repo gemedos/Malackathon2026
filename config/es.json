@@ -1,0 +1,24 @@
+{
+  "market": "es",
+  "base_url": "https://www.betsson.es",
+  "language": "Español",
+  "currency": "EUR",
+  "accounts": {
+    "funded": {
+      "user_env": "BETSSON_ES_FUNDED_USER",
+      "pass_env": "BETSSON_ES_FUNDED_PASS"
+    },
+    "empty": {
+      "user_env": "BETSSON_ES_EMPTY_USER",
+      "pass_env": "BETSSON_ES_EMPTY_PASS"
+    }
+  },
+  "insufficient_patterns": ["saldo insuficiente", "fondos insuficientes", "credito insuficiente", "no (tienes|tiene|hay) (suficiente saldo|saldo suficiente|fondos suficientes|credito suficiente)"],
+  "timing": {
+    "spin_timeout_s": 60,
+    "poll_interval_ms": 500,
+    "still_frames_to_settle": 4,
+    "balance_wait_s": 8
+  },
+  "default_game": "big-bass-bonanza"
+}
