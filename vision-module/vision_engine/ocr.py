@@ -14,9 +14,9 @@ from .currency import detect_currency
 from .errors import OcrUnavailableError, ProfileError
 from .evidence import EvidenceStore
 from .geometry import ROI
-from .imaging import preprocess_for_ocr, to_gray
+from .imaging import preprocess_for_ocr, strip_trailing_symbol, to_gray
 from .messages import normalize_text
-from .money import parse_money
+from .money import parse_money_lenient
 from .profile import GameProfile
 
 MONEY_FIELDS = ('balance', 'wager', 'payout')
@@ -109,9 +109,32 @@ class FieldReader:
                 if alt_value is not None:
                     raw, value, error = retry, alt_value, alt_error
                     break
+        if whitelist and value is None:
+            # El símbolo de moneda («€») se lee a veces como un dígito pegado al importe: se vuelve a leer sin él.
+            stripped = strip_trailing_symbol(processed)
+            if stripped is not None:
+                retry = self.backend(stripped, self.profile.ocr_language,
+                                     f'--psm 7 -c tessedit_char_whitelist={MONEY_CHARS}').strip()
+                alt_value, alt_error = self._interpret(field, retry, symbol_seen=True)
+                if alt_value is not None:
+                    raw, value, error = retry, alt_value, alt_error
         if field == 'payout' and value is None and self._shows_idle_prompt(raw):
             value, error = '0.00', None       # la línea de premio muestra el mensaje de reposo, sin importe
         return OcrReading(field, sample_id, timestamp, raw, value, error, crop_path, processed_path)
+
+    def read_wide_message(self, frame: np.ndarray, sample_id: str, timestamp: Optional[float] = None) -> OcrReading:
+        """Texto de TODA la zona central del juego, para cuando el mensaje no está donde la calibración espera
+        (otro juego, otro diálogo). Más lento que la región calibrada: se usa solo como respaldo."""
+        height = frame.shape[0]
+        band = frame[int(0.12 * height):int(0.88 * height)]
+        gray = to_gray(band)
+        texts = []
+        for image in (gray, 255 - gray):
+            processed = preprocess_for_ocr(image, 2)
+            texts.append(self.backend(processed, self.profile.ocr_language, '--psm 11').strip())
+        raw = '\n'.join(t for t in texts if t)
+        crop_path = self.evidence.save_image(sample_id, 'message-wide', band)
+        return OcrReading(MESSAGE_FIELD, sample_id, timestamp, raw, None, None, crop_path, crop_path)
 
     def _shows_idle_prompt(self, raw: str) -> bool:
         text = normalize_text(raw)
@@ -121,10 +144,12 @@ class FieldReader:
         """Región sin texto (casi uniforme), solo si el perfil declara que el juego oculta el premio."""
         return self.profile.payout_empty_is_zero and float(to_gray(crop).std()) <= self.profile.empty_region_max_std
 
-    def _interpret(self, field: str, raw: str) -> Tuple[Optional[str], Optional[str]]:
+    def _interpret(self, field: str, raw: str, symbol_seen: bool = False) -> Tuple[Optional[str], Optional[str]]:
         try:
             if field in MONEY_FIELDS or field == BETSSON_BALANCE_FIELD:
-                return str(parse_money(raw, self.profile.decimal_separator)), None
+                # Solo la apuesta puede ser un entero («2 €»); un saldo o un premio sin decimales sería una lectura recortada.
+                integer_ok = field == 'wager' and (symbol_seen or '€' in raw or 'EUR' in raw.upper())
+                return str(parse_money_lenient(raw, self.profile.decimal_separator, integer_ok)), None
             if field == CURRENCY_FIELD:
                 return detect_currency(raw), None
         except ValueError as exc:

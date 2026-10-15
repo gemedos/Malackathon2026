@@ -19,10 +19,12 @@ import cv2
 
 from validator.config import MarketConfig, SelectorsConfig
 from validator.game.account import AccountBalanceReader
-from validator.game.calibration import (GAMES_DIR, CalibrationMissingError, LoadedCalibration, build_profile,
+from validator.game.autocal import auto_calibrate
+from validator.game.calibration import (DEFAULT_NAME, GAMES_DIR, CalibrationMissingError, LoadedCalibration, build_profile,
                                         load_calibration)
 from validator.game.driver import GameDriver
 from validator.pages.game_page import GameSession
+from vision_engine.hud_locator import find_start_button
 from vision_engine.matching import best_match
 from vision_engine import (AssertionResult, BetssonBalance, MotionState, ScenarioRecord, ScenarioReport,
                            SpinAttemptRecorder, SpinNotFoundError, Verdict, VisionEngine, evaluate_insufficient,
@@ -54,18 +56,36 @@ def run_scenario(kind: str, session: GameSession, context, market: MarketConfig,
     """Ejecuta un escenario sobre el juego abierto. Los fallos de ejecución se propagan (ERROR, no FAIL)."""
     if kind not in SCENARIO_NAMES:
         raise ValueError(f"Escenario desconocido: {kind!r}")
+    driver = GameDriver(session)
     try:
         loaded = load_calibration(session.provider, session.game, games_dir)
     except CalibrationMissingError as exc:
-        return _not_calibrated(kind, market, session, str(exc))
+        loaded = _auto_calibrate(session, driver, games_dir)
+        if loaded is None:
+            return _not_calibrated(kind, market, session, str(exc))
 
-    driver = GameDriver(session)
-    first = driver.capture()
-    frame_size = (first.shape[1], first.shape[0])
-    profile = build_profile(loaded.calibration, market, frame_size)
-    engine = VisionEngine(profile, evidence_dir / "vision")
+    def prepare(current: LoadedCalibration):
+        frame = driver.capture()
+        size = (frame.shape[1], frame.shape[0])
+        profile = build_profile(current.calibration, market, size)
+        return size, profile, VisionEngine(profile, evidence_dir / "vision")
+
+    frame_size, profile, engine = prepare(loaded)
+    inherited = loaded.path.name == f"{DEFAULT_NAME}.yaml"       # calibración del proveedor, no del juego
+    try:
+        _reach_hud(session, driver, engine, loaded.splash_template(), frame_size,
+                   timeout_s=INHERITED_HUD_TIMEOUT_S if inherited else HUD_TIMEOUT_S)
+    except CalibrationError as exc:
+        if not inherited:
+            raise
+        # El HUD de este juego no coincide con el del proveedor: se calibra el juego en la propia sesión.
+        log.warning("La calibración del proveedor no sirve para %s (%s): se calibra el juego", session.game, exc)
+        loaded = _auto_calibrate(session, driver, games_dir)
+        if loaded is None:
+            raise
+        frame_size, profile, engine = prepare(loaded)
+        _reach_hud(session, driver, engine, loaded.splash_template(), frame_size)
     spin_template, busy_template = loaded.templates()
-    _reach_hud(session, driver, engine, loaded.splash_template(), frame_size)
     extra = [_setup(driver, loaded, frame_size)] if loaded.calibration.setup_clicks else []
 
     account = AccountBalanceReader(context, session.page, market, selectors, engine)
@@ -103,14 +123,30 @@ def run_scenario(kind: str, session: GameSession, context, market: MarketConfig,
 
 HUD_TIMEOUT_S = 120
 SPLASH_MAX_CLICKS = 3
+HUD_STATUS_EVERY_S = 10
+INHERITED_HUD_TIMEOUT_S = 60      # con la calibración del proveedor: si no vale, se calibra el juego
+RELAXED_AFTER_S = 30          # si el HUD sigue ilegible, se admite un Spin de carga con menos confianza
+RELAXED_THRESHOLD = 0.60
+RELAXED_EXTRA_CLICKS = 2
+RELAXED_GAP_S = 20
+START_EVERY_S = 8             # pantalla de inicio sin plantilla («CONTINUAR», «JUGAR»): se busca por texto
+START_MAX_CLICKS = 4
 
 
-def _reach_hud(session: GameSession, driver: GameDriver, engine: VisionEngine, splash_template, frame_size) -> None:
+def _reach_hud(session: GameSession, driver: GameDriver, engine: VisionEngine, splash_template, frame_size,
+               timeout_s: float = HUD_TIMEOUT_S) -> None:
     """Llega hasta el juego jugable: resuelve pantallas previas que aparezcan y pulsa el Spin de la
-    «pantalla de carga» (si el proveedor la tiene) hasta que el OCR lee crédito y apuesta."""
+    «pantalla de carga» (si el proveedor la tiene) hasta que el OCR lee crédito y apuesta.
+
+    Si no llega, el error explica qué se veía (texto OCR crudo, confianza del Spin de carga) y guarda
+    el último fotograma, para que un fallo intermitente se pueda diagnosticar sin repetir la prueba."""
     profile = engine.profile
-    deadline = time.monotonic() + HUD_TIMEOUT_S
-    clicks, index = 0, 0
+    start = time.monotonic()
+    deadline = start + timeout_s
+    clicks, index, last_click, next_status = 0, 0, 0.0, start + HUD_STATUS_EVERY_S
+    start_clicks, last_start = 0, start
+    frame = balance = wager = None
+    score = 0.0
     while time.monotonic() < deadline:
         if session.pregame is not None and session.pregame():
             driver.wait(500)
@@ -123,16 +159,66 @@ def _reach_hud(session: GameSession, driver: GameDriver, engine: VisionEngine, s
         if balance.value is not None and wager.value is not None:
             log.info("HUD visible (crédito %s, apuesta %s)", balance.value, wager.value)
             return
-        if splash_template is not None and clicks < SPLASH_MAX_CLICKS:
+        now = time.monotonic()
+        hit = None
+        if splash_template is not None:
             hit = best_match(frame, splash_template, engine.roi("spin_search"), profile.template_scales)
-            if hit is not None and hit.confidence >= profile.template_threshold:
-                log.info("Pantalla de carga: pulsando Spin (%.2f)", hit.confidence)
+            score = hit.confidence if hit is not None else 0.0
+        if hit is not None:
+            elapsed = now - start
+            normal = clicks < SPLASH_MAX_CLICKS and score >= profile.template_threshold
+            relaxed = (elapsed >= RELAXED_AFTER_S and clicks < SPLASH_MAX_CLICKS + RELAXED_EXTRA_CLICKS
+                       and score >= RELAXED_THRESHOLD and now - last_click >= RELAXED_GAP_S)
+            if normal or relaxed:
+                log.info("Pantalla de carga: pulsando Spin (%.2f%s)", score, "" if normal else ", umbral relajado")
+                if relaxed and not normal:
+                    _refocus(session)
                 driver.click(hit.point, frame_size)
                 clicks += 1
+                last_click = time.monotonic()
                 driver.wait(3000)
                 continue
+        if start_clicks < START_MAX_CLICKS and now - last_start >= START_EVERY_S:
+            last_start = now
+            point = find_start_button(frame, profile.ocr_language)
+            if point is not None:
+                log.info("Pantalla de inicio: pulsando el botón de arranque en %s", point)
+                driver.click(point, frame_size)
+                start_clicks += 1
+                driver.wait(3000)
+                continue
+        if now >= next_status:
+            next_status = now + HUD_STATUS_EVERY_S
+            log.info("Esperando el HUD (%ds): crédito=%r apuesta=%r spin_carga=%.2f clics=%d",
+                     now - start, balance.raw_text, wager.raw_text, score, clicks)
         driver.wait(1500)
-    raise CalibrationError(f"No se llegó al HUD del juego en {HUD_TIMEOUT_S}s (crédito/apuesta ilegibles)")
+    shot = ""
+    if frame is not None:
+        try:
+            shot = engine.evidence.save_image("hud-timeout", "ultimo_fotograma", frame)
+        except Exception as exc:   # la evidencia nunca debe tapar el error real
+            log.debug("No se pudo guardar el último fotograma: %s", exc)
+    raise CalibrationError(
+        f"No se llegó al HUD del juego en {timeout_s:.0f}s. Último OCR: crédito={getattr(balance, 'raw_text', None)!r} "
+        f"(error: {getattr(balance, 'error', None)}), apuesta={getattr(wager, 'raw_text', None)!r} "
+        f"(error: {getattr(wager, 'error', None)}); confianza del Spin de carga {score:.2f} "
+        f"(umbral {profile.template_threshold:.2f}); clics {clicks}. Último fotograma: {shot or 'no guardado'}")
+
+
+def _auto_calibrate(session: GameSession, driver: GameDriver, games_dir: Path) -> LoadedCalibration | None:
+    try:
+        return auto_calibrate(session, driver, games_dir)
+    except CalibrationMissingError as exc:
+        log.warning("%s", exc)
+        return None
+
+
+def _refocus(session: GameSession) -> None:
+    """Trae la pestaña del juego al frente (una pestaña en segundo plano pausa el juego)."""
+    try:
+        session.page.bring_to_front()
+    except Exception as exc:
+        log.debug("bring_to_front falló: %s", exc)
 
 
 def _setup(driver: GameDriver, loaded: LoadedCalibration, frame_size: tuple[int, int]) -> AssertionResult:

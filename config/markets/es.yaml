@@ -39,6 +39,8 @@ vision:
   ocr_language: spa+eng
   insufficient_patterns:
     - "\\bsaldo insuficiente\\b"
+    - "\\bfondos insuf\\w+"                 # tolera fallos del OCR (p. ej. «insufikientes»)
+    - "\\binsuf\\w+ para realizar\\b"
     - "\\bfondos insuficientes\\b"
     - "\\bcredito insuficiente\\b"
     - "\\b(?:fondos|saldo|credito|dinero) insuficientes?\\b"

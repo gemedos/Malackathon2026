@@ -30,11 +30,11 @@ calibrate-check:  ## Comprueba la calibración sobre una captura: make calibrate
 
 scenarios:        ## Escenarios 1 y 2 con DINERO REAL (cuentas FUNDED y EMPTY de .env) + informe
 	-$(PY) -m pytest tests/test_game_scenarios.py -m real_money --provider "$(PROVIDER)" --game "$(GAME)"
-	$(PY) scripts/report.py
+	$(PY) scripts/make_report.py
 	$(PY) -m pytest tests/test_secret_hygiene.py
 
 report:           ## Regenera artifacts/es/report.{txt,html} desde results.json
-	$(PY) scripts/report.py
+	$(PY) scripts/make_report.py
 
 clean:            ## Borra artifacts, sesión y capturas de calibración locales
 	rm -rf artifacts .auth calibration

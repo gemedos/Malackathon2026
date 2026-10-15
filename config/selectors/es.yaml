@@ -40,6 +40,8 @@ login:
     - {role: button, name: "Entrar", exact: true}         # TODO: verificar con inspect_site.sh
     - {role: button, name: "Acceder", exact: true}        # TODO: verificar con inspect_site.sh
   logged_in:
+    - {role: button, name: "Depósito"}                    # el encabezado muestra «Saldo» y «Depósito»
+    - {role: link, name: "Depósito"}
     - {role: button, name: "Depositar"}                   # TODO: verificar con inspect_site.sh
     - {role: link, name: "Depositar"}                     # TODO: verificar con inspect_site.sh
     - {role: button, name: "Mi cuenta"}                   # TODO: verificar con inspect_site.sh
@@ -114,7 +116,8 @@ game_launch:
       detect: [{css: '[data-test-id="session-settings"]'}]
       steps:                                             # valores moderados: la cuenta guarda estos límites
         - {css: '[data-test-id="session-settings_time-limit-option-3600"]'}       # 1 Hora
-        - {css: '[data-test-id="session-settings_spending-limit-option-25"]'}     # 25 % del saldo
+        # Sin saldo (cuenta EMPTY) el formulario solo ofrece el tiempo: este paso es opcional.
+        - {css: '[data-test-id="session-settings_spending-limit-option-25"]', optional: true}     # 25 % del saldo
         - {css: '[data-test-id="session-settings_submit-button-btn-1"]'}          # Iniciar sesión
     # El aviso es un diálogo modal: va antes que el panel de torneos: mientras está abierto tapa todo lo demás (clics bloqueados).
     - name: aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")

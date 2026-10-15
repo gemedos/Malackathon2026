@@ -80,3 +80,14 @@ class ReadyTests(unittest.TestCase):
         self.assertTrue(detector.observe(frame_with(ready)).ready)
         self.assertFalse(detector.observe(frame_with(busy)).ready)
         self.assertFalse(detector.observe(frame_with(None)).ready)
+
+
+class WideMessageTests(unittest.TestCase):
+    """Respaldo: el mensaje de saldo insuficiente fuera de la región calibrada (otro juego)."""
+
+    def test_wide_read_finds_text_outside_the_calibrated_region(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            engine = VisionEngine(synthetic_profile(), tmp, ocr_backend=lambda *args: 'Insufficient funds to place this bet')
+            frame = np.zeros((100, 200, 3), np.uint8)
+            reading = engine.read_wide_message(frame, 'wide')
+            self.assertTrue(engine.is_insufficient_message(reading.raw_text))

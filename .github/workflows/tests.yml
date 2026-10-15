@@ -2280,7 +2280,7 @@ jobs:
 
       - name: Informe
         if: always()
-        run: python scripts/report.py
+        run: python scripts/make_report.py
 
       - name: Test de higiene de secretos
         id: hygiene

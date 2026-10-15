@@ -117,6 +117,7 @@ class SelectorCandidate(_Strict):
     exact: bool = False
     fuzzy: bool = False
     last: bool = False     # si hay varias coincidencias visibles, la última (la que está encima en el DOM)
+    optional: bool = False  # en un paso de pregame: si no aparece, se omite (p. ej. límite de gasto sin saldo)
 
     @model_validator(mode="after")
     def _one_strategy(self) -> "SelectorCandidate":

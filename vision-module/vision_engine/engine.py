@@ -52,6 +52,10 @@ class VisionEngine:
         """Balance, apuesta, premio y moneda, cada uno en su propia región."""
         return {field: self.read_field(frame, field, sample_id, timestamp) for field in HUD_FIELDS}
 
+    def read_wide_message(self, frame: np.ndarray, sample_id: str,
+                          timestamp: Optional[float] = None) -> OcrReading:
+        return self._reader.read_wide_message(frame, sample_id, timestamp)
+
     def read_message(self, frame: np.ndarray, sample_id: str,
                      timestamp: Optional[float] = None) -> OcrReading:
         return self.read_field(frame, MESSAGE_FIELD, sample_id, timestamp)

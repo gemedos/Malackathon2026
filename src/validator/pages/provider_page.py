@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import time
 from dataclasses import dataclass, field
 from urllib.parse import urlparse
 
@@ -182,7 +183,7 @@ class ProviderPage(BasePage):
 
         # El hover muestra el botón solo en la tarjeta activa: se busca en la página
         # (la web usa shadow DOM, así que no se acota por ancestros con XPath).
-        button = self._find_label_button(launch.real_play, self.market.real_play_labels, 2000)
+        button = self._find_label_button(launch.real_play, self.market.real_play_labels, 2000, near=card.locator)
         if button is None and self.is_any_visible(launch.login_required):
             raise LaunchError("La web pide iniciar sesión para jugar: la sesión del login no se conservó")
         if button is None:
@@ -193,7 +194,8 @@ class ProviderPage(BasePage):
                 raise LaunchError("La tarjeta del juego dejó de estar visible")
             self.page.mouse.click(box["x"] + box["width"] / 2, box["y"] + box["height"] / 2)
             self.page.wait_for_timeout(1500)
-            button = self._find_label_button(launch.real_play, self.market.real_play_labels, self.nav.launch_button_timeout_ms)
+            button = self._find_label_button(launch.real_play, self.market.real_play_labels, self.nav.launch_button_timeout_ms,
+                                         near=card.locator)
         if button is None:
             demo = self._find_label_button(launch.demo, self.market.demo_labels, 1000)
             if demo is not None:
@@ -207,10 +209,51 @@ class ProviderPage(BasePage):
         log.info("Real Play lanzado con el botón %r", label)
         return f"botón {label!r}"
 
-    def _find_label_button(self, templates: list[SelectorCandidate], labels: list[str], timeout: float) -> Locator | None:
-        """Busca un botón/enlace visible con alguno de los textos configurados."""
+    def _find_label_button(self, templates: list[SelectorCandidate], labels: list[str], timeout: float,
+                           near: Locator | None = None) -> Locator | None:
+        """Busca un botón/enlace visible con alguno de los textos configurados.
+
+        Con `near` (la tarjeta del juego) se elige el botón más cercano a ella: la página puede tener varias
+        tarjetas con «Jugar», o un buscador abierto encima de la lista, y el primero del DOM no es el correcto."""
         candidates = [t.render(label=label) for label in labels for t in templates]
-        return self.find_first(candidates, timeout, what="lanzar")
+        if near is None:
+            return self.find_first(candidates, timeout, what="lanzar")
+        locators = [build_locator(self.page, c) for c in candidates]
+        deadline = time.monotonic() + timeout / 1000
+        while True:
+            try:
+                anchor = near.bounding_box()
+            except Exception:
+                anchor = None
+            best, best_distance = None, float("inf")
+            for locator in locators:
+                try:
+                    count = min(locator.count(), 15)
+                except Exception:
+                    continue
+                for index in range(count):
+                    item = locator.nth(index)
+                    try:
+                        if not item.is_visible():
+                            continue
+                        box = item.bounding_box()
+                    except Exception:
+                        continue
+                    if box is None:
+                        continue
+                    if anchor is None:
+                        return item
+                    distance = (abs((box["x"] + box["width"] / 2) - (anchor["x"] + anchor["width"] / 2))
+                                + abs((box["y"] + box["height"] / 2) - (anchor["y"] + anchor["height"] / 2)))
+                    if distance < best_distance:
+                        best, best_distance = item, distance
+            if best is not None:
+                log.info("find_first[lanzar]: botón más cercano a la tarjeta (a %.0f px)", best_distance)
+                return best
+            if time.monotonic() >= deadline:
+                log.info("find_first[lanzar]: ninguna alternativa visible en %d ms", timeout)
+                return None
+            self.page.wait_for_timeout(250)
 
     def _game_iframe_present(self) -> bool:
         self.page.wait_for_timeout(2000)

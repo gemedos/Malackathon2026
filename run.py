@@ -7,6 +7,8 @@
     python run.py -s 1                       # solo el escenario 1 (cuenta con saldo)
     python run.py -s 2                       # solo el escenario 2 (cuenta sin saldo)
     python run.py test                       # pruebas SIN dinero real ni betsson.es
+    python run.py calibrate "<proveedor>" "<juego>"  # juego NUEVO: localiza el HUD solo y escribe su YAML
+    python run.py inspect [proveedor] [juego]  # abre el juego SIN apostar y lista diálogos/botones visibles
     python run.py clean                      # borra evidencias locales (artifacts/ y .auth/)
 
 Los escenarios 1 y 2 juegan con dinero real en betsson.es (una apuesta por escenario).
@@ -138,6 +140,18 @@ def cmd_test(_: argparse.Namespace) -> int:
                            cwd=ROOT, env=env)
 
 
+def cmd_inspect(_: argparse.Namespace) -> int:
+    return subprocess.call([PY, "scripts/inspect_game.py", *sys.argv[2:]], cwd=ROOT)
+
+
+def cmd_calibrate(_: argparse.Namespace) -> int:
+    rest = sys.argv[2:]
+    if len(rest) < 2:
+        print('Uso: python run.py calibrate "<proveedor>" "<juego>"')
+        return 2
+    return subprocess.call([PY, "scripts/calibrate.py", "auto", "--provider", rest[0], "--game", rest[1], *rest[2:]], cwd=ROOT)
+
+
 def cmd_clean(_: argparse.Namespace) -> int:
     for name in ("artifacts", ".auth"):
         shutil.rmtree(ROOT / name, ignore_errors=True)
@@ -161,7 +175,8 @@ def cmd_run(args: argparse.Namespace) -> int:
         command += ["-k", key]
     print(f"\n>>> {args.provider} / {args.game} — escenarios: {args.scenario} — DINERO REAL\n")
     code = subprocess.call(command, cwd=ROOT)
-    subprocess.call([PY, "scripts/report.py"], cwd=ROOT, stdout=subprocess.DEVNULL)
+    subprocess.call([PY, "scripts/make_report.py"], cwd=ROOT, stdout=subprocess.DEVNULL,
+                    env=dict(os.environ, PYTHONIOENCODING="utf-8"))
     summary()
     clean = subprocess.call([PY, "-m", "pytest", "tests/test_secret_hygiene.py", "-q", "-p", "no:cacheprovider"], cwd=ROOT,
                             env=dict(os.environ, PROVIDER=args.provider, GAME=args.game), stdout=subprocess.DEVNULL) == 0
@@ -188,11 +203,11 @@ def summary() -> None:
 
 
 def main() -> int:
-    commands = {"setup": cmd_setup, "test": cmd_test, "clean": cmd_clean}
+    commands = {"setup": cmd_setup, "test": cmd_test, "clean": cmd_clean, "inspect": cmd_inspect, "calibrate": cmd_calibrate}
     if len(sys.argv) > 1 and sys.argv[1] in commands:
         return commands[sys.argv[1]](argparse.Namespace())
     parser = argparse.ArgumentParser(
-        description="Validador de juegos de Betsson (visión por pantalla). Otros comandos: setup | test | clean.")
+        description="Validador de juegos de Betsson (visión por pantalla). Otros comandos: setup | test | inspect | calibrate | clean.")
     parser.add_argument("provider", nargs="?", default="Pragmatic Play")
     parser.add_argument("game", nargs="?", default="Bubble Up")
     parser.add_argument("-s", "--scenario", choices=list(SCENARIOS), default="all",

@@ -76,7 +76,8 @@ class BasePage:
                     log.info("find_first[%s]: funcionó %s", what, candidate.describe())
                     return visible
             if time.monotonic() >= deadline:
-                log.info("find_first[%s]: ninguna alternativa visible en %d ms", what, timeout)
+                quiet = what.startswith("pregame:") or what == "sesión-iniciada"
+                (log.debug if quiet else log.info)("find_first[%s]: ninguna alternativa visible en %d ms", what, timeout)
                 return None
             self.page.wait_for_timeout(POLL_MS)
 

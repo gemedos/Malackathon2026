@@ -130,6 +130,10 @@ class _Pending:
     frame: Optional[np.ndarray]   # se libera tras el OCR
 
 
+WIDE_EVERY = 3
+WIDE_READS_MAX = 8
+
+
 class SpinAttemptRecorder:
     def __init__(self, engine: VisionEngine, spin_template: np.ndarray,
                  busy_template: Optional[np.ndarray] = None):
@@ -143,6 +147,8 @@ class SpinAttemptRecorder:
         self._last_before: Optional[Tuple[np.ndarray, float]] = None
         self._click_timestamp: Optional[float] = None
         self._last_timestamp: Optional[float] = None
+        self._after_frames = 0
+        self._wide_reads = 0
 
     # ------------------------------------------------------------------ estado
 
@@ -246,6 +252,16 @@ class SpinAttemptRecorder:
         frame_path = self.engine.evidence.save_image(o.sample_id, 'frame', frame)
         readings = dict(self.engine.read_hud(frame, o.sample_id, o.timestamp))
         readings[MESSAGE_FIELD] = self.engine.read_message(frame, o.sample_id, o.timestamp)
+        if o.phase == AFTER:
+            self._after_frames += 1
+            # Respaldo: si el mensaje no está donde la calibración lo espera (otro juego), se lee la zona central
+            # entera en una de cada 3 capturas posteriores al clic (máx. WIDE_READS_MAX, es una lectura lenta).
+            if (not self.engine.is_insufficient_message(readings[MESSAGE_FIELD].raw_text)
+                    and self._wide_reads < WIDE_READS_MAX and self._after_frames % WIDE_EVERY == 1):
+                self._wide_reads += 1
+                wide = self.engine.read_wide_message(frame, o.sample_id, o.timestamp)
+                if self.engine.is_insufficient_message(wide.raw_text):
+                    readings[MESSAGE_FIELD] = wide
         return FrameRecord(
             sample_id=o.sample_id, timestamp=o.timestamp, phase=o.phase, frame_path=frame_path,
             readings=readings, ready=o.ready, motion=o.motion,

@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import io
 import logging
+import re
 import time
 from dataclasses import dataclass
 from typing import Any, Callable
@@ -40,6 +41,12 @@ class PregameError(RuntimeError):
     """Una pantalla previa (límites, aviso...) se detectó pero no se pudo resolver con sus pasos."""
 
 
+OVERLAY_CHECK_S = 3.0
+OVERLAY_SELECTOR = '[role="dialog"], [aria-modal="true"], fds-dialog, site-drawer'
+_SAFE_BUTTON = re.compile(r"\b(cerrar|aceptar|continuar|entendido|ok|de acuerdo|m[aá]s tarde|ahora no|omitir|close)\b|^\s*[x×✕]\s*$", re.I)
+_UNSAFE_BUTTON = re.compile(r"depos|compr|pagar|retir|jugar|apost|registr|inici(?:a|ar) sesi", re.I)
+
+
 @dataclass
 class GameSession:
     page: Page
@@ -60,6 +67,9 @@ class GamePage(BasePage):
         super().__init__(page, market, selectors)
         self.evidence = evidence
         self._pregame_checked = 0.0
+        self._overlay_checked = 0.0
+        self._overlay_reported: set[str] = set()
+        self._game_box: dict[str, float] | None = None
 
     # ------------------------------------------------------------------ público
 
@@ -81,6 +91,7 @@ class GamePage(BasePage):
             self._handle_session_limits()      # configuración antigua (session_limits_*)
         iframe = self._wait_iframe()
         box = self._wait_stable_box(iframe)
+        self._game_box = box
         self._assert_not_demo(iframe)
         self._wait_canvas(iframe)
         shot = self.evidence.screenshot(self.page, "game_loaded.png")
@@ -106,7 +117,12 @@ class GamePage(BasePage):
             log.info("Pantalla previa: %s", screen.name)
             for step in screen.steps:
                 alternatives = step if isinstance(step, list) else [step]
-                target = self.find_first(alternatives, 3000, what=f"pregame:{screen.name}")
+                target = self.find_first(alternatives, 1500 if all(a.optional for a in alternatives) else 3000,
+                                         what=f"pregame:{screen.name}")
+                if target is None and all(a.optional for a in alternatives):
+                    log.info("Pantalla previa %r: paso opcional ausente, se omite (%s)", screen.name,
+                             alternatives[0].describe())
+                    continue
                 if target is None:
                     shot = self.evidence.screenshot(self.page, "pregame_step_missing.png")
                     raise PregameError(f"Pantalla previa {screen.name!r}: no encuentro el paso {alternatives[0].describe()} "
@@ -119,7 +135,67 @@ class GamePage(BasePage):
                 self.page.wait_for_timeout(300)
             self.page.wait_for_timeout(700)
             return True
+        return self._dismiss_unknown_overlay()
+
+    def _dismiss_unknown_overlay(self) -> bool:
+        """Red de seguridad genérica: un diálogo/panel que tape el juego y no esté en las reglas del YAML.
+
+        Solo pulsa botones inequívocamente inocuos («Entendido», «Cerrar», «Más tarde»...) y nunca los que
+        mueven dinero o lanzan acciones (Depositar, Jugar...). Si no hay ninguno, lo deja registrado una vez
+        con su texto y una captura, para poder añadir la regla al YAML."""
+        now = time.monotonic()
+        if now - self._overlay_checked < OVERLAY_CHECK_S:
+            return False
+        self._overlay_checked = now
+        try:
+            overlays = self.page.locator(OVERLAY_SELECTOR)
+            for index in range(min(overlays.count(), 5)):
+                overlay = overlays.nth(index)
+                box = self._box(overlay)
+                if box is None or not self._covers_game(box):
+                    continue
+                text = " ".join((overlay.inner_text(timeout=500) or "").split())[:200]
+                button = self._safe_button(overlay)
+                if button is None:
+                    if text not in self._overlay_reported:
+                        self._overlay_reported.add(text)
+                        shot = self.evidence.screenshot(self.page, "overlay_unknown.png")
+                        log.warning("Diálogo desconocido sobre el juego, sin botón seguro que pulsar: %r "
+                                    "(evidencia: %s). Añade una regla en game_launch.pregame.", text,
+                                    self.evidence.relative(shot))
+                    continue
+                log.info("Diálogo genérico sobre el juego (%r): se cierra con un botón seguro", text)
+                button.click(timeout=2500)
+                self.page.wait_for_timeout(500)
+                return True
+        except Exception as exc:    # la red de seguridad nunca debe romper el flujo
+            log.debug("Detección genérica de diálogos falló: %s", type(exc).__name__)
         return False
+
+    def _covers_game(self, box: dict[str, float]) -> bool:
+        game = self._game_box
+        if game is None:
+            return box["width"] > 200 and box["height"] > 100
+        overlap_w = min(box["x"] + box["width"], game["x"] + game["width"]) - max(box["x"], game["x"])
+        overlap_h = min(box["y"] + box["height"], game["y"] + game["height"]) - max(box["y"], game["y"])
+        return overlap_w > 0 and overlap_h > 0 and overlap_w * overlap_h > 0.1 * game["width"] * game["height"]
+
+    @staticmethod
+    def _safe_button(overlay: Locator) -> Locator | None:
+        buttons = overlay.get_by_role("button")
+        for index in range(min(buttons.count(), 12)):
+            button = buttons.nth(index)
+            try:
+                if not button.is_visible():
+                    continue
+                label = " ".join(filter(None, [button.inner_text(timeout=300), button.get_attribute("aria-label")]))
+            except Exception:
+                continue
+            if _UNSAFE_BUTTON.search(label):
+                continue
+            if _SAFE_BUTTON.search(label):
+                return button
+        return None
 
     def _handle_session_limits(self) -> None:
         launch = self.selectors.game_launch

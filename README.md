@@ -16,7 +16,7 @@ login → proveedor → juego en Real Play  ──►    capturas del iframe →
 saldo Betsson (cabecera: DOM + OCR)            movimiento → reposo + botón listo → OCR por región
                                     └──────►   reglas deterministas → PASS / FAIL / INCONCLUSIVE
                                                          │
-artifacts/es/results.json ──► scripts/report.py ──► report.txt (RR-03) · report.html · resumen del job
+artifacts/es/results.json ──► scripts/make_report.py ──► report.txt (RR-03) · report.html · resumen del job
 ```
 
 | Pieza | Dónde |
@@ -25,7 +25,7 @@ artifacts/es/results.json ──► scripts/report.py ──► report.txt (RR-0
 | Puente navegador → visión | `src/validator/game/` (`driver.py` capturas y clics, `account.py` saldo Betsson, `scenarios.py` escenarios) |
 | Reglas de verificación (deterministas) | `vision-module/vision_engine/evaluation.py` |
 | Calibración de cada juego | `config/games/<proveedor>/<juego>.yaml` + `spin.png` (regiones normalizadas 0–1) |
-| Nombres de los checks e informe | `src/validator/checks.py`, `src/validator/report.py`, `scripts/report.py` |
+| Nombres de los checks e informe | `src/validator/checks.py`, `src/validator/report.py`, `scripts/make_report.py` |
 | Tests | `tests/test_navigation.py`, `tests/test_game_scenarios.py` (dinero real), `tests/test_game_flow_offline.py` (juego falso) |
 
 ### Puesta en marcha rápida (macOS)
@@ -139,7 +139,7 @@ En `artifacts/es/`:
 
 - `results.json`: un registro por check (escenario, mercado, proveedor, juego, check, estado
   `pass|fail|inconclusive|not_run|error`, esperado, detalle, evidencia). Es la fuente única del informe.
-- `report.txt` (formato RR-03), `report.html` (con miniaturas de evidencia) y `summary.md`: `python scripts/report.py`.
+- `report.txt` (formato RR-03), `report.html` (con miniaturas de evidencia) y `summary.md`: `python scripts/make_report.py`.
 - `run.log`.
 - `<proveedor>/<juego>/`: `provider_page.png`, `game_card.png`, `game_loaded.png`, `video.webm` y
   `trace.zip`. La traza se abre con `python -m playwright show-trace <ruta>/trace.zip`.

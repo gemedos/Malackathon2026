@@ -62,6 +62,7 @@ Variantes:
 | `python run.py --headless` | sin ventana de navegador |
 | `python run.py "Pragmatic Play" "Gates of Olympus"` | otro juego del proveedor (ver «Otros juegos») |
 | `python run.py test` | pruebas **sin dinero real** ni betsson.es (visión + un juego falso local) |
+| `python run.py inspect "Pragmatic Play" "Bubble Up"` | abre el juego **sin apostar** y lista los diálogos/botones visibles (útil si algo no se detecta) |
 | `python run.py clean` | borra evidencias locales (`artifacts/`, `.auth/`) |
 
 Cada ejecución borra las evidencias de la anterior (usa `--keep` para conservarlas).
@@ -86,7 +87,7 @@ Los detalles están en `artifacts/es/`:
 
 | Archivo | Contenido |
 | --- | --- |
-| `report.html` / `report.txt` | informe de la ejecución |
+| `report.html` / `report.txt` | informe de la ejecución, generado por `scripts/make_report.py` (`python scripts/make_report.py` lo regenera) |
 | `results.json` | cada check con su estado, detalle y evidencia |
 | `run.log` | registro paso a paso (empieza aquí si algo falla) |
 | `<proveedor>/<juego>/<escenario>/video.webm` | vídeo de la prueba |
@@ -105,10 +106,19 @@ Los detalles están en `artifacts/es/`:
 
 ## 7. Otros juegos y proveedores
 
-El flujo es general. Cada proveedor tiene una calibración por defecto en `config/games/<proveedor>/_default.yaml`
-(regiones de pantalla normalizadas, plantilla del botón Spin, textos de reposo) y cada juego puede sobrescribirla con
-`config/games/<proveedor>/<juego>.yaml`. La de Pragmatic Play está **validada con Bubble Up**; en otros juegos puede
-requerir ajustar las regiones. Guía de calibración: sección «Calibrar un juego» del [README](README.md).
+El flujo es general y **se calibra solo**: `python run.py "<proveedor>" "<juego>"` funciona con cualquier juego.
+
+1. Si el juego tiene su YAML (`config/games/<proveedor>/<juego>.yaml`), se usa.
+2. Si no, se prueba la calibración del proveedor (`_default.yaml`, validada con Pragmatic Play).
+3. Si el HUD no coincide, o el proveedor no tiene calibración, **el programa calibra el juego en esa misma sesión**
+   (sin apostar): pulsa pantallas de inicio («CONTINUAR», «JUGAR»...), localiza saldo, apuesta y premio en pantalla,
+   escribe el YAML del juego y sigue con las pruebas. La siguiente ejecución ya lo reutiliza.
+
+La calibración automática es una propuesta: los saldos se siguen verificando después del giro, así que una región mal
+puesta acaba en INCONCLUSIVE y nunca en un PASS falso. Para revisarla a mano:
+`python run.py calibrate "<proveedor>" "<juego>"` (deja `calibration/<proveedor>/<juego>/annotated-auto.png` con las
+regiones y los posibles botones Spin; `--reuse` reutiliza las capturas ya hechas). Límites conocidos: texto del HUD
+muy pequeño, botón Spin sin forma circular y mensajes de error en posiciones muy distintas pueden requerir ajuste manual.
 
 ## 8. Estructura del código
 

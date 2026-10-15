@@ -54,3 +54,13 @@ def test_notice_is_closed_before_tournament_panel(browser) -> None:
     assert page.evaluate("window.noticeDone") is True
     assert page.evaluate("window.tourDone") is True
     assert steps == 2
+
+
+def test_optional_step_is_skipped(browser) -> None:
+    """Sin saldo el formulario de límites no ofrece el gasto: el paso opcional se omite y el envío se pulsa."""
+    page = browser.new_page()
+    page.set_content('<div data-test-id="session-settings"><button data-test-id="session-settings_time-limit-option-3600">1h</button>'
+                     '<button data-test-id="session-settings_submit-button-btn-1" onclick="window.sent=true">Iniciar sesión</button></div>')
+    game_page = GamePage(page, load_market("es"), load_selectors("es"), object())  # type: ignore[arg-type]
+    assert game_page.handle_pregame() is True
+    assert page.evaluate("window.sent") is True

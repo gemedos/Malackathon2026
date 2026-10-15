@@ -2,7 +2,7 @@ import unittest
 from decimal import Decimal
 
 from vision_engine.currency import detect_currency
-from vision_engine.money import parse_money, reconcile
+from vision_engine.money import parse_money, parse_money_lenient, reconcile
 
 
 class MoneyTests(unittest.TestCase):
@@ -15,6 +15,13 @@ class MoneyTests(unittest.TestCase):
         for text in ('', '12.3', '10.00 20.00', '1,23.45', '1.234.56', 'EUR'):
             with self.assertRaises(ValueError):
                 parse_money(text)
+
+    def test_lenient_accepts_swapped_decimal_only_when_unambiguous(self):
+        self.assertEqual(parse_money_lenient('GANANCIA 1.60 €', ','), Decimal('1.60'))
+        self.assertEqual(parse_money_lenient('1,60', ','), Decimal('1.60'))
+        for text in ('', '1.600', '12.3', '1.60 2.00', 'GANANCIA', '1.234.56'):
+            with self.assertRaises(ValueError):
+                parse_money_lenient(text, ',')
 
     def test_invalid_separator(self):
         with self.assertRaises(ValueError):
@@ -41,3 +48,15 @@ class CurrencyTests(unittest.TestCase):
         for text in ('', 'E0R', 'EUR PEN', '10.00'):
             with self.assertRaises(ValueError):
                 detect_currency(text)
+
+
+class IntegerAmountTest(unittest.TestCase):
+    """Hay juegos que muestran la apuesta sin decimales («2 €»): solo se acepta si el llamador lo permite."""
+
+    def test_integer_needs_permission(self):
+        from vision_engine.money import parse_money_lenient
+        self.assertEqual(parse_money_lenient('2€', ',', integer_ok=True), Decimal('2'))
+        with self.assertRaises(ValueError):
+            parse_money_lenient('2€', ',')
+        with self.assertRaises(ValueError):
+            parse_money_lenient('2 5', ',', integer_ok=True)   # dos números: sigue siendo ambiguo
