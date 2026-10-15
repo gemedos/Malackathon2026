@@ -137,6 +137,9 @@ class GameProfile:
     # giro terminado = el control Spin vuelve a estar listo tras verse ocupado.
     settle: str = 'motion'
     idle_patterns: Tuple[re.Pattern, ...] = ()      # línea de premio sin ganancia, p. ej. «haga su apuesta»
+    # HUD con importes en texto blanco: (saturación máx., brillo mín.) en HSV para aislar SOLO ese texto antes del
+    # OCR (sin fondo, brillos ni etiquetas de color). None = preprocesado por defecto (Otsu en gris).
+    light_text: Optional[Tuple[int, int]] = None
 
     @classmethod
     def load(cls, path: str | Path, markets: Optional[Mapping[str, Market]] = None) -> 'GameProfile':
@@ -220,7 +223,17 @@ class GameProfile:
             empty_region_max_std=_number(data.get('empty_region_max_std', 4.0), 'empty_region_max_std'),
             settle=_settle(data.get('settle', 'motion')),
             idle_patterns=_idle_patterns(data.get('idle_patterns', [])),
+            light_text=_light_text(data.get('light_text')),
         )
+
+
+def _light_text(value: Any) -> Optional[Tuple[int, int]]:
+    if value is None:
+        return None
+    if not (isinstance(value, Mapping) and set(value) == {'max_saturation', 'min_value'}
+            and all(isinstance(v, int) and not isinstance(v, bool) and 0 <= v <= 255 for v in value.values())):
+        raise ProfileError('light_text debe ser {max_saturation: 0-255, min_value: 0-255}')
+    return value['max_saturation'], value['min_value']
 
 
 def _settle(value: Any) -> str:

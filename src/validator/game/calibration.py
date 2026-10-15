@@ -87,6 +87,7 @@ class GameCalibration(BaseModel):
     payout_empty_is_zero: bool = False
     setup_clicks: list[SetupClick] = Field(default_factory=list)
     min_bet: MinBet | None = None              # bajar a la apuesta mínima antes del escenario
+    light_text: dict[str, int] | None = None   # importes en texto blanco: {max_saturation, min_value} (HSV)
     insufficient_window_seconds: float = Field(default=5.0, gt=0)
     motion: dict[str, float] = Field(default_factory=dict)
     consensus: dict[str, float] = Field(default_factory=dict)
@@ -197,6 +198,7 @@ def build_profile(calibration: GameCalibration, market: MarketConfig, frame_size
         "ready": calibration.ready,
         "settle": calibration.settle,
         "idle_patterns": calibration.idle_patterns,
+        "light_text": calibration.light_text,
     }
     return GameProfile.from_dict(data, {market.market: vision_market(market)})
 

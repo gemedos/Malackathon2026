@@ -27,6 +27,10 @@ settle: ready
 # Separadores tolerantes: Tesseract 5.4 (Windows) lee los espacios de este texto como comillas («haga"su"apuesta»).
 # Tras un giro perdido la línea alterna con «¡BUENA SUERTE!» (run 38768481527). Sin dígitos = premio 0,00.
 idle_patterns: ["haga\\W*su\\W*apuest", "su\\W*apuest", "buena\\W*suerte"]
+# Importes del HUD (crédito, apuesta, «GANANCIA x,xx €») en blanco puro sobre fondo rosa con brillos: se aísla solo ese
+# texto antes del OCR. Medido sobre 91 recortes reales de Sweet Bonanza (2026-10-15): 21/21 saldos, 51/51 apuestas
+# y 12/12 premios correctos, 0 erróneos (antes: «48,14» leído «4,14» y premios con ganancia ilegibles).
+light_text: {max_saturation: 25, min_value: 235}
 payout_empty_is_zero: false
 setup_clicks: []
 # Apuesta mínima (CLAUDE.md §3): el juego recuerda la última apuesta, así que se pulsa «−» hasta que la apuesta leída

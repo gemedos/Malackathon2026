@@ -14,7 +14,7 @@ from .currency import detect_currency
 from .errors import OcrUnavailableError, ProfileError
 from .evidence import EvidenceStore
 from .geometry import ROI
-from .imaging import preprocess_for_ocr, to_gray
+from .imaging import preprocess_for_ocr, preprocess_light_text, to_gray
 from .messages import normalize_text
 from .money import parse_money
 from .profile import GameProfile
@@ -30,6 +30,10 @@ MONEY_CHARS = '0123456789.,€'
 
 # (imagen preprocesada, idioma, config de Tesseract) -> texto. Inyectable en pruebas.
 OcrBackend = Callable[[np.ndarray, str, str], str]
+
+
+def _digits(text: str) -> str:
+    return ''.join(c for c in text if c.isdigit())
 
 
 def _locate_tesseract(pytesseract) -> None:
@@ -87,9 +91,15 @@ class FieldReader:
             raise ProfileError(f'Campo OCR desconocido {field!r}')
         crop = (roi or self.profile.regions[field]).crop(frame)
         money = field in MONEY_FIELDS
+        light = self.profile.light_text if money else None
         # Saldo y apuesta solo contienen importes; el premio se lee sin lista porque puede mostrar «haga su apuesta».
-        whitelist = money and field != 'payout'
-        processed = preprocess_for_ocr(crop, MONEY_UPSCALE) if money else preprocess_for_ocr(crop)
+        # Con light_text solo queda el texto blanco (sin etiquetas de color): el importe se lee con lista y el
+        # mensaje de reposo con una lectura aparte sin ella.
+        whitelist = money and (field != 'payout' or light is not None)
+        if light is not None:
+            processed = preprocess_light_text(crop, *light)
+        else:
+            processed = preprocess_for_ocr(crop, MONEY_UPSCALE) if money else preprocess_for_ocr(crop)
         crop_path = self.evidence.save_image(sample_id, field, crop)
         processed_path = self.evidence.save_image(sample_id, f'{field}-ocr', processed)
         if field == 'payout' and self._is_empty(crop):
@@ -101,16 +111,25 @@ class FieldReader:
         value, error = self._interpret(field, raw)
         if whitelist and value is None:
             # Otros modos de segmentación (palabra / línea cruda) corrigen lecturas fallidas distintas por
-            # versión de Tesseract. La interpretación sigue siendo estricta: no se adivina nada.
+            # versión de Tesseract. Solo se aceptan si conservan las MISMAS cifras que la lectura principal
+            # (p. ej. «4814» -> «48,14»): un modo que pierde una cifra («4,14») daría un valor erróneo.
+            primary_digits = _digits(raw)
             for psm in (8, 13):
                 retry = self.backend(processed, self.profile.ocr_language,
                                      f'--psm {psm} -c tessedit_char_whitelist={MONEY_CHARS}').strip()
                 alt_value, alt_error = self._interpret(field, retry)
+                if alt_value is not None and primary_digits and _digits(retry) != primary_digits:
+                    error = f'Lecturas con cifras distintas ({raw!r} / {retry!r}): no se acepta ninguna'
+                    continue
                 if alt_value is not None:
                     raw, value, error = retry, alt_value, alt_error
                     break
-        if field == 'payout' and value is None and self._shows_idle_prompt(raw):
-            value, error = '0.00', None       # la línea de premio muestra el mensaje de reposo, sin importe
+        if field == 'payout' and value is None:
+            idle_raw = raw
+            if light is not None:   # el texto de reposo tiene letras: lectura sin lista de caracteres
+                idle_raw = self.backend(processed, self.profile.ocr_language, '--psm 7').strip()
+            if self._shows_idle_prompt(idle_raw):
+                raw, value, error = idle_raw, '0.00', None   # mensaje de reposo, sin importe
         return OcrReading(field, sample_id, timestamp, raw, value, error, crop_path, processed_path)
 
     def _shows_idle_prompt(self, raw: str) -> bool:
