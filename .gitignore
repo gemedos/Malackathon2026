@@ -26,3 +26,6 @@ ignore/
 
 artifacts.zip
 ignore/
+
+# Archivos de sistema de macOS
+.DS_Store
