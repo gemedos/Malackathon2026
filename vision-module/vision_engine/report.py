@@ -36,6 +36,7 @@ LABELS = {
     'wager_consistent': 'Wager used matches displayed wager',
     'in_game_balance': 'In-game balance validated',
     'betsson_balance': 'Betsson balance validated',
+    'message_visible': 'Message visible',
     'rejection_message': 'Insufficient-balance message detected',
     'message_language': 'Message language validated',
     'in_game_balance_unchanged': 'In-game balance unchanged',
@@ -46,6 +47,8 @@ LABELS = {
 
 @dataclass(frozen=True)
 class TestResult:
+    __test__ = False   # no es un test de pytest
+
     test_id: str
     market: Market
     scenario: str

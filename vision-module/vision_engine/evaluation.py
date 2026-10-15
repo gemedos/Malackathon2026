@@ -12,12 +12,14 @@ INCONCLUSIVE significa "no se pudo verificar": nunca se informa PASS sin pruebas
 """
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from decimal import Decimal
 from typing import Iterable, List, Optional, Sequence, Tuple
 
 from .consensus import consensus, spaced_indices
 from .language import detect_language
+from .messages import normalize_text
 from .money import reconcile
 from .ocr import BETSSON_BALANCE_FIELD, OcrReading
 from .profile import ConsensusSettings
@@ -94,6 +96,7 @@ def evaluate_insufficient(record: ScenarioRecord, betsson: Optional[BetssonBalan
     initial, result = _money('initial_balance', 'balance', before, record)
     results.append(result)
     results.append(_currency(before + after, record))
+    results.append(_message_visible(record))
     message = _rejection_message(record)
     results.append(message)
     results.append(_message_language(record))
@@ -218,6 +221,21 @@ def _betsson_reconciliation(betsson: Optional[BetssonBalance], wager, payout) ->
 
 
 # --------------------------------------------------------------------------- SC-02
+
+def _message_visible(record: ScenarioRecord) -> AssertionResult:
+    """Aparece algún texto legible (>= 2 palabras) en la región de mensaje tras el intento."""
+    frames = [f for f in record.after_frames
+              if len(re.findall(r'[a-z]{2,}', normalize_text(f.readings['message'].raw_text))) >= 2]
+    evidence = tuple(f.readings['message'].crop_path for f in frames)
+    settings = record.profile.consensus
+    count = len(spaced_indices([f.timestamp for f in frames], settings.min_separation_seconds))
+    if count >= settings.min_readings:
+        return AssertionResult('message_visible', PASS,
+                               f'Texto visible en {count} frames: {frames[-1].readings["message"].raw_text!r}',
+                               evidence)
+    return AssertionResult('message_visible', INCONCLUSIVE,
+                           f'Texto visible en {count} frames separados de {settings.min_readings} requeridos', evidence)
+
 
 def _rejection_message(record: ScenarioRecord) -> AssertionResult:
     matched = [f for f in record.after_frames if f.insufficient_message]

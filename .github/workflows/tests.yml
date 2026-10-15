@@ -2274,16 +2274,20 @@ jobs:
           pip install -r requirements.txt
           python -m playwright install --with-deps chromium
 
-      # Todos los tests salvo el de higiene (los escenarios futuros se añadirán aquí solos).
-      - name: Tests
-        run: pytest tests --ignore=tests/test_secret_hygiene.py
+      # Solo navegación: los escenarios con dinero real van en scenarios.yml (un juego, no lotes).
+      - name: Tests de navegación
+        run: pytest tests/test_navigation.py
+
+      - name: Informe
+        if: always()
+        run: python scripts/report.py
 
       - name: Test de higiene de secretos
         id: hygiene
         if: always()
         run: pytest tests/test_secret_hygiene.py
 
-      # Evidencias crudas para depurar (aún no se genera informe).
+      # Evidencias e informe (artifacts/es/report.html).
       # Solo se suben si la higiene pasó: nunca se publica un artifact con secretos.
       - name: Subir evidencias
         if: always() && steps.hygiene.outcome == 'success'

@@ -1,6 +1,6 @@
 """Resultados por check (escenario + mercado + proveedor + juego + nombre), sin credenciales.
 
-`navigation_results.json` es el dato crudo del que saldrá el informe (aún no se genera ningún informe).
+`artifacts/<mercado>/results.json` es la fuente única del informe (scripts/report.py).
 """
 
 from __future__ import annotations
@@ -22,9 +22,11 @@ class CheckResult:
     provider: str
     game: str
     check: str
-    status: str            # pass | fail | not_run
+    status: str            # pass | fail | inconclusive | not_run | error
     detail: str = ""
     evidence: str | None = None
+    expected: str = ""
+    observed: str = ""
 
 
 @dataclass

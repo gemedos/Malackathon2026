@@ -1,11 +1,58 @@
 # Malackathon 2026 — Betsson Intelligent Game Validation
 
 Prueba de concepto que valida un juego de casino **como lo haría un jugador** en
-[betsson.es](https://www.betsson.es). Este módulo cubre la **navegación**: desde abrir betsson.es hasta
-tener el juego cargado en **Real Play** (dinero real). La capa de visión dentro del canvas se construirá
-sobre la `GameSession` que devuelve este módulo.
+[betsson.es](https://www.betsson.es): navega, inicia sesión, abre un juego de Pragmatic Play en **Real Play**
+y valida los dos escenarios del reto **leyendo la pantalla** (OCR y visión), sin tocar el DOM del juego.
 
 > Las reglas del proyecto están en [CLAUDE.md](CLAUDE.md) y son obligatorias.
+
+## Flujo completo
+
+```
+Playwright (src/validator)                     Visión (vision-module/vision_engine)
+login → proveedor → juego en Real Play  ──►    capturas del iframe → Spin localizado → UN clic
+saldo Betsson (cabecera: DOM + OCR)            movimiento → reposo + botón listo → OCR por región
+                                    └──────►   reglas deterministas → PASS / FAIL / INCONCLUSIVE
+                                                         │
+artifacts/es/results.json ──► scripts/report.py ──► report.txt (RR-03) · report.html · resumen del job
+```
+
+| Pieza | Dónde |
+| --- | --- |
+| Navegación, login, page objects | `src/validator/` (`navigation.py`, `pages/`) |
+| Puente navegador → visión | `src/validator/game/` (`driver.py` capturas y clics, `account.py` saldo Betsson, `scenarios.py` escenarios) |
+| Reglas de verificación (deterministas) | `vision-module/vision_engine/evaluation.py` |
+| Calibración de cada juego | `config/games/<proveedor>/<juego>.yaml` + `spin.png` (regiones normalizadas 0–1) |
+| Nombres de los checks e informe | `src/validator/checks.py`, `src/validator/report.py`, `scripts/report.py` |
+| Tests | `tests/test_navigation.py`, `tests/test_game_scenarios.py` (dinero real), `tests/test_game_flow_offline.py` (juego falso) |
+
+### Puesta en marcha rápida (macOS)
+
+```bash
+brew install tesseract tesseract-lang     # OCR con español
+make setup                                # .venv + dependencias + Chromium
+make test                                 # pruebas sin dinero real ni betsson.es (incluye un juego falso en Chromium)
+cp .env.example .env                      # rellenar SOLO en tu máquina
+make calibrate                            # capturas reales del juego (sin spins) + config/games/...yaml
+make calibrate-check IMAGE=calibration/pragmatic-play/sweet-bonanza/frame-00.png
+make scenarios                            # Escenarios 1 y 2 con DINERO REAL + informe en artifacts/es/
+```
+
+`PROVIDER` y `GAME` se cambian así: `make scenarios PROVIDER="Pragmatic Play" GAME="Gates of Olympus"`.
+
+### Calibrar un juego (obligatorio antes de los escenarios)
+
+Sin calibración el resultado es INCONCLUSIVE, nunca PASS.
+
+1. `make calibrate` abre el juego (sin jugar) y guarda capturas en `calibration/<proveedor>/<juego>/`
+   (local, en `.gitignore`) y un esqueleto `config/games/<proveedor>/<juego>.yaml`.
+2. Recorta el botón Spin de una captura y guárdalo como `spin.png` junto al YAML.
+3. Ajusta las regiones `[x, y, ancho, alto]` como fracciones del iframe (p. ej. píxel 320 de 1280 = 0.25):
+   `balance`, `wager`, `payout`, `currency`, `reels`, `message` y `spin_search`.
+4. `make calibrate-check IMAGE=...` imprime lo que lee cada región y guarda una imagen anotada.
+5. Si el juego oculta el premio al perder, comprueba en capturas y pon `payout_empty_is_zero: true`.
+   Para apostar la mínima, añade `setup_clicks` (cada clic se verifica por cambio visible).
+6. Solo cuando todo se lea bien: `calibrated: true`.
 
 ## Instalación
 
@@ -51,7 +98,8 @@ ejecución programada. Para el workflow de catálogo hace falta además `CATALOG
 ## Ejecutar en local
 
 ```bash
-pytest tests --provider "Pragmatic Play" --game "Sweet Bonanza"
+pytest tests --provider "Pragmatic Play" --game "Sweet Bonanza"   # sin escenarios de dinero real
+pytest tests/test_game_scenarios.py -m real_money --provider "Pragmatic Play" --game "Sweet Bonanza"
 pytest tests --game "Pragmatic Play / Sweet Bonanza"            # formato del desplegable
 pytest tests --provider "PlaynGo"                               # todos los juegos del proveedor
 pytest tests --provider "Pragmatic Play" --game "Gates of Olympus" --headed
@@ -83,15 +131,18 @@ falla y lista las candidatas que encontró (`Sweet Bonanza 1000`, `Sweet Bonanza
 3. Espera el iframe (tamaño mínimo y estable 2 s) y el canvas (capturas cada 500 ms hasta que dos
    seguidas casi no difieran; timeout de 60 s).
 
-### Datos que genera (todavía no hay informe)
+### Datos que genera
 
 En `artifacts/es/`:
 
-- `navigation_results.json`: un registro por check (escenario, mercado, proveedor, juego, check, estado,
-  detalle, evidencia). Es la fuente de la que saldrá el informe cuando terminen los escenarios.
+- `results.json`: un registro por check (escenario, mercado, proveedor, juego, check, estado
+  `pass|fail|inconclusive|not_run|error`, esperado, detalle, evidencia). Es la fuente única del informe.
+- `report.txt` (formato RR-03), `report.html` (con miniaturas de evidencia) y `summary.md`: `python scripts/report.py`.
 - `run.log`.
 - `<proveedor>/<juego>/`: `provider_page.png`, `game_card.png`, `game_loaded.png`, `video.webm` y
   `trace.zip`. La traza se abre con `python -m playwright show-trace <ruta>/trace.zip`.
+- `<proveedor>/<juego>/<escenario>/vision/`: cada fotograma, los recortes OCR (original y preprocesado),
+  `annotated-before.png` / `annotated-after.png` (regiones con los valores leídos) y `spin-strip.png`.
 
 ## Catálogo de proveedores y juegos
 
@@ -132,6 +183,13 @@ compartas un script o captura con credenciales.
 
 ## GitHub Actions
 
+### `Escenarios betsson.es` (`.github/workflows/scenarios.yml`)
+
+**Actions → Escenarios betsson.es → Run workflow** con proveedor y juego (calibrado). Ejecuta las pruebas sin
+dinero real, después el Escenario 1 (cuenta FUNDED) y el 2 (cuenta EMPTY), genera el informe (también en el
+resumen del job), pasa el test de higiene y sube `artifacts/` como artifact. Necesita Tesseract, que el
+workflow instala con `apt-get`.
+
 ### `Tests betsson.es` (`.github/workflows/tests.yml`)
 
 **Actions → Tests betsson.es → Run workflow**:
@@ -147,12 +205,12 @@ Jobs:
 
 1. `plan`: valida la selección contra el catálogo y reparte los juegos en lotes de 20.
 2. `Lote N` (matriz con `max-parallel: 1`): los lotes van de uno en uno, porque todos usan la misma
-   cuenta de dinero real. Cada lote hace login una vez y ejecuta `pytest tests` (todos los tests salvo el
-   de higiene) sobre sus juegos. Después pasa el test de higiene (`if: always()`), sube las evidencias
+   cuenta de dinero real. Cada lote hace login una vez y ejecuta `pytest tests/test_navigation.py` sobre
+   sus juegos (nunca escenarios con dinero real) y genera el informe. Después pasa el test de higiene (`if: always()`), sube las evidencias
    **solo si la higiene pasó** (nunca `.auth/`) y borra `.auth`.
 
 Hay además una ejecución programada (`schedule`) con un solo juego (`vars.DEFAULT_GAME`, por defecto
-`Pragmatic Play / Sweet Bonanza`). Todavía no se genera informe: solo los datos crudos y las evidencias.
+`Pragmatic Play / Sweet Bonanza`).
 
 ### `Actualizar catálogo` (`.github/workflows/update-catalog.yml`)
 

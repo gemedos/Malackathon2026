@@ -5,18 +5,22 @@ Este módulo no hace clics. Flujo con el equipo Playwright:
     recorder.observe_before(frame, t)       # >= 3 frames para consenso inicial
     hit = recorder.register_click(t)        # justo ANTES de clicar; falla si no hay Spin
     page.mouse.click(*page_point(hit.point, ...))   # exactamente un intento
-    recorder.observe_after(frame, t)        # hasta reposo + lecturas estables o timeout
-    record = recorder.record()
+    recorder.observe_after(frame, t)        # hasta settled_count() suficiente o timeout
+    record = recorder.record()              # aquí se hace el OCR de todos los frames
+
+Durante la captura solo se calculan movimiento y control listo (rápido); el OCR se
+difiere a record() para no frenar el muestreo mientras giran los rodillos.
 
 Tras un timeout no se reintenta: el resultado es INCONCLUSIVE.
 """
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Mapping, Optional, Tuple
+from typing import List, Mapping, Optional, Tuple
 
 import numpy as np
 
+from .consensus import spaced_indices
 from .engine import VisionEngine
 from .errors import SequenceError, SpinNotFoundError
 from .matching import TemplateMatch
@@ -77,6 +81,23 @@ class ScenarioRecord:
                 'frames': [f.to_dict() for f in self.frames]}
 
 
+@dataclass(frozen=True)
+class FrameObservation:
+    """Lo que se sabe de un frame mientras se captura (sin OCR, que se hace al cerrar con record())."""
+
+    sample_id: str
+    timestamp: float
+    phase: str
+    ready: ReadyObservation
+    motion: Optional[MotionObservation]
+
+
+@dataclass
+class _Pending:
+    observation: FrameObservation
+    frame: Optional[np.ndarray]   # se libera tras el OCR
+
+
 class SpinAttemptRecorder:
     def __init__(self, engine: VisionEngine, spin_template: np.ndarray,
                  busy_template: Optional[np.ndarray] = None):
@@ -84,29 +105,54 @@ class SpinAttemptRecorder:
         self.spin_template = spin_template
         self.ready_detector = ReadyDetector(engine.profile, spin_template, busy_template)
         self.tracker = MotionTracker(engine.roi('reels'), engine.profile.motion)
-        self._frames: list = []
+        self._pending: List[_Pending] = []
+        self._records: List[FrameRecord] = []
         self._spin: Optional[TemplateMatch] = None
         self._last_before: Optional[Tuple[np.ndarray, float]] = None
         self._click_timestamp: Optional[float] = None
         self._last_timestamp: Optional[float] = None
+
+    # ------------------------------------------------------------------ estado
 
     @property
     def clicked(self) -> bool:
         return self._click_timestamp is not None
 
     @property
+    def click_timestamp(self) -> Optional[float]:
+        return self._click_timestamp
+
+    @property
+    def spin(self) -> Optional[TemplateMatch]:
+        return self._spin
+
+    @property
     def last_motion_state(self) -> Optional[MotionState]:
-        after = [f for f in self._frames if f.phase == AFTER]
+        after = self._after()
         return after[-1].motion.state if after else None
 
-    def observe_before(self, frame: np.ndarray, timestamp: float) -> FrameRecord:
+    def settled_count(self) -> int:
+        """Frames en reposo con control listo tras el último movimiento, separados en el tiempo."""
+        after = self._after()
+        last_motion = max((i for i, o in enumerate(after) if o.motion.state is MotionState.MOTION), default=-1)
+        settled = [o.timestamp for o in after[last_motion + 1:]
+                   if o.motion.state is MotionState.QUIET_AFTER_MOTION and o.ready.ready]
+        return len(spaced_indices(settled, self.engine.profile.consensus.min_separation_seconds))
+
+    def after_count(self) -> int:
+        return len(spaced_indices([o.timestamp for o in self._after()],
+                                  self.engine.profile.consensus.min_separation_seconds))
+
+    # ------------------------------------------------------------------ secuencia
+
+    def observe_before(self, frame: np.ndarray, timestamp: float) -> FrameObservation:
         if self.clicked:
             raise SequenceError('El clic ya se registró; usar observe_after')
         self._advance(timestamp)
         self.engine.check_size(frame)
         self._spin = self.engine.locate_spin(frame, self.spin_template)
         self._last_before = (frame, timestamp)
-        return self._capture(frame, timestamp, BEFORE, None)
+        return self._keep(frame, timestamp, BEFORE, None)
 
     def register_click(self, timestamp: float) -> TemplateMatch:
         """Registra el ÚNICO intento. Devuelve dónde clicar o lanza si falta evidencia."""
@@ -122,32 +168,44 @@ class SpinAttemptRecorder:
         self._click_timestamp = timestamp
         return self._spin
 
-    def observe_after(self, frame: np.ndarray, timestamp: float) -> FrameRecord:
+    def observe_after(self, frame: np.ndarray, timestamp: float) -> FrameObservation:
         if not self.clicked:
             raise SequenceError('Registrar el clic antes de observar frames posteriores')
         self._advance(timestamp)
         self.engine.check_size(frame)
-        motion = self.tracker.observe(frame, timestamp)
-        return self._capture(frame, timestamp, AFTER, motion)
+        return self._keep(frame, timestamp, AFTER, self.tracker.observe(frame, timestamp))
 
     def record(self) -> ScenarioRecord:
+        """Hace el OCR pendiente (guardando evidencias) y devuelve el registro completo."""
+        for pending in self._pending[len(self._records):]:
+            self._records.append(self._read(pending))
+            pending.frame = None
         return ScenarioRecord(self.engine.profile, self._spin, self._click_timestamp,
-                              tuple(self._frames), self.tracker.summary)
+                              tuple(self._records), self.tracker.summary)
+
+    # ------------------------------------------------------------------ interno
+
+    def _after(self) -> List[FrameObservation]:
+        return [p.observation for p in self._pending if p.observation.phase == AFTER]
 
     def _advance(self, timestamp: float) -> None:
         if self._last_timestamp is not None and timestamp <= self._last_timestamp:
             raise SequenceError('Los timestamps deben ser estrictamente crecientes (reloj monotónico)')
         self._last_timestamp = timestamp
 
-    def _capture(self, frame: np.ndarray, timestamp: float, phase: str,
-                 motion: Optional[MotionObservation]) -> FrameRecord:
-        sample_id = f'{phase}-{len(self._frames):03d}'
-        frame_path = self.engine.evidence.save_image(sample_id, 'frame', frame)
-        readings = dict(self.engine.read_hud(frame, sample_id, timestamp))
-        readings[MESSAGE_FIELD] = self.engine.read_message(frame, sample_id, timestamp)
-        record = FrameRecord(
-            sample_id=sample_id, timestamp=timestamp, phase=phase, frame_path=frame_path,
-            readings=readings, ready=self.ready_detector.observe(frame), motion=motion,
+    def _keep(self, frame: np.ndarray, timestamp: float, phase: str,
+              motion: Optional[MotionObservation]) -> FrameObservation:
+        observation = FrameObservation(f'{phase}-{len(self._pending):03d}', timestamp, phase,
+                                       self.ready_detector.observe(frame), motion)
+        self._pending.append(_Pending(observation, frame.copy()))
+        return observation
+
+    def _read(self, pending: _Pending) -> FrameRecord:
+        o, frame = pending.observation, pending.frame
+        frame_path = self.engine.evidence.save_image(o.sample_id, 'frame', frame)
+        readings = dict(self.engine.read_hud(frame, o.sample_id, o.timestamp))
+        readings[MESSAGE_FIELD] = self.engine.read_message(frame, o.sample_id, o.timestamp)
+        return FrameRecord(
+            sample_id=o.sample_id, timestamp=o.timestamp, phase=o.phase, frame_path=frame_path,
+            readings=readings, ready=o.ready, motion=o.motion,
             insufficient_message=self.engine.is_insufficient_message(readings[MESSAGE_FIELD].raw_text))
-        self._frames.append(record)
-        return record

@@ -14,3 +14,6 @@ __pycache__/
 *.pyc
 .venv/
 .pytest_cache/
+
+# Capturas locales de calibración (scripts/calibrate.py)
+calibration/

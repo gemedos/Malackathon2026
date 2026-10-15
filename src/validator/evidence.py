@@ -35,6 +35,10 @@ class Evidence:
     def for_game(self, provider: str, game: str) -> "Evidence":
         return Evidence(self.market, f"{slugify(provider)}/{slugify(game)}")
 
+    def for_scenario(self, provider: str, game: str, scenario: str) -> "Evidence":
+        """`artifacts/<mercado>/<proveedor>/<juego>/<escenario>/` (traza, vídeo y visión propios)."""
+        return Evidence(self.market, f"{slugify(provider)}/{slugify(game)}/{scenario}")
+
     # -- rutas -------------------------------------------------------------
 
     def path(self, name: str) -> Path:

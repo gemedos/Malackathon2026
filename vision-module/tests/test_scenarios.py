@@ -129,8 +129,10 @@ class RecorderTests(unittest.TestCase):
             self.recorder.register_click(0.2)
         with self.assertRaises(SequenceError):
             self.recorder.observe_before(frame_with(self.template), 0.3)
-        record = self.recorder.observe_after(frame_with(self.template), 0.4)
-        self.assertEqual(record.readings['balance'].value, '10.00')
+        self.recorder.observe_after(frame_with(self.template), 0.4)
+        record = self.recorder.record()
+        self.assertEqual([f.phase for f in record.frames], ['before', 'after'])
+        self.assertEqual(record.frames[-1].readings['balance'].value, '10.00')
 
     def test_frame_before_click_is_required(self):
         with self.assertRaises(SequenceError):

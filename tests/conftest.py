@@ -12,8 +12,9 @@ from __future__ import annotations
 import json
 import logging
 import os
+from contextlib import ExitStack
 from dataclasses import dataclass
-from typing import Iterator
+from typing import Callable, Iterator
 
 import pytest
 from playwright.sync_api import Browser, BrowserContext, sync_playwright
@@ -123,7 +124,7 @@ def evidence(run_config: RunConfig) -> Iterator[Evidence]:
 
 @pytest.fixture(scope="session")
 def results(evidence: Evidence) -> Results:
-    return Results(evidence.path("navigation_results.json"))
+    return Results(evidence.path("results.json"))
 
 
 @pytest.fixture(scope="session")
@@ -135,13 +136,28 @@ def browser(run_config: RunConfig) -> Iterator[Browser]:
 
 
 @pytest.fixture(scope="session")
-def session_context(browser, run_config, market_config, selectors, evidence, results) -> Iterator[BrowserContext]:
-    """Un único login por ejecución (o lote) y un contexto de trabajo compartido por todos los juegos."""
-    checklist = Checklist(results, "sesion", run_config.market, run_config.provider, "-", (CHECK_LOGIN,))
-    try:
-        state = login(browser, market_config, selectors, evidence,
-                      provider=run_config.provider, account=run_config.account, check=checklist.check)
-    except Exception as exc:
-        pytest.fail(f"Login: {type(exc).__name__}: {exc}", pytrace=False)
-    with work_context(browser, market_config, evidence, state) as context:
-        yield context
+def account_context(browser, run_config, market_config, selectors, evidence, results
+                    ) -> Iterator[Callable[[str], BrowserContext]]:
+    """Contexto de trabajo por cuenta (FUNDED / EMPTY): un único login por cuenta y ejecución."""
+    contexts: dict[str, BrowserContext] = {}
+    with ExitStack() as stack:
+        def get(account: str) -> BrowserContext:
+            account = account.upper()
+            if account not in contexts:
+                checklist = Checklist(results, f"sesion-{account.lower()}", run_config.market,
+                                      run_config.provider, "-", (CHECK_LOGIN,))
+                try:
+                    state = login(browser, market_config, selectors, evidence,
+                                  provider=run_config.provider, account=account, check=checklist.check)
+                except Exception as exc:
+                    pytest.fail(f"Login ({account}): {type(exc).__name__}: {exc}", pytrace=False)
+                contexts[account] = stack.enter_context(work_context(browser, market_config, evidence, state))
+            return contexts[account]
+
+        yield get
+
+
+@pytest.fixture(scope="session")
+def session_context(account_context, run_config) -> BrowserContext:
+    """Contexto de la cuenta elegida con --account/ACCOUNT (lo usa el test de navegación)."""
+    return account_context(run_config.account)

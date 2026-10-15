@@ -96,6 +96,14 @@ game_launch:
     - {text: "límites de juego", fuzzy: true}             # TODO: verificar con inspect_site.sh
   session_limits_steps: []     # p. ej. [{role: button, name: "Confirmar"}] TODO: definir con el equipo
 
+account:
+  # Saldo de la cuenta Betsson en la cabecera (fuera del juego: se permite DOM y se respalda con OCR).
+  balance:
+    - {role: button, name: "€", fuzzy: true}              # TODO: verificar con inspect_site.sh
+    - {role: link, name: "€", fuzzy: true}                # TODO: verificar con inspect_site.sh
+    - {css: "[data-testid*=balance i]"}                   # TODO: verificar con inspect_site.sh
+    - {css: "[class*=balance i]"}                         # TODO: verificar con inspect_site.sh
+
 game:
   iframe:
     - {css: "iframe"}                                     # se elige el iframe visible más grande

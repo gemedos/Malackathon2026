@@ -60,6 +60,17 @@ class CatalogSettings(_Strict):
     min_games: int = 200
 
 
+class VisionMarketSettings(_Strict):
+    """Datos del mercado que necesita la lectura visual del juego."""
+
+    language_name: str
+    ocr_language: str = "spa"
+    insufficient_patterns: list[str] = Field(min_length=1)
+    balance_poll_interval_s: float = Field(default=2.0, gt=0)
+    balance_poll_timeout_s: float = Field(default=30.0, gt=0)
+    balance_min_wait_s: float = Field(default=6.0, ge=0)
+
+
 class MarketConfig(_Strict):
     market: str
     base_url: str
@@ -78,6 +89,7 @@ class MarketConfig(_Strict):
     real_play_url_markers: list[str] = Field(default_factory=list)
     navigation: NavigationSettings = Field(default_factory=NavigationSettings)
     catalog: CatalogSettings
+    vision: VisionMarketSettings
 
     @model_validator(mode="after")
     def _check(self) -> "MarketConfig":
@@ -178,12 +190,17 @@ class GameSelectors(_Strict):
     iframe: Candidates
 
 
+class AccountSelectors(_Strict):
+    balance: Candidates = Field(default_factory=list)
+
+
 class SelectorsConfig(_Strict):
     cookies: CookieSelectors
     login: LoginSelectors
     lobby: LobbySelectors
     game_launch: GameLaunchSelectors
     game: GameSelectors
+    account: AccountSelectors = Field(default_factory=AccountSelectors)
 
 
 # ------------------------------------------------------------------------- carga

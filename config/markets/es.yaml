@@ -32,6 +32,21 @@ catalog:
   min_providers: 10       # salvaguarda: si el scrape trae menos, no se sobrescribe el catálogo
   min_games: 200
 
+# Lectura visual del juego (vision-module). El texto exacto del aviso no lo fija el reto: estas frases
+# son un punto de partida y se ajustan al mensaje real del juego (en minúsculas y sin tildes).
+vision:
+  language_name: Español
+  ocr_language: spa+eng
+  insufficient_patterns:
+    - "\\bsaldo insuficiente\\b"
+    - "\\bfondos insuficientes\\b"
+    - "\\bcredito insuficiente\\b"
+    - "\\bno (?:tienes|tiene|hay) (?:suficiente saldo|saldo suficiente|fondos suficientes|credito suficiente)\\b"
+  # Sondeo del saldo Betsson tras el intento (puede tardar en actualizarse).
+  balance_poll_interval_s: 2.0
+  balance_poll_timeout_s: 30.0
+  balance_min_wait_s: 6.0
+
 # Tiempos y umbrales de navegación (ms salvo indicación).
 navigation:
   default_timeout_ms: 15000

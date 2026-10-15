@@ -67,6 +67,12 @@ class VisionEngine:
             raise CalibrationError(f'Captura de página {size} distinta a betsson_page {layout.image_size}')
         return self._reader.read(page, BETSSON_BALANCE_FIELD, sample_id, timestamp, roi=layout.balance)
 
+    def read_image(self, image: np.ndarray, field: str, sample_id: str,
+                   timestamp: Optional[float] = None) -> OcrReading:
+        """OCR de una imagen completa (p. ej. captura de un elemento de la web de Betsson)."""
+        height, width = image.shape[:2]
+        return self._reader.read(image, field, sample_id, timestamp, roi=ROI(0, 0, width, height))
+
     def is_insufficient_message(self, text: str) -> bool:
         """Frase específica calibrada por mercado; una palabra genérica no basta."""
         return matches_any(text, self.profile.insufficient_patterns)

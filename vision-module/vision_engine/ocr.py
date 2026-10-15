@@ -14,7 +14,7 @@ from .currency import detect_currency
 from .errors import OcrUnavailableError, ProfileError
 from .evidence import EvidenceStore
 from .geometry import ROI
-from .imaging import preprocess_for_ocr
+from .imaging import preprocess_for_ocr, to_gray
 from .money import parse_money
 from .profile import GameProfile
 
@@ -69,10 +69,16 @@ class FieldReader:
         processed = preprocess_for_ocr(crop)
         crop_path = self.evidence.save_image(sample_id, field, crop)
         processed_path = self.evidence.save_image(sample_id, f'{field}-ocr', processed)
+        if field == 'payout' and self._is_empty(crop):
+            return OcrReading(field, sample_id, timestamp, '', '0.00', None, crop_path, processed_path)
         config = '--psm 6' if field == MESSAGE_FIELD else '--psm 7'
         raw = self.backend(processed, self.profile.ocr_language, config).strip()
         value, error = self._interpret(field, raw)
         return OcrReading(field, sample_id, timestamp, raw, value, error, crop_path, processed_path)
+
+    def _is_empty(self, crop: np.ndarray) -> bool:
+        """Región sin texto (casi uniforme), solo si el perfil declara que el juego oculta el premio."""
+        return self.profile.payout_empty_is_zero and float(to_gray(crop).std()) <= self.profile.empty_region_max_std
 
     def _interpret(self, field: str, raw: str) -> Tuple[Optional[str], Optional[str]]:
         try:

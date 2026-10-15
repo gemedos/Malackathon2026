@@ -1,0 +1,98 @@
+name: Escenarios betsson.es
+
+# Escenario 1 (spin completado, cuenta FUNDED) y Escenario 2 (saldo insuficiente, cuenta EMPTY)
+# sobre UN juego, con dinero real y apuesta mínima. Publica el informe pass/fail con evidencias.
+# El juego necesita calibración en config/games/<proveedor>/<juego>.yaml (scripts/calibrate.py).
+on:
+  workflow_dispatch:
+    inputs:
+      provider:
+        description: "Proveedor"
+        type: string
+        default: "Pragmatic Play"
+      game:
+        description: "Juego (calibrado en config/games/)"
+        type: string
+        default: "Sweet Bonanza"
+  schedule:
+    - cron: "30 6 * * 1-5"   # CLAUDE.md §9: ejecución programada (vars.DEFAULT_PROVIDER / vars.DEFAULT_GAME)
+
+permissions:
+  contents: read
+
+# Comparte grupo con tests.yml: nunca dos sesiones a la vez con las mismas cuentas.
+concurrency:
+  group: betsson-es-real-money
+  cancel-in-progress: false
+
+env:
+  MARKET: es
+
+jobs:
+  scenarios:
+    name: Escenarios 1 y 2
+    # Si betsson.es bloquea las IP de GitHub (403, CAPTCHA o anti-bot), cambia a: runs-on: self-hosted
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      # Los inputs llegan por env (nunca interpolados en scripts) para evitar inyección.
+      PROVIDER: ${{ inputs.provider || vars.DEFAULT_PROVIDER || 'Pragmatic Play' }}
+      GAME: ${{ inputs.game || vars.DEFAULT_GAME_NAME || 'Sweet Bonanza' }}
+      BETSSON_ES_FUNDED_USER: ${{ secrets.BETSSON_ES_FUNDED_USER }}
+      BETSSON_ES_FUNDED_PASS: ${{ secrets.BETSSON_ES_FUNDED_PASS }}
+      BETSSON_ES_EMPTY_USER: ${{ secrets.BETSSON_ES_EMPTY_USER }}
+      BETSSON_ES_EMPTY_PASS: ${{ secrets.BETSSON_ES_EMPTY_PASS }}
+    steps:
+      - name: Enmascarar usuarios
+        run: |
+          for v in "$BETSSON_ES_FUNDED_USER" "$BETSSON_ES_EMPTY_USER"; do
+            if [ -n "$v" ]; then echo "::add-mask::$v"; fi
+          done
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Instalar dependencias (Python, Chromium y Tesseract con español)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends tesseract-ocr tesseract-ocr-spa tesseract-ocr-eng
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          python -m playwright install --with-deps chromium
+
+      # Sin red ni credenciales: reglas de visión, calibración e integración sobre un juego falso.
+      - name: Pruebas sin dinero real
+        run: pytest vision-module/tests tests/test_integration_units.py tests/test_game_flow_offline.py -m "not real_money"
+
+      - name: Escenarios con dinero real
+        run: pytest tests/test_game_scenarios.py -m real_money
+
+      - name: Informe
+        if: always()
+        run: python scripts/report.py
+
+      - name: Test de higiene de secretos
+        id: hygiene
+        if: always()
+        run: pytest tests/test_secret_hygiene.py
+
+      # Solo se suben si la higiene pasó: nunca se publica un artifact con secretos.
+      - name: Subir informe y evidencias
+        if: always() && steps.hygiene.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: informe-${{ env.MARKET }}-${{ github.run_id }}
+          path: |
+            artifacts/
+            !.auth/
+            !**/.auth/**
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Borrar storage_state
+        if: always()
+        run: rm -rf .auth

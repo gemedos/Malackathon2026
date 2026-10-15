@@ -484,9 +484,9 @@ Módulo Python independiente (OpenCV + Tesseract) que recibe capturas del juego 
 ### Límites
 
 - Solo analiza imágenes: frames BGR del rectángulo visible del iframe, perfil del juego, timestamps y directorio de evidencias.
-- No implementa navegador, login, lobby, credenciales, selección de juego, clics ni CI: eso es la parte Playwright, que le entrega las capturas.
+- No implementa navegador, login, lobby, credenciales, selección de juego, clics ni CI: eso es la parte Playwright (`src/validator/`), que le entrega las capturas a través de `src/validator/game/`.
 - No consulta DOM del juego, canvas API, JavaScript, red, WebSocket ni estado privado. Sin agentes autónomos ni APIs de modelos.
-- La configuración de mercados vive en `vision-module/config/markets.json`; la calibración de cada juego en `vision-module/config/profiles/`.
+- En el flujo integrado, el mercado sale de `config/markets/es.yaml` (sección `vision`) y la calibración de cada juego de `config/games/`. `vision-module/config/` solo sirve para usar el módulo por separado (demo .com/.pe).
 
 ### Reglas de validación (no relajar)
 
@@ -600,7 +600,7 @@ trazas, vídeos, logs ni en la presentación.**
 - Dentro del juego (canvas/iframe) se usa percepción visual: IA de visión, OCR por regiones y
   diferencia de píxeles entre fotogramas.
 - La IA **aporta lecturas y localizaciones**, pero **nunca decide el pass/fail final**. Las reglas de
-  verificación son código determinista en `src/validator/verify/`.
+  verificación son código determinista en `vision-module/vision_engine/evaluation.py`.
 - Cada click dentro del juego se verifica: si la captura posterior no cambia, el click no cuenta.
 - Si se usa la red (respuestas del servidor del juego), es solo un **oráculo de contraste**. Nunca
   sustituye la verificación visual.
@@ -669,8 +669,8 @@ El mensaje puede aparecer dentro del juego. Se valida lo que ve el jugador y se 
 - Los selectores viven en `config/selectors/es.yaml`. No pongas selectores en el código y no inventes
   selectores CSS frágiles: usa `get_by_role`, `get_by_label` y `get_by_text`, con alternativas en español.
   Marca los no confirmados con `# TODO: verificar`.
-- Las coordenadas y regiones de lectura de cada juego se cachean en `config/games/<juego>.yaml`, en
-  formato normalizado (0–1) respecto al iframe.
+- Las coordenadas y regiones de lectura de cada juego se cachean en `config/games/<proveedor>/<juego>.yaml`
+  (con su `spin.png`), en formato normalizado (0–1) respecto al iframe. Se crean con `scripts/calibrate.py`.
 - Usa page objects para la web de Betsson, un driver para el juego, verificadores puros y un módulo de evidencias.
 - Usa el módulo `logging`, sin datos sensibles. Código tipado y con docstrings breves.
 

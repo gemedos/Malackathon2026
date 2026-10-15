@@ -129,6 +129,10 @@ class GameProfile:
     consensus: ConsensusSettings
     ready: ReadySettings
     betsson_page: Optional[BetssonPage]
+    # Juegos que ocultan el premio al perder: región de premio SIN texto en un frame liquidado = 0.
+    # Es una observación positiva (región vacía), no un fallo de OCR. Activar solo tras calibrar.
+    payout_empty_is_zero: bool = False
+    empty_region_max_std: float = 4.0
 
     @classmethod
     def load(cls, path: str | Path, markets: Optional[Mapping[str, Market]] = None) -> 'GameProfile':
@@ -208,7 +212,15 @@ class GameProfile:
             consensus=ConsensusSettings(**data.get('consensus', {})),
             ready=ReadySettings(**data.get('ready', {})),
             betsson_page=_betsson_page(data.get('betsson_page')),
+            payout_empty_is_zero=_flag(data.get('payout_empty_is_zero', False), 'payout_empty_is_zero'),
+            empty_region_max_std=_number(data.get('empty_region_max_std', 4.0), 'empty_region_max_std'),
         )
+
+
+def _flag(value: Any, name: str) -> bool:
+    if not isinstance(value, bool):
+        raise ProfileError(f'{name} debe ser true o false')
+    return value
 
 
 def _image_size(value: Any, name: str) -> Tuple[int, int]:
