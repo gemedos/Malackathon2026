@@ -1,5 +1,4 @@
- playwright_vision
-# Malackathon 2026 — Betsson Intelligent Game Validation
+# Malackathon 2026 — BetssonGroup
 
 Prueba de concepto que valida un juego de casino **como lo haría un jugador** en
 [betsson.es](https://www.betsson.es): navega, inicia sesión, abre un juego de Pragmatic Play en **Real Play**
@@ -9,16 +8,17 @@ y valida los dos escenarios del reto **leyendo la pantalla** (OCR y visión), si
 
 > **¿Quieres ejecutarlo?** Sigue [HOW_TO_RUN.md](HOW_TO_RUN.md): `python run.py setup` una vez y después `python run.py`.
 
-## Flujo completo
 
-```
-Playwright (src/validator)                     Visión (vision-module/vision_engine)
-login → proveedor → juego en Real Play  ──►    capturas del iframe → Spin localizado → UN clic
-saldo Betsson (cabecera: DOM + OCR)            movimiento → reposo + botón listo → OCR por región
-                                    └──────►   reglas deterministas → PASS / FAIL / INCONCLUSIVE
-                                                         │
-artifacts/es/results.json ──► scripts/make_report.py ──► report.txt (RR-03) · report.html · resumen del job
-```
+# Carpeta reports
+Esta carpeta contiene el report con al menos un test fallido, además de la entrada que ocasiona dicho report, en la carpeta artifact
+
+# Script make_report.py
+Este script se encarga de generar un report en formato html (report.html) a partir de un fichero JSON (results.json). Para que este script funcione, la carpeta artifacts (generada por el programa encargado de entrar a la casa de apuestas), debe estar en el mismo nivel de directorio que este script. En otro caso, la línea 7 "SRC = sys.argv[1] if len(sys.argv) > 1 else "artifacts/es/results.json"", habría que modificarla por "SRC = sys.argv[1] if len(sys.argv) > 1 else "<nombreCarpeta>/artifacts/es/results.json"". Otro modo de usar este script es pasándo la ruta donde se encuentra el JSON (argumento 1) y dónde queremos que se guarde el report (argumento 2). 
+
+
+# Diseño del Tester
+
+## Flujo completo
 
 | Pieza | Dónde |
 | --- | --- |
@@ -242,9 +242,4 @@ Resumen; la referencia completa está en [CLAUDE.md §3](CLAUDE.md):
 - Nunca se juega en modo demo cuando se pide Real Play.
 
 ### Malackathon2026
-# Carpeta reports
-Esta carpeta contiene el report con al menos un test fallido, además de la entrada que ocasiona dicho report, en la carpeta artifact
 
-# Script make_report.py
-Este script se encarga de generar un report en formato html (report.html) a partir de un fichero JSON (results.json). Para que este script funcione, la carpeta artifacts (generada por el programa encargado de entrar a la casa de apuestas), debe estar en el mismo nivel de directorio que este script. En otro caso, la línea 7 "SRC = sys.argv[1] if len(sys.argv) > 1 else "artifacts/es/results.json"", habría que modificarla por "SRC = sys.argv[1] if len(sys.argv) > 1 else "<nombreCarpeta>/artifacts/es/results.json"". Otro modo de usar este script es pasándo la ruta donde se encuentra el JSON (argumento 1) y dónde queremos que se guarde el report (argumento 2). 
- main
