@@ -15,6 +15,8 @@ Tras un timeout no se reintenta: el resultado es INCONCLUSIVE.
 """
 from __future__ import annotations
 
+import os
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from typing import List, Mapping, Optional, Tuple
 
@@ -68,9 +70,39 @@ class ScenarioRecord:
     def after_frames(self) -> Tuple[FrameRecord, ...]:
         return tuple(f for f in self.frames if f.phase == AFTER)
 
+    def busy_seen(self) -> bool:
+        """¿Se vio el control Spin ocupado/atenuado tras el clic? (prueba de que el juego reaccionó)"""
+        return any(not f.ready.ready for f in self.after_frames)
+
+    def busy_runs(self) -> int:
+        """Veces que el control pasó de ocupado a listo tras el clic (>1: cascada, bonus o giro extra)."""
+        count, previous = 0, True
+        for frame in self.after_frames:
+            if frame.ready.ready and not previous:
+                count += 1
+            previous = frame.ready.ready
+        return count
+
     def settled_frames(self) -> Tuple[FrameRecord, ...]:
-        """Frames en reposo consolidado CON control listo, posteriores al último movimiento."""
+        """Frames con la ronda liquidada y el control listo.
+
+        settle='ready' (animación constante): frames listos posteriores al último frame ocupado, y de ellos la
+        cola con el mismo crédito leído (el contador de premio puede estar animándose).
+        settle='motion': reposo consolidado tras el último movimiento."""
         after = self.after_frames
+        if self.profile.settle == 'ready' and self.busy_seen():
+            last_busy = max(i for i, f in enumerate(after) if not f.ready.ready)
+            stable, balance = [], None
+            for frame in reversed([f for f in after[last_busy + 1:] if f.ready.ready]):
+                reading = frame.readings.get('balance')
+                value = reading.value if reading else None
+                if value is None:
+                    continue          # lectura ilegible aislada: no cuenta como estable ni rompe la cola
+                if stable and value != balance:
+                    break
+                balance = value
+                stable.append(frame)
+            return tuple(reversed(stable))
         last_motion = max((i for i, f in enumerate(after) if f.motion.state is MotionState.MOTION), default=-1)
         return tuple(f for f in after[last_motion + 1:]
                      if f.motion.state is MotionState.QUIET_AFTER_MOTION and f.ready.ready)
@@ -132,8 +164,14 @@ class SpinAttemptRecorder:
         return after[-1].motion.state if after else None
 
     def settled_count(self) -> int:
-        """Frames en reposo con control listo tras el último movimiento, separados en el tiempo."""
+        """Frames con la ronda liquidada y control listo, separados en el tiempo.
+
+        settle='ready': listos tras el último frame ocupado. settle='motion': en reposo tras el último movimiento."""
         after = self._after()
+        if self.engine.profile.settle == 'ready' and any(not o.ready.ready for o in after):
+            last_busy = max(i for i, o in enumerate(after) if not o.ready.ready)
+            ready = [o.timestamp for o in after[last_busy + 1:] if o.ready.ready]
+            return len(spaced_indices(ready, self.engine.profile.consensus.min_separation_seconds))
         last_motion = max((i for i, o in enumerate(after) if o.motion.state is MotionState.MOTION), default=-1)
         settled = [o.timestamp for o in after[last_motion + 1:]
                    if o.motion.state is MotionState.QUIET_AFTER_MOTION and o.ready.ready]
@@ -177,8 +215,11 @@ class SpinAttemptRecorder:
 
     def record(self) -> ScenarioRecord:
         """Hace el OCR pendiente (guardando evidencias) y devuelve el registro completo."""
-        for pending in self._pending[len(self._records):]:
-            self._records.append(self._read(pending))
+        todo = self._pending[len(self._records):]
+        # Tesseract corre en un proceso aparte: con hilos los frames se leen en paralelo (orden conservado).
+        with ThreadPoolExecutor(max_workers=min(4, os.cpu_count() or 2)) as pool:
+            self._records.extend(pool.map(self._read, todo))
+        for pending in todo:
             pending.frame = None
         return ScenarioRecord(self.engine.profile, self._spin, self._click_timestamp,
                               tuple(self._records), self.tracker.summary)

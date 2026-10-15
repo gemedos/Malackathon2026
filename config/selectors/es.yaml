@@ -94,15 +94,39 @@ game_launch:
   session_limits_indicator:
     - {text: "límite de sesión", fuzzy: true}             # TODO: verificar con inspect_site.sh
     - {text: "límites de juego", fuzzy: true}             # TODO: verificar con inspect_site.sh
-  session_limits_steps: []     # p. ej. [{role: button, name: "Confirmar"}] TODO: definir con el equipo
+  session_limits_steps: []     # (antiguo; usa `pregame`)
+
+  # Pantallas previas al juego (regulación española + avisos que tapan el juego). Se resuelve UNA por pasada,
+  # en bucle, hasta que el juego es jugable; el orden de la lista da prioridad. Comunes a todos los juegos y
+  # proveedores. Confirmado 2026-10-15 con Bubble Up (Pragmatic Play).
+  pregame:
+    # Formulario de límites (componentes fds-* con shadow DOM; data-test-id confirmados en la traza del 2026-10-15).
+    # Va antes que el aviso: con el formulario abierto, el «Iniciar sesión» del aviso no debe pulsarse por error.
+    - name: límites de sesión (tiempo y pérdidas)
+      detect: [{css: '[data-test-id="session-settings"]'}]
+      steps:                                             # valores moderados: la cuenta guarda estos límites
+        - {css: '[data-test-id="session-settings_time-limit-option-3600"]'}       # 1 Hora
+        - {css: '[data-test-id="session-settings_spending-limit-option-25"]'}     # 25 % del saldo
+        - {css: '[data-test-id="session-settings_submit-button-btn-1"]'}          # Iniciar sesión
+    # El aviso es un diálogo modal: va antes que el panel de torneos: mientras está abierto tapa todo lo demás (clics bloqueados).
+    - name: aviso de sesión de juego ("Hace menos de 60 mins. que finalizaste tu sesión de juego")
+      detect:
+        - {css: '[data-test-id="start-new-session-buttons-btn-2"]'}
+        - {text: "finalizaste tu sesión de juego"}
+      steps:
+        - - {css: '[data-test-id="start-new-session-buttons-btn-2"]'}
+          - {css: 'fds-dialog >> text="Iniciar sesión"'}
+          - {role: button, name: "Iniciar sesión", exact: true}
+    - name: panel de torneos tapando el juego
+      detect: [{text: "Cerrar y no volver a mostrar", exact: true}]
+      steps:  [{text: "Cerrar y no volver a mostrar", exact: true}]
 
 account:
   # Saldo de la cuenta Betsson en la cabecera (fuera del juego: se permite DOM y se respalda con OCR).
   balance:
-    - {role: button, name: "€", fuzzy: true}              # TODO: verificar con inspect_site.sh
-    - {role: link, name: "€", fuzzy: true}                # TODO: verificar con inspect_site.sh
-    - {css: "[data-testid*=balance i]"}                   # TODO: verificar con inspect_site.sh
-    - {css: "[class*=balance i]"}                         # TODO: verificar con inspect_site.sh
+    # En la página del juego la cabecera solo muestra «Saldo» (sin importe): no hay coincidencia y se lee desde el
+    # lobby, donde el importe va en un <span data-cs-mask> del botón de usuario (confirmado en la traza 2026-10-15).
+    - {css: 'span[data-cs-mask]:text-matches("^\\s*\\d[\\d.,]*\\s*(€|EUR)\\s*$")'}
 
 game:
   iframe:

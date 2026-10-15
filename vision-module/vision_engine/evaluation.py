@@ -76,7 +76,7 @@ def evaluate_spin(record: ScenarioRecord, betsson: Optional[BetssonBalance] = No
         _frame_paths(settled)))
     final, result = _money('final_balance', 'balance', settled, record)
     results.append(result)
-    payout, result = _money('payout', 'payout', settled, record)
+    payout, result = _payout(settled, record)
     results.append(result)
     results.append(_wager_consistent(wager, settled, record))
     results.append(_reconciliation('in_game_balance', initial, wager, payout, final,
@@ -148,6 +148,31 @@ def _money(name: str, field: str, frames: Sequence[FrameRecord],
     return None, AssertionResult(name, INCONCLUSIVE, f'Valor desconocido: {result.reason}', result.evidence)
 
 
+def _payout(frames: Sequence[FrameRecord], record: ScenarioRecord) -> Tuple[Optional[Decimal], AssertionResult]:
+    """Premio observado. Un importe > 0 es transitorio (el juego lo oculta al volver al reposo): basta con
+    verlo, idéntico, en 2 frames separados. Sin importe, el reposo («haga su apuesta») debe verse en >= 3."""
+    settings = record.profile.consensus
+    amounts = {}
+    for frame in frames:
+        reading = frame.readings.get('payout')
+        if reading is not None and reading.value is not None and Decimal(reading.value) > 0:
+            amounts[frame.sample_id] = reading
+    if amounts:
+        readings = sorted(amounts.values(), key=lambda r: r.timestamp)
+        evidence = tuple(r.crop_path for r in readings)
+        values = sorted({r.value for r in readings})
+        if len(values) > 1:
+            return None, AssertionResult('payout', INCONCLUSIVE, f'Valor desconocido: premios discrepantes {values}',
+                                         evidence)
+        spaced = spaced_indices([r.timestamp for r in readings], settings.min_separation_seconds)
+        if len(spaced) >= 2:
+            return Decimal(values[0]), AssertionResult(
+                'payout', PASS, f'{values[0]} (importe de premio visible en {len(spaced)} frames)', evidence)
+        return None, AssertionResult('payout', INCONCLUSIVE,
+                                     'Valor desconocido: importe de premio visto en un solo frame', evidence)
+    return _money('payout', 'payout', frames, record)
+
+
 def _currency(frames: Sequence[FrameRecord], record: ScenarioRecord) -> AssertionResult:
     expected = record.profile.expected_currency
     result = consensus('currency', [f.readings['currency'] for f in frames], record.profile.consensus)
@@ -172,7 +197,30 @@ def _reconciliation(name: str, initial, wager, payout, final, evidence: Tuple[st
 
 # --------------------------------------------------------------------------- SC-01
 
+def _motion_ready(record: ScenarioRecord) -> List[AssertionResult]:
+    """Juegos con animación constante: el giro se prueba por el ciclo del control Spin (listo → ocupado → listo)."""
+    summary, settled, paths = record.motion, record.settled_frames(), _frame_paths(record.after_frames)
+    started = AssertionResult('reels_started', PASS, 'Control Spin ocupado tras el clic', paths)
+    if settled:
+        done = AssertionResult('reels_settled', PASS,
+                               f'Control Spin listo de nuevo con crédito estable en {len(settled)} frames', paths)
+    else:
+        done = AssertionResult('reels_settled', INCONCLUSIVE,
+                               'El control Spin no volvió a estar listo con crédito estable' +
+                               ('; timeout, no reintentar' if summary.timed_out else ''), paths)
+    runs = record.busy_runs()
+    if runs == 1:
+        cascade = AssertionResult('no_cascade_or_bonus', PASS, 'Un único ciclo ocupado → listo', paths)
+    else:
+        cascade = AssertionResult('no_cascade_or_bonus', INCONCLUSIVE,
+                                  f'{runs} ciclos ocupado → listo: posible cascada/bonus, requiere adaptación'
+                                  if runs > 1 else 'No evaluable sin ciclo completo', paths)
+    return [started, done, cascade]
+
+
 def _motion(record: ScenarioRecord) -> List[AssertionResult]:
+    if record.profile.settle == 'ready' and record.busy_seen():
+        return _motion_ready(record)
     summary = record.motion
     paths = _frame_paths(record.after_frames)
     if summary.started_at is not None:

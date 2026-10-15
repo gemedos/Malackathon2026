@@ -17,3 +17,12 @@ __pycache__/
 
 # Capturas locales de calibración (scripts/calibrate.py)
 calibration/
+
+# Modelos de Tesseract descargados en local
+tessdata/
+
+artifacts.zip
+ignore/
+
+artifacts.zip
+ignore/

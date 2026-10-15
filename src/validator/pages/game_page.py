@@ -9,7 +9,7 @@ import io
 import logging
 import time
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Callable
 
 import numpy as np
 from PIL import Image
@@ -34,6 +34,10 @@ class SessionLimitsRequiredError(RuntimeError):
     """La web exige configurar límites de sesión y no hay pasos definidos en el YAML."""
 
 
+class PregameError(RuntimeError):
+    """Una pantalla previa (límites, aviso...) se detectó pero no se pudo resolver con sus pasos."""
+
+
 @dataclass
 class GameSession:
     page: Page
@@ -41,6 +45,7 @@ class GameSession:
     bounding_box: dict[str, float]
     provider: str
     game: str
+    pregame: Callable[[], bool] | None = None   # resuelve pantallas previas que aparezcan más tarde (True si actuó)
 
     @property
     def frame(self) -> FrameLocator:
@@ -69,16 +74,43 @@ class GamePage(BasePage):
         return cls(page, market, selectors, evidence)
 
     def wait_loaded(self, provider: str, game: str) -> GameSession:
-        self._handle_session_limits()
+        if not self.selectors.game_launch.pregame:
+            self._handle_session_limits()      # configuración antigua (session_limits_*)
         iframe = self._wait_iframe()
         box = self._wait_stable_box(iframe)
         self._assert_not_demo(iframe)
         self._wait_canvas(iframe)
         shot = self.evidence.screenshot(self.page, "game_loaded.png")
         log.info("Juego cargado (%s): caja %s; evidencia %s", game, box, self.evidence.relative(shot))
-        return GameSession(self.page, iframe, box, provider, game)
+        return GameSession(self.page, iframe, box, provider, game, pregame=self.handle_pregame)
 
     # ------------------------------------------------------------------ pasos
+
+    def handle_pregame(self) -> bool:
+        """Resuelve UNA pantalla previa visible (config game_launch.pregame). True si actuó.
+
+        Puede llamarse en bucle mientras se espera al juego: las pantallas regulatorias (aviso de sesión de
+        juego, límites, avisos que tapan el juego) llegan en distinto orden según el juego y el proveedor."""
+        for screen in self.selectors.game_launch.pregame:
+            if self.find_first(screen.detect, 0, what=f"pregame:{screen.name}") is None:
+                continue
+            log.info("Pantalla previa: %s", screen.name)
+            for step in screen.steps:
+                alternatives = step if isinstance(step, list) else [step]
+                target = self.find_first(alternatives, 3000, what=f"pregame:{screen.name}")
+                if target is None:
+                    shot = self.evidence.screenshot(self.page, "pregame_step_missing.png")
+                    raise PregameError(f"Pantalla previa {screen.name!r}: no encuentro el paso {alternatives[0].describe()} "
+                                       f"(evidencia: {self.evidence.relative(shot)})")
+                try:
+                    target.click(timeout=2500)
+                except Exception as exc:     # p. ej. otro diálogo intercepta el clic: se reintenta en la siguiente pasada
+                    log.warning("Pantalla previa %r: clic no aplicado (%s)", screen.name, type(exc).__name__)
+                    return True
+                self.page.wait_for_timeout(300)
+            self.page.wait_for_timeout(700)
+            return True
+        return False
 
     def _handle_session_limits(self) -> None:
         launch = self.selectors.game_launch
@@ -102,6 +134,8 @@ class GamePage(BasePage):
         nav = self.nav
         deadline = time.monotonic() + nav.iframe_timeout_ms / 1000
         while time.monotonic() < deadline:
+            if self.handle_pregame():
+                continue
             best, best_area = None, 0.0
             for candidate in self.selectors.game.iframe:
                 locator = build_locator(self.page, candidate)
@@ -125,6 +159,9 @@ class GamePage(BasePage):
         reference = self._box(iframe)
         stable_since = time.monotonic()
         while time.monotonic() < deadline:
+            if self.handle_pregame():          # los avisos/límites pueden salir mientras el iframe se asienta
+                reference, stable_since = self._box(iframe), time.monotonic()
+                continue
             self.page.wait_for_timeout(250)
             box = self._box(iframe)
             if box is None or reference is None or not _same_box(box, reference):
@@ -153,6 +190,9 @@ class GamePage(BasePage):
         previous: np.ndarray | None = None
         last_diff: float | None = None
         while time.monotonic() < deadline:
+            if self.handle_pregame():
+                previous = None
+                continue
             frame = _to_gray(iframe.screenshot(animations="allow"))
             if previous is not None and previous.shape == frame.shape:
                 last_diff = float(np.mean(np.abs(frame - previous) > nav.canvas_pixel_delta))

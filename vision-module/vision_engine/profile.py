@@ -133,6 +133,10 @@ class GameProfile:
     # Es una observación positiva (región vacía), no un fallo de OCR. Activar solo tras calibrar.
     payout_empty_is_zero: bool = False
     empty_region_max_std: float = 4.0
+    # 'motion': giro terminado = rodillos quietos. 'ready': juegos con animación constante (p. ej. Bubble Up),
+    # giro terminado = el control Spin vuelve a estar listo tras verse ocupado.
+    settle: str = 'motion'
+    idle_patterns: Tuple[re.Pattern, ...] = ()      # línea de premio sin ganancia, p. ej. «haga su apuesta»
 
     @classmethod
     def load(cls, path: str | Path, markets: Optional[Mapping[str, Market]] = None) -> 'GameProfile':
@@ -214,7 +218,28 @@ class GameProfile:
             betsson_page=_betsson_page(data.get('betsson_page')),
             payout_empty_is_zero=_flag(data.get('payout_empty_is_zero', False), 'payout_empty_is_zero'),
             empty_region_max_std=_number(data.get('empty_region_max_std', 4.0), 'empty_region_max_std'),
+            settle=_settle(data.get('settle', 'motion')),
+            idle_patterns=_idle_patterns(data.get('idle_patterns', [])),
         )
+
+
+def _settle(value: Any) -> str:
+    if value not in ('motion', 'ready'):
+        raise ProfileError("settle debe ser 'motion' o 'ready'")
+    return value
+
+
+def _idle_patterns(values: Any) -> Tuple[re.Pattern, ...]:
+    """Frases (minúsculas, sin tildes) que muestra la línea de premio cuando NO hay ganancia."""
+    if not isinstance(values, list):
+        raise ProfileError('idle_patterns debe ser una lista de expresiones')
+    compiled = []
+    for pattern in values:
+        try:
+            compiled.append(re.compile(pattern))
+        except (re.error, TypeError) as exc:
+            raise ProfileError(f'idle_patterns inválido {pattern!r}: {exc}') from exc
+    return tuple(compiled)
 
 
 def _flag(value: Any, name: str) -> bool:

@@ -71,7 +71,7 @@ class BasePage:
         deadline = time.monotonic() + timeout / 1000
         while True:
             for candidate, locator in zip(rendered, locators):
-                visible = self._first_visible(locator)
+                visible = self._first_visible(locator, last=candidate.last)
                 if visible is not None:
                     log.info("find_first[%s]: funcionó %s", what, candidate.describe())
                     return visible
@@ -88,12 +88,13 @@ class BasePage:
         )
 
     @staticmethod
-    def _first_visible(locator: Locator, limit: int = 10) -> Locator | None:
+    def _first_visible(locator: Locator, limit: int = 10, last: bool = False) -> Locator | None:
         try:
             count = locator.count()
         except Exception:
             return None
-        for index in range(min(count, limit)):
+        indexes = range(min(count, limit))
+        for index in (reversed(indexes) if last else indexes):
             item = locator.nth(index)
             try:
                 if item.is_visible():

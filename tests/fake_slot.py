@@ -32,11 +32,11 @@ def money(value: str) -> str:
 def outer_html(balance: str) -> str:
     return f"""<!doctype html><html><head><meta charset="utf-8"></head><body style="margin:0;font-family:Arial;background:#f4f4f4">
 <header style="height:64px;display:flex;align-items:center;justify-content:flex-end;padding:0 24px;background:#fff">
-<button id="saldo" style="font:bold 22px Arial;padding:8px 16px;background:#fff;border:2px solid #333;color:#111">Saldo {money(balance)}</button>
+<button id="saldo" style="font:bold 22px Arial;padding:8px 16px;background:#fff;border:2px solid #333;color:#111"><span data-cs-mask>{money(balance)}</span></button>
 </header>
 <iframe id="game" src="{BASE}/game.html?balance={balance}" width="{SIZE[0]}" height="{SIZE[1]}"
  style="border:0;display:block;margin:16px 40px"></iframe>
-<script>addEventListener('message', e => document.getElementById('saldo').textContent = 'Saldo ' + e.data);</script>
+<script>addEventListener('message', e => document.querySelector('#saldo span').textContent = e.data);</script>
 </body></html>"""
 
 

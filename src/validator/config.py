@@ -116,6 +116,7 @@ class SelectorCandidate(_Strict):
     css: str | None = None
     exact: bool = False
     fuzzy: bool = False
+    last: bool = False     # si hay varias coincidencias visibles, la última (la que está encima en el DOM)
 
     @model_validator(mode="after")
     def _one_strategy(self) -> "SelectorCandidate":
@@ -178,12 +179,25 @@ class LobbySelectors(_Strict):
     game_card: Candidates
 
 
+class PregameScreen(_Strict):
+    """Pantalla previa al juego (aviso regulatorio, límites, panel de torneos...).
+
+    Se detecta por texto visible y se resuelve pulsando `steps` en orden. En cada pasada se resuelve UNA
+    pantalla; el orden de la lista decide cuál tiene prioridad si varias coinciden."""
+
+    name: str
+    detect: Candidates = Field(min_length=1)
+    # Cada paso es una alternativa o una lista de alternativas (se pulsa la primera visible).
+    steps: list[SelectorCandidate | list[SelectorCandidate]] = Field(min_length=1)
+
+
 class GameLaunchSelectors(_Strict):
     real_play: Candidates
     login_required: Candidates = Field(default_factory=list)
     demo: Candidates = Field(default_factory=list)
     session_limits_indicator: Candidates = Field(default_factory=list)
     session_limits_steps: Candidates = Field(default_factory=list)
+    pregame: list[PregameScreen] = Field(default_factory=list)
 
 
 class GameSelectors(_Strict):

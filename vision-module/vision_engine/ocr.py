@@ -15,6 +15,7 @@ from .errors import OcrUnavailableError, ProfileError
 from .evidence import EvidenceStore
 from .geometry import ROI
 from .imaging import preprocess_for_ocr, to_gray
+from .messages import normalize_text
 from .money import parse_money
 from .profile import GameProfile
 
@@ -24,13 +25,32 @@ MESSAGE_FIELD = 'message'
 BETSSON_BALANCE_FIELD = 'betsson_balance'   # saldo de la cuenta, en la página fuera del iframe
 HUD_FIELDS = MONEY_FIELDS + (CURRENCY_FIELD,)
 OCR_FIELDS = HUD_FIELDS + (MESSAGE_FIELD, BETSSON_BALANCE_FIELD)
+MONEY_UPSCALE = 4              # importes: más ampliación para distinguir coma de punto
+MONEY_CHARS = '0123456789.,€'
 
 # (imagen preprocesada, idioma, config de Tesseract) -> texto. Inyectable en pruebas.
 OcrBackend = Callable[[np.ndarray, str, str], str]
 
 
+def _locate_tesseract(pytesseract) -> None:
+    """Ruta del ejecutable: TESSERACT_CMD, el PATH o, en Windows, las carpetas de instalación habituales."""
+    import os
+    import shutil
+    cmd = os.environ.get('TESSERACT_CMD')
+    if not cmd and not shutil.which('tesseract'):
+        for candidate in (r'C:\Program Files\Tesseract-OCR\tesseract.exe',
+                          r'C:\Program Files (x86)\Tesseract-OCR\tesseract.exe',
+                          os.path.expandvars(r'%LOCALAPPDATA%\Programs\Tesseract-OCR\tesseract.exe')):
+            if os.path.isfile(candidate):
+                cmd = candidate
+                break
+    if cmd:
+        pytesseract.pytesseract.tesseract_cmd = cmd
+
+
 def tesseract_backend(image: np.ndarray, language: str, config: str) -> str:
     import pytesseract
+    _locate_tesseract(pytesseract)
     try:
         return pytesseract.image_to_string(image, lang=language, config=config)
     except pytesseract.TesseractNotFoundError as exc:
@@ -66,15 +86,36 @@ class FieldReader:
         if field not in OCR_FIELDS:
             raise ProfileError(f'Campo OCR desconocido {field!r}')
         crop = (roi or self.profile.regions[field]).crop(frame)
-        processed = preprocess_for_ocr(crop)
+        money = field in MONEY_FIELDS
+        # Saldo y apuesta solo contienen importes; el premio se lee sin lista porque puede mostrar «haga su apuesta».
+        whitelist = money and field != 'payout'
+        processed = preprocess_for_ocr(crop, MONEY_UPSCALE) if money else preprocess_for_ocr(crop)
         crop_path = self.evidence.save_image(sample_id, field, crop)
         processed_path = self.evidence.save_image(sample_id, f'{field}-ocr', processed)
         if field == 'payout' and self._is_empty(crop):
             return OcrReading(field, sample_id, timestamp, '', '0.00', None, crop_path, processed_path)
         config = '--psm 6' if field == MESSAGE_FIELD else '--psm 7'
+        if whitelist:
+            config += f' -c tessedit_char_whitelist={MONEY_CHARS}'
         raw = self.backend(processed, self.profile.ocr_language, config).strip()
         value, error = self._interpret(field, raw)
+        if whitelist and value is None:
+            # Otros modos de segmentación (palabra / línea cruda) corrigen lecturas fallidas distintas por
+            # versión de Tesseract. La interpretación sigue siendo estricta: no se adivina nada.
+            for psm in (8, 13):
+                retry = self.backend(processed, self.profile.ocr_language,
+                                     f'--psm {psm} -c tessedit_char_whitelist={MONEY_CHARS}').strip()
+                alt_value, alt_error = self._interpret(field, retry)
+                if alt_value is not None:
+                    raw, value, error = retry, alt_value, alt_error
+                    break
+        if field == 'payout' and value is None and self._shows_idle_prompt(raw):
+            value, error = '0.00', None       # la línea de premio muestra el mensaje de reposo, sin importe
         return OcrReading(field, sample_id, timestamp, raw, value, error, crop_path, processed_path)
+
+    def _shows_idle_prompt(self, raw: str) -> bool:
+        text = normalize_text(raw)
+        return not any(c.isdigit() for c in text) and any(p.search(text) for p in self.profile.idle_patterns)
 
     def _is_empty(self, crop: np.ndarray) -> bool:
         """Región sin texto (casi uniforme), solo si el perfil declara que el juego oculta el premio."""

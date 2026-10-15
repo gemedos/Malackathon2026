@@ -43,8 +43,17 @@ class AccountBalanceReader:
         if locator is None:
             return OcrReading(BETSSON_BALANCE_FIELD, sample_id, timestamp, '', None,
                               'Saldo Betsson no visible (revisar account.balance en config/selectors)', '', '')
-        reading = self.engine.read_image(decode_png(locator.screenshot()), BETSSON_BALANCE_FIELD, sample_id, timestamp)
-        return _cross_check(reading, locator.inner_text(timeout=2000), self.market.number_format.decimal)
+        lobby_used = locator.page is not self.game_page
+        try:
+            if lobby_used:
+                locator.page.bring_to_front()      # una pestaña en segundo plano no se captura bien
+            reading = self.engine.read_image(decode_png(locator.screenshot()), BETSSON_BALANCE_FIELD, sample_id, timestamp)
+            return _cross_check(reading, locator.inner_text(timeout=2000), self.market.number_format.decimal)
+        finally:
+            if lobby_used:
+                # IMPORTANTE: con el lobby delante el juego queda oculto y el navegador lo pausa (no responde al Spin).
+                self.game_page.bring_to_front()
+                self.game_page.wait_for_timeout(300)
 
     def read_series(self, prefix: str, count: int, separation_s: float) -> list[OcrReading]:
         samples = []
@@ -75,13 +84,20 @@ class AccountBalanceReader:
 
     def close(self) -> None:
         if self._lobby is not None:
-            self._lobby.close()
+            try:
+                self._lobby.close()
+            except Exception:
+                pass
             self._lobby = None
 
     # ------------------------------------------------------------------ interno
 
     def _locate(self, refresh: bool) -> Optional[Locator]:
         candidates = self.selectors.account.balance
+        if self._lobby is not None and self._lobby.is_closed():
+            log.warning("La pestaña del lobby se cerró: se reabre")
+            self._lobby = None
+            refresh = False
         if self._lobby is None:
             found = BasePage(self.game_page, self.market, self.selectors).find_first(candidates, 2000, what="saldo-betsson")
             if found is not None:
@@ -90,7 +106,12 @@ class AccountBalanceReader:
             self._lobby = self.context.new_page()
             self._lobby.goto(lobby_url(self.market), wait_until="domcontentloaded")
         elif refresh:
-            self._lobby.reload(wait_until="domcontentloaded")
+            try:
+                self._lobby.reload(wait_until="domcontentloaded")
+            except Exception as exc:  # pestaña cerrada a mitad: se reabre
+                log.warning("Recarga del lobby falló (%s): se reabre", type(exc).__name__)
+                self._lobby = self.context.new_page()
+                self._lobby.goto(lobby_url(self.market), wait_until="domcontentloaded")
         return BasePage(self._lobby, self.market, self.selectors).find_first(
             candidates, self.market.navigation.default_timeout_ms, what="saldo-betsson")
 

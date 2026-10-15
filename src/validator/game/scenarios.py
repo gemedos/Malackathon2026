@@ -23,10 +23,12 @@ from validator.game.calibration import (GAMES_DIR, CalibrationMissingError, Load
                                         load_calibration)
 from validator.game.driver import GameDriver
 from validator.pages.game_page import GameSession
+from vision_engine.matching import best_match
 from vision_engine import (AssertionResult, BetssonBalance, MotionState, ScenarioRecord, ScenarioReport,
                            SpinAttemptRecorder, SpinNotFoundError, Verdict, VisionEngine, evaluate_insufficient,
                            evaluate_spin)
 from vision_engine.annotate import annotate, strip
+from vision_engine.errors import CalibrationError
 from vision_engine.verdict import combine
 
 log = logging.getLogger(__name__)
@@ -63,6 +65,7 @@ def run_scenario(kind: str, session: GameSession, context, market: MarketConfig,
     profile = build_profile(loaded.calibration, market, frame_size)
     engine = VisionEngine(profile, evidence_dir / "vision")
     spin_template, busy_template = loaded.templates()
+    _reach_hud(session, driver, engine, loaded.splash_template(), frame_size)
     extra = [_setup(driver, loaded, frame_size)] if loaded.calibration.setup_clicks else []
 
     account = AccountBalanceReader(context, session.page, market, selectors, engine)
@@ -98,6 +101,40 @@ def run_scenario(kind: str, session: GameSession, context, market: MarketConfig,
 
 # --------------------------------------------------------------------------- pasos
 
+HUD_TIMEOUT_S = 120
+SPLASH_MAX_CLICKS = 3
+
+
+def _reach_hud(session: GameSession, driver: GameDriver, engine: VisionEngine, splash_template, frame_size) -> None:
+    """Llega hasta el juego jugable: resuelve pantallas previas que aparezcan y pulsa el Spin de la
+    «pantalla de carga» (si el proveedor la tiene) hasta que el OCR lee crédito y apuesta."""
+    profile = engine.profile
+    deadline = time.monotonic() + HUD_TIMEOUT_S
+    clicks, index = 0, 0
+    while time.monotonic() < deadline:
+        if session.pregame is not None and session.pregame():
+            driver.wait(500)
+            continue
+        frame = driver.capture()
+        sample = f"hud-{index:03d}"
+        index += 1
+        balance = engine.read_field(frame, "balance", sample)
+        wager = engine.read_field(frame, "wager", sample)
+        if balance.value is not None and wager.value is not None:
+            log.info("HUD visible (crédito %s, apuesta %s)", balance.value, wager.value)
+            return
+        if splash_template is not None and clicks < SPLASH_MAX_CLICKS:
+            hit = best_match(frame, splash_template, engine.roi("spin_search"), profile.template_scales)
+            if hit is not None and hit.confidence >= profile.template_threshold:
+                log.info("Pantalla de carga: pulsando Spin (%.2f)", hit.confidence)
+                driver.click(hit.point, frame_size)
+                clicks += 1
+                driver.wait(3000)
+                continue
+        driver.wait(1000)
+    raise CalibrationError(f"No se llegó al HUD del juego en {HUD_TIMEOUT_S}s (crédito/apuesta ilegibles)")
+
+
 def _setup(driver: GameDriver, loaded: LoadedCalibration, frame_size: tuple[int, int]) -> AssertionResult:
     checks = driver.run_setup(loaded.calibration.setup_clicks, frame_size)
     failed = [c for c in checks if not c.changed]
@@ -123,7 +160,9 @@ def _click_spin(recorder: SpinAttemptRecorder, driver: GameDriver, frame_size: t
 def _observe_after(kind: str, recorder: SpinAttemptRecorder, driver: GameDriver) -> None:
     """Observa hasta tener evidencia suficiente o agotar el tiempo (nunca indefinidamente)."""
     profile = recorder.engine.profile
-    needed = profile.consensus.min_readings + 1          # margen sobre el consenso mínimo
+    # Margen sobre el consenso mínimo. En juegos de animación constante (settle=ready) el contador de crédito
+    # puede seguir subiendo al volver el Spin: se piden más frames listos para tener una cola estable.
+    needed = profile.consensus.min_readings + (3 if profile.settle == "ready" else 1)
     deadline = recorder.click_timestamp + profile.motion.timeout_seconds + 2
     while True:
         observation = recorder.observe_after(driver.capture(), time.monotonic())

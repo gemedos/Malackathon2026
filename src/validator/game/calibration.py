@@ -13,6 +13,8 @@ from pathlib import Path
 
 import numpy as np
 import yaml
+from typing import Literal
+
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from validator import PROJECT_ROOT
@@ -59,6 +61,9 @@ class GameCalibration(BaseModel):
     reference_size: tuple[int, int]            # tamaño del iframe en el que se recortaron las plantillas
     spin_template: str                         # relativo al YAML
     busy_template: str | None = None
+    splash_template: str | None = None         # Spin de la «pantalla de carga» que hay que pulsar para entrar al juego
+    settle: Literal["motion", "ready"] = "motion"   # 'ready': juegos con animación constante (giro = Spin ocupado → listo)
+    idle_patterns: list[str] = Field(default_factory=list)   # texto de la línea de premio sin ganancia
     template_threshold: float = Field(default=0.85, gt=0, le=1)
     template_scales: list[float] = Field(default_factory=lambda: [0.9, 1.0, 1.1], min_length=1)
     regions: dict[str, Region]
@@ -89,6 +94,10 @@ class LoadedCalibration:
     def template_path(self, name: str) -> Path:
         return self.path.parent / name
 
+    def splash_template(self) -> np.ndarray | None:
+        name = self.calibration.splash_template
+        return load_template(self.template_path(name)) if name else None
+
     def templates(self) -> tuple[np.ndarray, np.ndarray | None]:
         cal = self.calibration
         spin = load_template(self.template_path(cal.spin_template))
@@ -100,8 +109,20 @@ def calibration_path(provider: str, game: str, games_dir: Path = GAMES_DIR) -> P
     return games_dir / slugify(provider) / f"{slugify(game)}.yaml"
 
 
+DEFAULT_NAME = "_default"
+
+
 def load_calibration(provider: str, game: str, games_dir: Path = GAMES_DIR) -> LoadedCalibration:
+    """Calibración del juego; si no existe, la del proveedor (`<proveedor>/_default.yaml`).
+
+    Los juegos de un mismo proveedor suelen compartir HUD, así que basta calibrar el proveedor una vez.
+    Un juego concreto puede afinarlo con su propio YAML."""
     path = calibration_path(provider, game, games_dir)
+    if not path.is_file():
+        fallback = games_dir / slugify(provider) / f"{DEFAULT_NAME}.yaml"
+        if fallback.is_file():
+            log.info("Sin calibración propia de %s: se usa la del proveedor (%s)", game, fallback.name)
+            path = fallback
     if not path.is_file():
         shown = path.relative_to(PROJECT_ROOT) if PROJECT_ROOT in path.parents else path
         raise CalibrationMissingError(
@@ -156,6 +177,8 @@ def build_profile(calibration: GameCalibration, market: MarketConfig, frame_size
         "motion": calibration.motion,
         "consensus": {k: int(v) if k == "min_readings" else v for k, v in calibration.consensus.items()},
         "ready": calibration.ready,
+        "settle": calibration.settle,
+        "idle_patterns": calibration.idle_patterns,
     }
     return GameProfile.from_dict(data, {market.market: vision_market(market)})
 

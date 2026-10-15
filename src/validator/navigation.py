@@ -16,7 +16,7 @@ from typing import Callable, ContextManager, Iterator
 
 from playwright.sync_api import Browser, BrowserContext
 
-from validator.browser import new_context
+from validator.browser import new_context, save_session_storage
 from validator.config import MarketConfig, SelectorsConfig
 from validator.evidence import Evidence
 from validator.pages.cookie_banner import CookieBanner
@@ -54,6 +54,8 @@ def login(
             credentials = get_credentials(account, market.market)
             out.detail = f"cuenta {account}: " + LoginPage(page, market, selectors).login(credentials, evidence)
             context.storage_state(path=str(state_path))
+            keys = save_session_storage(page, state_path)
+            log.info("sessionStorage de la sesión guardado (%d claves: %s)", len(keys), ", ".join(keys))
             log.info("storage_state guardado en .auth/ (fuera de artifacts)")
     finally:
         context.close()
@@ -64,7 +66,7 @@ def login(
 def work_context(browser: Browser, market: MarketConfig, evidence: Evidence, state_path: Path) -> Iterator[BrowserContext]:
     """Contexto de trabajo con la sesión del login; vídeo y traza activos desde el inicio."""
     context = new_context(browser, market, storage_state=state_path, video_dir=evidence.video_dir)
-    context.tracing.start(screenshots=True, snapshots=True, sources=False)
+    context.tracing.start(screenshots=False, snapshots=False, sources=False)
     log.info("Contexto de trabajo creado (traza y vídeo posteriores al login)")
     try:
         yield context
