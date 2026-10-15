@@ -69,7 +69,7 @@ def run_scenario(kind: str, session: GameSession, context, market: MarketConfig,
     _reach_hud(session, driver, engine, loaded.splash_template(), frame_size)
     extra = [_setup(driver, loaded, frame_size)] if loaded.calibration.setup_clicks else []
     if loaded.calibration.min_bet is not None:
-        extra.append(_lower_to_min_bet(driver, engine, loaded.calibration.min_bet, frame_size))
+        extra.append(_lower_to_min_bet(driver, engine, loaded.calibration.min_bet, frame_size, spin_template))
 
     account = AccountBalanceReader(context, session.page, market, selectors, engine)
     n, separation = profile.consensus.min_readings, profile.consensus.min_separation_seconds
@@ -163,8 +163,28 @@ def _read_wager(driver: GameDriver, engine: VisionEngine, sample: str) -> Decima
     return Decimal(values[0])
 
 
+def _spin_visible(driver: GameDriver, engine: VisionEngine, spin_template) -> bool:
+    profile = engine.profile
+    hit = best_match(driver.capture(), spin_template, engine.roi("spin_search"), profile.template_scales)
+    return hit is not None and hit.confidence >= profile.template_threshold
+
+
+def _close_bet_panel(driver: GameDriver, engine: VisionEngine, cfg: MinBet, frame_size: tuple[int, int],
+                     spin_template) -> bool:
+    """Cierra el panel de apuesta con su «×» SOLO si tapa el Spin; el cierre se verifica viendo el Spin otra vez."""
+    width, height = frame_size
+    point = (cfg.close_point[0] * (width - 1), cfg.close_point[1] * (height - 1))  # type: ignore[index]
+    for attempt in range(2):
+        if _spin_visible(driver, engine, spin_template):
+            return True
+        log.info("El Spin no se ve tras fijar la apuesta: cerrando el panel de apuesta (intento %d)", attempt + 1)
+        driver.click(point, frame_size)
+        driver.wait(cfg.settle_ms)
+    return _spin_visible(driver, engine, spin_template)
+
+
 def _lower_to_min_bet(driver: GameDriver, engine: VisionEngine, cfg: MinBet,
-                      frame_size: tuple[int, int]) -> AssertionResult:
+                      frame_size: tuple[int, int], spin_template=None) -> AssertionResult:
     """Pulsa «−» hasta que la apuesta visible deja de bajar. Cada clic se verifica leyendo la apuesta por OCR."""
     current = _read_wager(driver, engine, "minbet-000")
     if current is None:
@@ -185,8 +205,12 @@ def _lower_to_min_bet(driver: GameDriver, engine: VisionEngine, cfg: MinBet,
             unchanged += 1
             if unchanged >= MIN_BET_CONFIRMATIONS:
                 log.info("Apuesta mínima: %s (desde %s, %d bajadas)", after, start, lowered)
-                return AssertionResult("min_bet", Verdict.PASS,
-                                       f"Apuesta mínima {after} (desde {start}; {lowered} bajadas leídas por OCR)")
+                detail = f"Apuesta mínima {after} (desde {start}; {lowered} bajadas leídas por OCR)"
+                if cfg.close_point is not None and spin_template is not None:
+                    if not _close_bet_panel(driver, engine, cfg, frame_size, spin_template):
+                        return AssertionResult("min_bet", Verdict.INCONCLUSIVE,
+                                               f"{detail}; el panel de apuesta sigue tapando el Spin")
+                return AssertionResult("min_bet", Verdict.PASS, detail)
         else:
             current, lowered, unchanged = after, lowered + 1, 0
     return AssertionResult("min_bet", Verdict.INCONCLUSIVE,

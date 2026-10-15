@@ -57,14 +57,15 @@ class MinBet(BaseModel):
 
     model_config = ConfigDict(extra="forbid", frozen=True)
     point: tuple[float, float]
+    close_point: tuple[float, float] | None = None   # «×» del panel de apuesta que puede abrir «−» y tapar el Spin
     max_clicks: int = Field(default=30, ge=1, le=60)
     settle_ms: int = Field(default=600, ge=100, le=5000)
 
-    @field_validator("point")
+    @field_validator("point", "close_point")
     @classmethod
-    def _normalized(cls, value: tuple[float, float]) -> tuple[float, float]:
-        if not all(0 <= v <= 1 for v in value):
-            raise ValueError("point debe estar normalizado (0–1)")
+    def _normalized(cls, value: tuple[float, float] | None) -> tuple[float, float] | None:
+        if value is not None and not all(0 <= v <= 1 for v in value):
+            raise ValueError("los puntos deben estar normalizados (0–1)")
         return value
 
 

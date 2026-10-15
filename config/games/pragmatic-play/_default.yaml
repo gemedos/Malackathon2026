@@ -29,7 +29,9 @@ payout_empty_is_zero: false
 setup_clicks: []
 # Apuesta mínima (CLAUDE.md §3): el juego recuerda la última apuesta, así que se pulsa «−» hasta que la apuesta leída
 # por OCR deja de bajar. Botón «−» del HUD estándar de Pragmatic, medido en Sweet Bonanza 2026-10-15.
-min_bet: {point: [0.695, 0.902], max_clicks: 30, settle_ms: 600}
+# En la mínima, «−» abre el panel «MULTIPLICADOR DE APUESTA», que tapa el Spin: se cierra con su «×» (close_point),
+# solo si el Spin no se ve (run 38766002917).
+min_bet: {point: [0.695, 0.902], close_point: [0.874, 0.157], max_clicks: 30, settle_ms: 600}
 insufficient_window_seconds: 5.0
 motion: {start_threshold: 8.0, quiet_threshold: 2.0, quiet_seconds: 1.0, timeout_seconds: 25.0}
 consensus: {min_readings: 3, min_separation_seconds: 0.3}

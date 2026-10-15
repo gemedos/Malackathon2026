@@ -6,6 +6,7 @@ from types import SimpleNamespace
 
 import numpy as np
 
+from validator.game import scenarios
 from validator.game.calibration import MinBet
 from validator.game.scenarios import _lower_to_min_bet
 from vision_engine import Verdict
@@ -67,6 +68,34 @@ def test_ocr_fallido_no_es_un_valor() -> None:
 def test_punto_equivocado_que_sube_la_apuesta() -> None:
     result = _run(FakeGame(LEVELS, start=3, step=+1))
     assert result.verdict is Verdict.INCONCLUSIVE and "subió" in result.detail
+
+
+def test_cierra_el_panel_de_apuesta_si_tapa_el_spin(monkeypatch) -> None:
+    """En la mínima, «−» abre el panel de apuesta (tapa el Spin): se cierra con «×» y se verifica viendo el Spin."""
+    game = FakeGame(LEVELS, start=2)
+    panel = {"open": True}
+    clicks_before_close: list[int] = []
+
+    def fake_click(point, frame_size):
+        if point[1] < FRAME[1] * 0.5:      # «×» del panel (arriba); «−» está abajo
+            clicks_before_close.append(game.clicks)
+            panel["open"] = False
+            return point
+        return FakeGame.click(game, point, frame_size)
+
+    monkeypatch.setattr(game, "click", fake_click)
+    monkeypatch.setattr(scenarios, "_spin_visible", lambda driver, engine, template: not panel["open"])
+    cfg = MinBet(point=CFG.point, close_point=(0.874, 0.157), max_clicks=10, settle_ms=100)
+    result = _lower_to_min_bet(game, game, cfg, FRAME, spin_template=object())
+    assert result.verdict is Verdict.PASS and not panel["open"]
+    assert len(clicks_before_close) == 1
+
+
+def test_panel_que_no_se_cierra_no_es_pass(monkeypatch) -> None:
+    monkeypatch.setattr(scenarios, "_spin_visible", lambda driver, engine, template: False)
+    cfg = MinBet(point=CFG.point, close_point=(0.874, 0.157), max_clicks=10, settle_ms=100)
+    result = _lower_to_min_bet(FakeGame(LEVELS, start=0), FakeGame(LEVELS, start=0), cfg, FRAME, spin_template=object())
+    assert result.verdict is Verdict.INCONCLUSIVE and "panel" in result.detail
 
 
 def test_sin_llegar_a_la_minima_en_el_limite_de_clics() -> None:
