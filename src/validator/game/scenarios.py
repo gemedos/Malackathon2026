@@ -217,14 +217,29 @@ def _lower_to_min_bet(driver: GameDriver, engine: VisionEngine, cfg: MinBet,
                            f"La apuesta seguía bajando tras {cfg.max_clicks} clics ({start} -> {current})")
 
 
+SPIN_EXTRA_FRAMES = 6     # frames previos extra si una animación tapa el Spin en el último (Sweet Bonanza: destello)
+SPIN_EXTRA_WAIT_MS = 400
+
+
 def _click_spin(recorder: SpinAttemptRecorder, driver: GameDriver, frame_size: tuple[int, int],
                 notes: list[str]) -> bool:
-    try:
-        hit = recorder.register_click(time.monotonic())
-    except SpinNotFoundError as exc:
-        notes.append(str(exc))
-        log.warning("%s", exc)
-        return False
+    """Un único clic, y solo sobre un frame previo en el que el Spin se ve con confianza suficiente.
+
+    Si en el último frame no se identifica (p. ej. un destello pasa por encima del botón), se observan hasta
+    SPIN_EXTRA_FRAMES frames más ANTES de clicar; register_click no consume el intento cuando falta evidencia."""
+    for extra in range(SPIN_EXTRA_FRAMES + 1):
+        try:
+            hit = recorder.register_click(time.monotonic())
+            break
+        except SpinNotFoundError as exc:
+            if extra == SPIN_EXTRA_FRAMES:
+                notes.append(str(exc))
+                log.warning("%s", exc)
+                return False
+            log.info("Spin no identificado en el último frame previo: se observa otro antes de clicar (%d/%d)",
+                     extra + 1, SPIN_EXTRA_FRAMES)
+            driver.wait(SPIN_EXTRA_WAIT_MS)
+            recorder.observe_before(driver.capture(), time.monotonic())
     driver.click(hit.point, frame_size)   # exactamente un intento
     return True
 
